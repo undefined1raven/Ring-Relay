@@ -1,11 +1,32 @@
 body{
-  background-color: #13002B;
+  background-color: #09000e;
+  font-family: 'Electrolize', sans-serif;
+  overflow: hidden;
 }
 
 :root{
+  --FS_M_BigMedium: 2.69vh;
   --FS_M_Normal: 2.34vh;
+  --FS_M_SmallMedium: 1.9vh;
 }
 
+@keyframes ani {
+  0%{background-color: #6100DC20}
+  50%{background-color: #6100DC40}
+  100%{background-color: #6100DC20}
+}
+.x0{
+  animation: ease-in-out ani 1.2s infinite;
+  animation-delay: 0s;
+}
+.x1{
+  animation: ease-in-out ani 1.2s infinite;
+  animation-delay: 0.25s;
+}
+.x2{
+  animation: ease-in-out ani 1.2s infinite;
+  animation-delay: .5s;
+}
 @mixin VAlign(){
   left: 50%;
   transform: translate(-50%);
@@ -15,15 +36,41 @@ body{
   align-items: center;
   justify-content: center;
 }
+.newAccountLabel{
+  width: 79.444444444%;
+  height: 4.375%;
+  font-size: 2.1vh !important;
+  @include flex();
+}
 
 .verticalLine{
   position: absolute;
   width: 0.01vh;
   background-color: #AAA;
 }
+.horizontalLine{
+  position: absolute;
+  height: 0.01vh;
+  background-color: #AAA;
+}
+#newAccountLn{
+  @include VAlign();
+}
+#E2ELabel{
+  top: 63.90625%;
+  @include VAlign();
+}
+#MsgAuthLabel{
+  top: 70%;
+  @include VAlign();
+}
+#NoPlainLabel{
+  top: 76.09375%;
+  @include VAlign();
+}
 .inputFieldContainer{
   position: absolute;
-  width: 63.888888889%;
+  width: 79.444444444%;
   height: 6.5625%;
   @include flex();
 }
@@ -61,4 +108,32 @@ body{
 #passwordField{
   top: 44.375%;
   @include VAlign();
+}
+.label{
+  position: absolute;
+  user-select: none;
+  color: #AAA;
+  font-size: var(--FS_M_Normal);
+}
+#linkDeco{
+  top: 56.9%;
+  @include VAlign();
+}
+.button{
+  position: absolute;
+  @include flex();
+  font-size: var(--FS_M_Normal);
+  transition: all linear 0.1s;
+}
+#privateKeyBackup{
+  top: 84.21875%;
+  font-size: var(--FS_M_SmallMedium);
+  @include VAlign();
+} 
+#createAccount{
+  top: 93.4375%;
+  font-size: var(--FS_M_BigMedium);
+  @include VAlign();
+  border-left: none !important;
+  border-right: none !important;
 }

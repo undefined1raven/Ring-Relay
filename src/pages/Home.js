@@ -5,7 +5,7 @@ function Login() {
   return (
     <div>
       <h1 style={{ color: "#FFF" }}>Epic home</h1>
-      <Link to={"login"} style={{color: "#FFF"}}>Login</Link>
+      <Link to={"newAccount"} style={{color: "#FFF"}}>New Account</Link>
     </div>
   );
 }
