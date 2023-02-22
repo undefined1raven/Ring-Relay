@@ -1,6 +1,6 @@
 <h1 align="center">Ring Relay</h1>
 
-![Ring Relay Logo](/src/visual_assets/logof.png?raw=true)
+![Ring Relay Logo](/src/visual_assets/logof.svg?raw=true)
 
 ##### Note: this isn't the repo for the app mentioned on my linkedin or resume, this is a refreshed version of the Ring Relay I've built a year ago
 
