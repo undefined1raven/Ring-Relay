@@ -1,0 +1,64 @@
+body{
+  background-color: #13002B;
+}
+
+:root{
+  --FS_M_Normal: 2.34vh;
+}
+
+@mixin VAlign(){
+  left: 50%;
+  transform: translate(-50%);
+}
+@mixin flex(){
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.verticalLine{
+  position: absolute;
+  width: 0.01vh;
+  background-color: #AAA;
+}
+.inputFieldContainer{
+  position: absolute;
+  width: 63.888888889%;
+  height: 6.5625%;
+  @include flex();
+}
+.inputField::selection{
+  background-color: #8c33ff60;
+  color: #d6b7ff;
+}
+.inputField:focus{
+  background-color: #6100DC60;
+}
+.inputField{
+  position: absolute;
+  top: 0%;
+  left: 3.043478261%;
+  width: calc(100% - 6.043478261%);
+  height: 97%;
+  outline: none;
+  border: none;
+  background-color: #6100DC20;
+  border-left: solid 1px #6100DC;
+  color: #FFF;
+  font-size: var(--FS_M_Normal);
+  text-decoration: none;
+  padding-left: 3%;
+  transition: all linear 0.1s;
+}
+#usernameField{
+  top: 21.25%;
+  @include VAlign();
+}
+#emailField{
+  top: 32.8125%;
+  @include VAlign();
+}
+#passwordField{
+  top: 44.375%;
+  @include VAlign();
+}
