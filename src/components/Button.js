@@ -8,7 +8,7 @@ function Button(props) {
     const ME = () => { setBkgOpacity(40) }
     const ML = () => { setBkgOpacity(20) }
     return (
-        <div onMouseEnter={ME} onMouseLeave={ML} id={props.id} className={'button ' + props.className} style={{ fontSize: props.fontSize, width: props.width, height: props.height, color: props.color, backgroundColor: props.bkg + bkgOpacity, border: 'solid 1px ' + props.color }}>{props.label}</div>
+        <div onClick={props.onClick} onMouseEnter={ME} onMouseLeave={ML} id={props.id} className={'button ' + props.className} style={{ fontSize: props.fontSize, width: props.width, height: props.height, color: props.color, backgroundColor: props.bkg + bkgOpacity, border: 'solid 1px ' + props.color }}>{props.label}</div>
     )
 }
 

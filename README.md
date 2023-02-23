@@ -9,7 +9,7 @@
 
 ## About
 
-A chatting app that lets you see different stats about your texts and conversations such as freqency maps for words, average length of each message and more. I'd love for this app to use a dynamic unique design.
+A chatting app that lets you see different stats about your texts and conversations such as freqency maps for words, average length of each message and more. I'd love for this app to use a dynamic unique design. I'll also implement end-to-end encryption using a public-private key pair for each user. I'll detail the architecture implemented later on.
 
 ## Tech Stack
 
@@ -23,7 +23,7 @@ I feel like I'm already profficient with Vue because I used it for more than a y
 
 ### Databases
 
-Since I already have 3 years of experience working with Mongo DB, I'll try out PlanetScale just for some novelty(this isn't a techinal driven decision cuz I'll be using this app with friends only anyway). I'll stick to Firebase Realtime DB for storing sessions and any other temporary data such as reset password tokens.
+Since I already have 3 years of experience working with Mongo DB, I'll try out PlanetScale just for some novelty (this isn't a techinal driven decision cuz I'll be using this app with friends only anyway)(also I'd like to get some experience with SQL based DBs). I'll stick to Firebase Realtime DB for storing sessions and any other temporary data such as reset password tokens.
 
 ## Development Method
 
