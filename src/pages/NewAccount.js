@@ -7,6 +7,7 @@ import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import { useState } from 'react'
 import * as EmailValidator from 'email-validator';
+import axios from 'axios';
 
 function NewAccount() {
     const [usernameFieldColor, setUsernameFieldColor] = useState("#6100DC");
@@ -22,7 +23,7 @@ function NewAccount() {
     }
 
     const validateInput = (continous) => {
-        if (username.length < 2) {
+        if (username.length < 2 || username.indexOf('@') != -1) {
             setUsernameFieldColor("#FF002E");
             setTimeout(() => {
                 if (!continous) {
@@ -57,6 +58,15 @@ function NewAccount() {
     const submit = (e) => {
         validateInput(false);
         e.preventDefault();
+        if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
+            axios.post('https://ring-relay-api-prod.vercel.app/api/dbop?newUser', {
+                username: username,
+                email: email,
+                password: password,
+            }).then(res => {
+                console.log(res.data)
+            }).catch(e => { console.log(e) });
+        }
     }
     return (
         <div>
@@ -75,7 +85,7 @@ function NewAccount() {
             <HorizontalLine id="newAccountLn" color="#6100DC" left="10.277777778%" top="55%" width="79.444444444%"></HorizontalLine>
             <LinkDeco id="linkDeco"></LinkDeco>
             <Button id="privateKeyBackup" width="79.444444444%" height="5.46875%" color="#FF002E" bkg="#FF002E" label="Tap here to back-up your private key"></Button>
-            <Link to={"/"} style={{ color: "#FFF", position: 'absolute', top: '50%' }}>Home</Link>
+            <Link to={"/login"}><Button id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
         </div>
     );
 }

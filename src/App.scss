@@ -1,87 +1,114 @@
-body{
+body {
   background-color: #09000e;
   font-family: 'Electrolize', sans-serif;
   overflow: hidden;
 }
 
-:root{
+:root {
   --FS_M_BigMedium: 2.69vh;
   --FS_M_Normal: 2.34vh;
   --FS_M_SmallMedium: 1.9vh;
 }
 
 @keyframes ani {
-  0%{background-color: #6100DC20}
-  50%{background-color: #6100DC40}
-  100%{background-color: #6100DC20}
+  0% {
+    background-color: #6100DC20
+  }
+
+  50% {
+    background-color: #6100DC40
+  }
+
+  100% {
+    background-color: #6100DC20
+  }
 }
-.x0{
+
+.x0 {
   animation: ease-in-out ani 1.2s infinite;
   animation-delay: 0s;
 }
-.x1{
+
+.x1 {
   animation: ease-in-out ani 1.2s infinite;
   animation-delay: 0.25s;
 }
-.x2{
+
+.x2 {
   animation: ease-in-out ani 1.2s infinite;
   animation-delay: .5s;
 }
-@mixin VAlign(){
+
+@mixin VAlign() {
   left: 50%;
   transform: translate(-50%);
 }
-@mixin flex(){
+
+@mixin flex() {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.newAccountLabel{
+
+.newAccountLabel {
   width: 79.444444444%;
   height: 4.375%;
   font-size: 2.1vh !important;
   @include flex();
 }
 
-.verticalLine{
+.verticalLine {
   position: absolute;
   width: 0.01vh;
   background-color: #AAA;
 }
-.horizontalLine{
+
+.horizontalLine {
   position: absolute;
   height: 0.01vh;
   background-color: #AAA;
 }
-#newAccountLn{
+
+#newAccountLn {
   @include VAlign();
 }
-#E2ELabel{
+
+#E2ELabel, #AuthStatusLabel {
   top: 63.90625%;
   @include VAlign();
 }
-#MsgAuthLabel{
+#AuthStatusLabel{
+  top: 14.9%;
+  transition: all linear 0.1s;
+  transition: color ease-in-out 0.3s;
+}
+#MsgAuthLabel {
   top: 70%;
   @include VAlign();
 }
-#NoPlainLabel{
+
+#NoPlainLabel {
   top: 76.09375%;
   @include VAlign();
 }
-.inputFieldContainer{
+
+.inputFieldContainer {
   position: absolute;
   width: 79.444444444%;
   height: 6.5625%;
   @include flex();
 }
-.inputField::selection{
+
+.inputField::selection {
   background-color: #8c33ff60;
   color: #d6b7ff;
 }
-.inputField:focus{
+
+.inputField:focus {
   background-color: #6100DC60;
 }
-.inputField{
+
+.inputField {
   position: absolute;
   top: 0%;
   left: 3.043478261%;
@@ -97,40 +124,75 @@ body{
   padding-left: 3%;
   transition: all linear 0.1s;
 }
-#usernameField{
-  top: 21.25%;
+
+#usernameField {
+  top: calc(21.25% - 5%);
   @include VAlign();
 }
-#emailField{
-  top: 32.8125%;
+
+#emailField {
+  top: calc(32.8125% - 5%);
   @include VAlign();
 }
-#passwordField{
-  top: 44.375%;
+
+#passwordField {
+  top: calc(44.375% - 5%);
   @include VAlign();
 }
-.label{
+
+#loginUsernameField {
+  top: 21%;
+  @include VAlign();
+}
+
+#loginPasswordField {
+  top: 31%;
+  @include VAlign();
+}
+
+
+.label {
   position: absolute;
   user-select: none;
   color: #AAA;
   font-size: var(--FS_M_Normal);
 }
-#linkDeco{
+
+#goToLoginButton {
+  top: 48.7%;
+  @include VAlign();
+}
+
+#linkDeco {
   top: 56.9%;
   @include VAlign();
 }
-.button{
+
+.button {
   position: absolute;
   @include flex();
   font-size: var(--FS_M_Normal);
   transition: all linear 0.1s;
 }
-#privateKeyBackup{
+
+#privateKeyBackup,
+#resetPasswordButton,
+#createAccountButton {
   top: 84.21875%;
   font-size: var(--FS_M_SmallMedium);
   @include VAlign();
-} 
-#createAccount{
+}
+
+#resetPasswordButton {
+  top: 47%;
+  font-size: var(--FS_M_Normal);
+}
+
+#createAccountButton {
+  font-size: var(--FS_M_Normal);
+}
+
+#createAccount {
   top: 93.4375%;
   font-size: var(--FS_M_BigMedium);
   @include VAlign();

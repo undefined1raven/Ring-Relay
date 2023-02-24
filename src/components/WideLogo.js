@@ -1,8 +1,8 @@
 
 
-function WideLogo() {
+function WideLogo(props) {
     return (
-        <svg style={{position: 'absolute', width: '100%', height: 'auto', borderBottom: 'solid 1px #6100DC'}} width="360" height="101" viewBox="0 0 360 101" fill="none" xmlns="http://www.w3.org/2000/svg" >
+        <svg id={props.id} style={{position: 'absolute', width: '100%', height: 'auto', borderBottom: 'solid 1px #6100DC'}} width="360" height="101" viewBox="0 0 360 101" fill="none" xmlns="http://www.w3.org/2000/svg" >
             <rect y="-2" width="360" height="103" fill="url(#paint0_linear_6_59)" fillOpacity="0.2" />
             <rect x="1.4599" width="58.7711" height="58.563" transform="matrix(0.729951 -0.6835 0.729951 0.6835 116.402 52.1911)" fill="#6100DC" fillOpacity="0.2" stroke="#6100DC" strokeWidth="2" />
             <rect x="1.4599" width="58.7711" height="58.563" transform="matrix(0.729951 -0.6835 0.729951 0.6835 131.682 53.1209)" fill="#6100DC" fillOpacity="0.2" stroke="#6100DC" strokeWidth="2" />
