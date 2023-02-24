@@ -54,7 +54,7 @@ function NewAccount() {
         validateInput(false);
         setAuthStatusLabelObj({text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF'});
         e.preventDefault();
-        axios.post('http://localhost:3001/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
+        axios.post('https://ring-relay-api-prod.vercel.app/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
         }).then(res => {
