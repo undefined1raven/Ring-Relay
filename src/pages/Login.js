@@ -7,12 +7,11 @@ import Label from '../components/Label.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
-import * as EmailValidator from 'email-validator';
 import axios from 'axios';
 
 function NewAccount() {
     const [usernameFieldColor, setUsernameFieldColor] = useState("#6100DC");
-    const [authStatusLabelObj, setAuthStatusLabelObj] = useState({color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]'});
+    const [authStatusLabelObj, setAuthStatusLabelObj] = useState({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
     const [locationHash, setLocationHash] = useState('#/login');
     const [passwordFieldColor, setPasswordFieldColor] = useState("#6100DC");
     const [userid, setUserid] = useState("");
@@ -52,25 +51,29 @@ function NewAccount() {
 
     const submit = (e) => {
         validateInput(false);
-        setAuthStatusLabelObj({text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF'});
+        setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
         e.preventDefault();
         axios.post('https://ring-relay-api-prod.vercel.app/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
         }).then(res => {
-            console.log(res.data)
             if (res.data['redirect']) {
-                setAuthStatusLabelObj({text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85'});
+                setAuthStatusLabelObj({ text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85' });
                 setTimeout(() => {
                     setLocationHash('#');
                 }, 100);
-            }else{
-                setAuthStatusLabelObj({text: 'Auth Failed [NSE]', color: '#D80027', bkg: '#D80027'});
+            } else {
+                setAuthStatusLabelObj({ text: 'Auth Failed [NSE]', color: '#D80027', bkg: '#D80027' });
                 setTimeout(() => {
-                    setAuthStatusLabelObj({color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]'});
+                    setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
                 }, 2000);
             }
-        }).catch(e => { console.log(e) });
+        }).catch(e => {
+            setAuthStatusLabelObj({ text: 'Auth Failed [SER]', color: '#D80027', bkg: '#D80027' });
+            setTimeout(() => {
+                setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
+            }, 2000);
+        });
     }
     return (
         <div>
