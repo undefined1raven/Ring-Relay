@@ -7,12 +7,14 @@ import Label from '../components/Label.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import NavBar from '../components/NavBar.js'
+import Chats from '../components/Chats.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 
 
 function Home() {
   const [authorized, setAuthorized] = useState(false);
+  const [windowId, setWindowId] = useState('chats');
   const [windowHash, setWindowHash] = useState('/');
 
   useEffect(() => {
@@ -35,8 +37,9 @@ function Home() {
   }
   return (
     <div>
-      <NavBar></NavBar>
+      <NavBar wid={windowId}></NavBar>
       <Button onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
+      <Chats wid={windowId}></Chats>
     </div>
   );
 }

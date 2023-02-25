@@ -8,8 +8,7 @@ import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 
-function NavBar() {
-    const [activeWindow, setActiveWindow] = useState("chats");
+function NavBar(props) {
     const [systemStatus, setSystemStatus] = useState({ text: '[Checking]', color: '#001AFF', last: 0 });
 
     function checkSys() {
@@ -28,7 +27,7 @@ function NavBar() {
     });
 
     function navButtonBkgController(btnId) {
-        if (btnId == activeWindow) {
+        if (btnId == props.wid) {
             return '#A055FF';
         } else {
             return '#6800EC';
