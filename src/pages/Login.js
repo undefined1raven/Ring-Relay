@@ -26,6 +26,31 @@ function NewAccount() {
         validateInput(true);
     }
 
+    const auth = (cip) => {
+        axios.post('https://ring-relay-api-prod.vercel.app/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
+            userid: userid,
+            password: password,
+            ip: cip
+        }).then(res => {
+            if (res.data['redirect']) {
+                setAuthStatusLabelObj({ text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85' });
+                setTimeout(() => {
+                    setLocationHash('#');
+                }, 100);
+            } else {
+                setAuthStatusLabelObj({ text: 'Auth Failed [NSE]', color: '#D80027', bkg: '#D80027' });
+                setTimeout(() => {
+                    setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
+                }, 2000);
+            }
+        }).catch(e => {
+            setAuthStatusLabelObj({ text: 'Auth Failed [SER]', color: '#D80027', bkg: '#D80027' });
+            setTimeout(() => {
+                setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
+            }, 2000);
+        });
+    }
+
     const validateInput = (continous) => {
         if (setUserid.length < 2) {
             setUsernameFieldColor("#FF002E");
@@ -53,27 +78,12 @@ function NewAccount() {
         validateInput(false);
         setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
         e.preventDefault();
-        axios.post('https://ring-relay-api-prod.vercel.app/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
-            userid: userid,
-            password: password,
-        }).then(res => {
-            if (res.data['redirect']) {
-                setAuthStatusLabelObj({ text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85' });
-                setTimeout(() => {
-                    setLocationHash('#');
-                }, 100);
-            } else {
-                setAuthStatusLabelObj({ text: 'Auth Failed [NSE]', color: '#D80027', bkg: '#D80027' });
-                setTimeout(() => {
-                    setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
-                }, 2000);
-            }
+        axios.get('https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c').then(res => {
+            auth(res.data.ip_address);
         }).catch(e => {
-            setAuthStatusLabelObj({ text: 'Auth Failed [SER]', color: '#D80027', bkg: '#D80027' });
-            setTimeout(() => {
-                setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
-            }, 2000);
+            auth('Failed To Get');
         });
+
     }
     return (
         <div>
