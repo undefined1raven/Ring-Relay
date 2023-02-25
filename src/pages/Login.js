@@ -87,11 +87,13 @@ function Login() {
         validateInput(false);
         setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
         e.preventDefault();
-        axios.get('https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c').then(res => {
-            auth(res.data.ip_address);
-        }).catch(e => {
-            auth('Failed To Get');
-        });
+        if (userid.length > 2 && password.length > 5) {
+            axios.get('https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c').then(res => {
+                auth(res.data.ip_address);
+            }).catch(e => {
+                auth('Failed To Get');
+            });
+        }
 
     }
     return (

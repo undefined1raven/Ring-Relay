@@ -1,6 +1,7 @@
-body {
+body, html {
   background-color: #09000e;
   font-family: 'Electrolize', sans-serif;
+  width: 100%;
   overflow: hidden;
 }
 
@@ -73,15 +74,18 @@ body {
   @include VAlign();
 }
 
-#E2ELabel, #AuthStatusLabel {
+#E2ELabel,
+#AuthStatusLabel {
   top: 63.90625%;
   @include VAlign();
 }
-#AuthStatusLabel{
+
+#AuthStatusLabel {
   top: 14.9%;
   transition: all linear 0.1s;
   transition: color ease-in-out 0.21s;
 }
+
 #MsgAuthLabel {
   top: 70%;
   @include VAlign();
@@ -192,10 +196,56 @@ body {
   font-size: var(--FS_M_Normal);
 }
 
-#createAccount {
+#createAccount, #logoutBtn {
   top: 93.4375%;
   font-size: var(--FS_M_BigMedium);
   @include VAlign();
   border-left: none !important;
   border-right: none !important;
+}
+
+//nav
+
+.navBarContainer {
+  position: absolute;
+  top: 2.1875%;
+  left: 0%;
+  width: 100%;
+  height: 4.84375%;
+  @include flex();
+  background-color: #6100DC20;
+}
+
+#navLogo {
+  position: absolute;
+  left: -39.388888889%;
+}
+
+.navButton {
+  height: 100%;
+  border: none !important;
+  border-right: solid 1px #6100DC !important;
+  border-left: solid 1px #6100DC !important;
+}
+
+#chatsNavButton{
+  left: 22%;
+}
+#newContactNavButton{
+  left: 42.7%;
+  width: 34.166666667% !important;
+}
+#settingsNavButton{
+  left: 77.2%;
+  width: 22.566666667% !important;
+  border-right: none !important;
+}
+#sysStatusLabel{
+  top: -48.3%;
+  width: 32.666666667%;
+  height: 45%;
+  left: 67.1%;
+  @include flex();
+  transition: all linear 0.1s;
+  transition: color ease-in-out 0.3s;
 }
