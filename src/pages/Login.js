@@ -26,7 +26,7 @@ function NewAccount() {
         validateInput(true);
     }
 
-    const auth = (cip) => {
+    function auth(cip) {
         axios.post('https://ring-relay-api-prod.vercel.app/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
