@@ -9,7 +9,13 @@ import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 
-function NewAccount() {
+
+function setItem(key, value) {
+    window.sessionStorage.setItem(key, value);
+}
+
+
+function Login() {
     const [usernameFieldColor, setUsernameFieldColor] = useState("#6100DC");
     const [authStatusLabelObj, setAuthStatusLabelObj] = useState({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
     const [locationHash, setLocationHash] = useState('#/login');
@@ -33,6 +39,9 @@ function NewAccount() {
             ip: cip
         }).then(res => {
             if (res.data['redirect']) {
+                setItem('AT', res.data['AT'])
+                setItem('CIP', cip)
+                console.log(window.sessionStorage.setItem)
                 setAuthStatusLabelObj({ text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85' });
                 setTimeout(() => {
                     setLocationHash('#');
@@ -108,4 +117,4 @@ function NewAccount() {
     );
 }
 
-export default NewAccount;
+export default Login;
