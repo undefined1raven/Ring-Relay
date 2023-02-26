@@ -332,3 +332,23 @@ fill, rect{
 .chatHeaderName{
   left: 14%;
 }
+.chatInput{
+  position: absolute;
+  top: 92.1875%;
+  width: 97.222222222%;
+  height: 6.5625%;
+  @include VAlign();
+}
+#msgInputActual:focus{
+  background-color: #7000FF40 !important; 
+}
+#msgInput{
+  width: 78%;
+  height: 100%;
+}
+#sendButton{
+  left: 80%;
+  width: 20%;
+  height: 100%;
+  border: none !important;
+}

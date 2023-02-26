@@ -10,6 +10,11 @@ import axios from 'axios';
 
 function Chat(props) {
     const [statusProps, setStatusProps] = useState({ color: '#FF002E' });
+    const [scrollToY, setScrollToY] = useState(0);
+
+    const onInputFocus = () => {
+        setScrollToY(30000);
+    }
 
     useEffect(() => {
         if (props.chatObj.status === 'Online') {
@@ -17,7 +22,7 @@ function Chat(props) {
         } else {
             setStatusProps({ color: '#FF002E' })
         }
-    }, [props])
+    }, [props, scrollToY])
 
     if (props.show) {
         return (
@@ -26,8 +31,12 @@ function Chat(props) {
                     <div className='chatHeaderBkg'></div>
                     <Button onClick={props.onBackButton} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
                     <Label className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
-                    <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={props.chatObj.status} bkg={`${statusProps.color}20`} style={{borderLeft: 'solid 1px' + statusProps.color}}></Label>
+                    <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={props.chatObj.status} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
+                </div>
+                <div className='chatInput'>
+                    <InputField fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
+                    <Button onClick={props.onBackButton} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
             </div>
         )

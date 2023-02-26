@@ -49,7 +49,7 @@ function Home() {
   return (
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
-      <Button onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
+      <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
       <Chats onChatSelected={onChatSelected} show={windowId == 'chats'} wid={windowId}></Chats>
       <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={{name: 'MCRN 3rd Jupi Fleet', status: 'Online', since: ''}}></Chat>
     </div>
