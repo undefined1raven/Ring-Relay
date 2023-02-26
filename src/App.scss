@@ -209,7 +209,7 @@ html {
 //nav
 
 .navBarContainer {
-  position: fixed;
+  position: absolute;
   top: 2.1875%;
   left: 0%;
   width: 100%;
@@ -278,7 +278,7 @@ html {
   @include flex();
 }
 .chatHeader{
-  position: fixed;
+  position: absolute;
   top: 8.90625%;
   height: 6.25%;
   @include VAlign();
