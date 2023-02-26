@@ -14,11 +14,11 @@ function Chat(props) {
     const [scrollToY, setScrollToY] = useState(0);
     const [msgListscrollToY, setMsgListscrollToY] = useState(0);
     const [newMessageContents, setNewMessageContents] = useState('');
-    const [msgArray, setMsgArray] = useState([{ content: 'MCRN Command is go for strike on Medina Station at 924:532:44 SSTO. Please relay orders to Ring Fleet Command and await further tactical details', secure: true, tx: Date.now(), type: 'rx' },
-    { content: 'no not really', secure: false, tx: Date.now(), type: 'tx' }]);
+    const [msgArray, setMsgArray] = useState([{ liked: false, seen: false, content: 'MCRN Command is go for strike on Medina Station at 924:532:44 SSTO. Please relay orders to Ring Fleet Command and await further tactical details', secure: true, tx: Date.now(), type: 'rx' },
+    { liked: false, seen: false, content: 'no not really', secure: false, tx: Date.now(), type: 'tx' }]);
     const [msgList, setMsgList] = useState(0);
     const [IH, setIH] = useState(window.innerHeight);
-    
+
 
     const onInputFocus = () => {
         setScrollToY(30000);
@@ -26,7 +26,7 @@ function Chat(props) {
 
     const onSend = () => {
         if (newMessageContents.length > 0) {
-            setMsgArray([...msgArray, {content: newMessageContents, type: 'tx', tx: Date.now(), secure: Math.random() < .5 ? false : true}]);
+            setMsgArray([...msgArray, { liked: false, seen: Math.random() < .5 ? false : true, content: newMessageContents, type: 'tx', tx: Date.now(), secure: Math.random() < .5 ? false : true }]);
             setMsgListscrollToY(30000);
             setNewMessageContents('');
         }
@@ -42,7 +42,11 @@ function Chat(props) {
             setIH(window.innerHeight)
         }, 100);
         setMsgList(msgArray.map(x => <li key={x.tx + Math.random()}><Message msgObj={x}></Message></li>))
-        setMsgListscrollToY(30000)
+
+        setTimeout(() => {
+            try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
+        }, 50);
+
     }, [props, scrollToY, msgArray, msgListscrollToY])
 
     if (props.show) {

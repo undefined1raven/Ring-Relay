@@ -396,10 +396,17 @@ rect {
   /* Foreground */
   background: #00008300;
 }
+
 .msgsList::-webkit-scrollbar-track {
   /* Background */
   background: #00008325;
 }
+
+@keyframes msgAni{
+  0%{transform: scaleY(0.2);}
+  100%{transform: scaleY(1);}
+}
+
 .msgContainer {
   position: relative;
   left: 2%;
@@ -411,8 +418,11 @@ rect {
   padding-right: 8.454810496%;
   border-left: solid 1px #7000FF;
   margin-bottom: 5%;
+  animation: msgAni linear 0.06s;
 }
-.msgTime{
+
+.msgTime,
+.msgSeen {
   position: absolute;
   top: 0;
   left: 91.836734694% !important;
@@ -420,11 +430,30 @@ rect {
   @include flex();
   left: 0;
 }
-.notAuthedMsgDeco, .msgTypeDeco{
+
+.msgSeen {
+  left: 83% !important;
+}
+
+.notAuthedMsgDeco,
+.msgTypeDeco {
   position: absolute;
   top: 2vh;
   left: 94.336734694%;
 }
-.msgTypeDeco{
+
+.msgTypeDeco {
   top: 4.8vh;
+}
+
+@keyframes likedDecoAni{
+  0%{opacity: 0;}
+  100%{opacity: 1;}
+}
+
+.msgLikedDeco {
+  position: absolute;
+  animation: likedDecoAni ease-in-out 0.2s;
+  top: 0vh;
+  left: 0%;
 }
