@@ -266,10 +266,13 @@ html {
   padding: 0;
   margin: 0;
 }
-.chatCardListContainer{
+
+.chatCardListContainer {
   margin-bottom: 20%;
 }
-.chatCard, .chatHeader {
+
+.chatCard,
+.chatHeader {
   position: absolute;
   padding: 0;
   margin: 0;
@@ -277,7 +280,8 @@ html {
   height: 7.722007722%;
   @include flex();
 }
-.chatHeader{
+
+.chatHeader {
   position: absolute;
   top: 8.90625%;
   height: 6.25%;
@@ -285,41 +289,51 @@ html {
   width: 97.222222222%;
   border-left: solid 1px #7000FF;
 }
-.chatCardName{
+
+.chatCardName {
   position: absolute;
   left: 5%;
 }
-.chatCardMsgCount{
+
+.chatCardMsgCount {
   left: 53%;
   width: 32%;
   text-align: end;
   transition: all linear 0.1s;
 }
-fill, rect{
+
+fill,
+rect {
   transition: all linear 0.1s;
 }
-.newMsgsDeco{
+
+.newMsgsDeco {
   position: absolute;
   top: 50%;
   left: 61%;
 }
-.chatCardStatus, .chatHeaderStatus{
+
+.chatCardStatus,
+.chatHeaderStatus {
   width: 15.05714286%;
   left: 86.14285714%;
   height: 100%;
   @include flex();
 }
-.chatHeaderStatus{
+
+.chatHeaderStatus {
   left: 82.94285714%;
-  width: 18%;
+  width: 15.8%;
 }
-.chatCardStatusLast{
+
+.chatCardStatusLast {
   left: 86.14285714%;
   width: 15.05714286%;
   text-align: center;
   top: 70%;
 }
-.chatHeaderBkg{
+
+.chatHeaderBkg {
   position: absolute;
   left: 2.285714286%;
   width: 81.111111111%;
@@ -327,33 +341,40 @@ fill, rect{
   background-color: #6100DC20;
   border-left: solid 1px #7000FF;
 }
-#chatHeaderBackButton{
+
+#chatHeaderBackButton {
   left: 2.285714286%;
 }
-.chatHeaderName{
+
+.chatHeaderName {
   left: 14%;
 }
-.chatInput{
+
+.chatInput {
   position: absolute;
   top: 92.1875%;
   width: 97.222222222%;
   height: 6.5625%;
   @include VAlign();
 }
-#msgInputActual:focus{
-  background-color: #7000FF40 !important; 
+
+#msgInputActual:focus {
+  background-color: #7000FF40 !important;
 }
-#msgInput{
+
+#msgInput {
   width: 78%;
   height: 100%;
 }
-#sendButton{
+
+#sendButton {
   left: 80%;
   width: 20%;
   height: 100%;
   border: none !important;
 }
-.msgsList{
+
+.msgsList {
   position: absolute;
   top: 17.03125%;
   width: 97.222222222%;
@@ -362,4 +383,48 @@ fill, rect{
   margin: 0;
   padding: 0;
   @include VAlign();
+  overflow-y: scroll;
+}
+
+//message | msg
+.msgsList::-webkit-scrollbar {
+  width: 0vh;
+  height: 0px;
+}
+
+.msgsList::-webkit-scrollbar-thumb {
+  /* Foreground */
+  background: #00008300;
+}
+.msgsList::-webkit-scrollbar-track {
+  /* Background */
+  background: #00008325;
+}
+.msgContainer {
+  position: relative;
+  left: 2%;
+  width: 86.545189504%;
+  height: auto;
+  padding-top: 5%;
+  padding-bottom: 5%;
+  padding-left: 2%;
+  padding-right: 8.454810496%;
+  border-left: solid 1px #7000FF;
+  margin-bottom: 5%;
+}
+.msgTime{
+  position: absolute;
+  top: 0;
+  left: 91.836734694% !important;
+  width: 8%;
+  @include flex();
+  left: 0;
+}
+.notAuthedMsgDeco, .msgTypeDeco{
+  position: absolute;
+  top: 2vh;
+  left: 94.336734694%;
+}
+.msgTypeDeco{
+  top: 4.8vh;
 }
