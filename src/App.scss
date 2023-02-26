@@ -269,13 +269,20 @@ html {
 .chatCardListContainer{
   margin-bottom: 20%;
 }
-.chatCard {
+.chatCard, .chatHeader {
   position: absolute;
   padding: 0;
   margin: 0;
   width: 100%;
   height: 7.722007722%;
   @include flex();
+}
+.chatHeader{
+  top: 8.90625%;
+  height: 6.25%;
+  @include VAlign();
+  width: 97.222222222%;
+  border-left: solid 1px #7000FF;
 }
 .chatCardName{
   position: absolute;
@@ -295,15 +302,33 @@ fill, rect{
   top: 50%;
   left: 61%;
 }
-.chatCardStatus{
+.chatCardStatus, .chatHeaderStatus{
   width: 15.05714286%;
   left: 86.14285714%;
   height: 100%;
   @include flex();
+}
+.chatHeaderStatus{
+  left: 82.94285714%;
+  width: 18%;
 }
 .chatCardStatusLast{
   left: 86.14285714%;
   width: 15.05714286%;
   text-align: center;
   top: 70%;
+}
+.chatHeaderBkg{
+  position: absolute;
+  left: 2.285714286%;
+  width: 81.111111111%;
+  height: 100%;
+  background-color: #6100DC20;
+  border-left: solid 1px #7000FF;
+}
+#chatHeaderBackButton{
+  left: 2.285714286%;
+}
+.chatHeaderName{
+  left: 14%;
 }

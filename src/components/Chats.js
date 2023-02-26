@@ -7,14 +7,18 @@ function Chats(props) {
     { name: 'MCRN Home Fleet', msg: 3, status: 'Online', since: '' }];
 
     const getChatList = () => {
-        return demo.map(x => <li key={x.name + Math.random()} className='chatCardListContainer'><ChatCard obj={{...x}}></ChatCard></li>)
+        return demo.map(x => <li onClick={() => { props.onChatSelected(x.name) }} key={x.name + Math.random()} className='chatCardListContainer'><ChatCard obj={{ ...x }}></ChatCard></li>)
     }
+    if (props.show) {
 
-    return (
-        <ul id="chatsContainer">
-            {getChatList()}
-        </ul>
-    )
+        return (
+            <ul id="chatsContainer">
+                {getChatList()}
+            </ul>
+        )
+    } else {
+        return ''
+    }
 }
 
 export default Chats;

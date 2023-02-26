@@ -8,6 +8,7 @@ import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import NavBar from '../components/NavBar.js'
 import Chats from '../components/Chats.js'
+import Chat from '../components/Chat.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 
@@ -16,7 +17,17 @@ function Home() {
   const [authorized, setAuthorized] = useState(false);
   const [windowId, setWindowId] = useState('chats');
   const [windowHash, setWindowHash] = useState('/');
+  const [refs, setRefs] = useState([]);
 
+  const onNavButtonClick = (btnId) => {
+    setWindowId(btnId);
+  };
+  const onChatSelected = () => {
+    setWindowId('chat');
+  }  
+  const onBackButton = () => {
+    setWindowId('chats');
+  }
   useEffect(() => {
     axios.post('https://ring-relay-api-prod.vercel.app/api/auth?val=0', { AT: sessionStorage.getItem('AT'), CIP: sessionStorage.getItem('CIP') }).then(res => {
       if (!res.data.flag) {
@@ -37,9 +48,10 @@ function Home() {
   }
   return (
     <div>
-      <NavBar wid={windowId}></NavBar>
+      <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Button onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
-      <Chats wid={windowId}></Chats>
+      <Chats onChatSelected={onChatSelected} show={windowId == 'chats'} wid={windowId}></Chats>
+      <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={{name: 'MCRN 3rd Jupi Fleet', status: 'Online', since: ''}}></Chat>
     </div>
   );
 }
