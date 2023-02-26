@@ -38,6 +38,9 @@ function Chat(props) {
                     <InputField fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
                     <Button onClick={props.onBackButton} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
+                <ul className='msgsList'>
+
+                </ul>
             </div>
         )
     } else {

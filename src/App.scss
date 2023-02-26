@@ -209,7 +209,7 @@ html {
 //nav
 
 .navBarContainer {
-  position: absolute;
+  position: fixed;
   top: 2.1875%;
   left: 0%;
   width: 100%;
@@ -278,6 +278,7 @@ html {
   @include flex();
 }
 .chatHeader{
+  position: fixed;
   top: 8.90625%;
   height: 6.25%;
   @include VAlign();
@@ -351,4 +352,14 @@ fill, rect{
   width: 20%;
   height: 100%;
   border: none !important;
+}
+.msgsList{
+  position: absolute;
+  top: 17.03125%;
+  width: 97.222222222%;
+  height: 74.21875%;
+  border-left: solid 1px #7000FF;
+  margin: 0;
+  padding: 0;
+  @include VAlign();
 }
