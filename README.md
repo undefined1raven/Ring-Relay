@@ -4,6 +4,11 @@
   <img src="/src/visual_assets/logof.svg"></img>
 </p>
 
+## Status
+```diff
++ Front-end required for the features mentioned below completed ( - new contacts)
+@@ Implementing Back-end @@
+```
 
 ##### Note: this isn't the repo for the app mentioned on my linkedin or resume, this is a refreshed version of the Ring Relay I've built a year ago
 
@@ -51,3 +56,13 @@ The flowchart above ilustrates how an user (Client 0 / [C0]) will connect with a
 </p>
 
 Every time an users taps on a conversation, the flowchart above gets triggered so the front-end could display the conversation using the message array retrieved from the DB. The first step is retrieving the UIDs any given user is connected to, so the front-end could hydrate the 'chats' section of the UI. After the user selects a conversation, a request is sent containing the UID of the person the conversation is with. Then, the serverless function checks both the `UM${OWN[UID]}` table and if the conversation is not found there, the `UM${FOREIGN[UID]}` table. This is efficient since the conversation can be in one of the 2 places. (I considered adding a new field in the refs table to deal with this, but concluded it would add complexity that's not warranted when considering the trade-offs of both methods) 
+
+### Message Exchange
+<p align="center">
+  <img src="/docs/Ring Relay Architecture (Message Exchange).png"></img>
+</p>
+
+Since the latency between users would be too high if I would've used serverless functions alone, I've decided to use the Firebase Realtime DB as a conversation buffer to deliver the messages near-instantly. This works by each active user(has a specific chat window open) having an unique JSON object stored in the RTDB at path `UID`. Any incoming messages from other users would be saved there while the session is active, and since the user client would be listening to changes at that specific path, as soon as a new message hits the buffer, it would then get relayed to the front-end. At the same time, the serverless function also adds a new row in the `UM${OWN}` or `UM${FOREIGN}` table to permanently store the messages.
+
+#### I'm planning on adding more features like push notifications, MFA, and possibily audio and video calls, but first I'll be focusing on the basic features above.
+
