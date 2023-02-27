@@ -37,3 +37,10 @@ I'll use a Github project to track everything that needs doing and the progress 
 </p>
 
 The Planet Scale hosted Mysql DB contains 2 main tables (users and refs) that contain all user account data and the relations between how users are connected to eachother. Each user then has its own table that has the name UM`${UID}`. The purpose of this table is to contain all messages sent or received for that specific user, depending on who started the connection. For example, the picture below contains the flowchart of how this new contact process would take place.
+
+### New Contact Flow
+<p align="center">
+  <img src="/docs/Ring Relay Architecture (New Contact Flow).png"></img>
+</p>
+
+The flowchart above ilustrates how an user (Client 0 / [C0]) will connect with another user (Client 1 / [C1]). At the end of this process, both users will have the other one saved in the `refs` table. I know using some sort of relation between this data would've been more efficient, but by allowing all users to have an independant array of contacts ensures access to those conversations even if one of the parties would delete the other one from their contacts on their end. 
