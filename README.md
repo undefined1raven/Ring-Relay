@@ -15,7 +15,7 @@ A chatting app that lets you see different stats about your texts and conversati
 
 ### Backend
 
-Even if the most efficient back-end solution for this type of real-time app is to use websockets, Heroku removed their free tier so as a result I'm gonna use Vercel Serverless functions as the basis for the backend. Latency should not be noticable after the first messages (I know this from previous experience with SpiderEyes).
+Even if the most efficient back-end solution for this type of real-time app is to use websockets, Heroku removed their free tier so as a result I'm gonna use Vercel Serverless functions as the basis for the backend. I'll use the Firebase Realtime DB as a conversation buffer to enable near-instant delivery of the messages between users while the backend also sends the message objects to Planet Scale for permanent storage. 
 
 ### Frontend
 
@@ -44,3 +44,10 @@ The Planet Scale hosted Mysql DB contains 2 main tables (users and refs) that co
 </p>
 
 The flowchart above ilustrates how an user (Client 0 / [C0]) will connect with another user (Client 1 / [C1]). At the end of this process, both users will have the other one saved in the `refs` table. I know using some sort of relation between this data would've been more efficient, but by allowing all users to have an independant array of contacts ensures access to those conversations even if one of the parties would delete the other one from their contacts on their end. 
+
+### Message Retrival
+<p align="center">
+  <img src="/docs/Ring Relay Architecture (Retrieve Messages).png"></img>
+</p>
+
+Every time an users taps on a conversation, the flowchart above gets triggered so the front-end could display the conversation using the message array retrieved from the DB. The first step is retrieving the UIDs any given user is connected to, so the front-end could hydrate the 'chats' section of the UI. After the user selects a conversation, a request is sent containing the UID of the person the conversation is with. Then, the serverless function checks both the `UM${OWN[UID]}` table and if the conversation is not found there, the `UM${FOREIGN[UID]}` table. This is efficient since the conversation can be in one of the 2 places. (I considered adding a new field in the refs table to deal with this, but concluded it would add complexity that's not warranted when considering the trade-offs of both methods) 
