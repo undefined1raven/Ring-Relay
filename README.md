@@ -29,3 +29,11 @@ Since I already have 3 years of experience working with Mongo DB, I'll try out P
 
 I'll use a Github project to track everything that needs doing and the progress on every task. Since I'm a big fan of Agile, I'll do the bulk development in sprits spanning a couple of days and use the same method for adding new features later on.
 
+## Architecture In-Depth
+
+### DB Schema
+<p align="center">
+  <img src="/docs/Ring Relay Architecture(DB Schema).png"></img>
+</p>
+
+The Planet Scale hosted Mysql DB contains 2 main tables (users and refs) that contain all user account data and the relations between how users are connected to eachother. Each user then has its own table that has the name UM`${UID}`. The purpose of this table is to contain all messages sent or received for that specific user, depending on who started the connection. For example, the picture below contains the flowchart of how this new contact process would take place.
