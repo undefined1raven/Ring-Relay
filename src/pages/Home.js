@@ -9,6 +9,7 @@ import Button from '../components/Button.js'
 import NavBar from '../components/NavBar.js'
 import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
+import DomainGetter from '../components/DomainGetter.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 // import { initializeApp } from "firebase/app";
@@ -45,12 +46,19 @@ function Home() {
   const [authorized, setAuthorized] = useState(false);
   const [windowId, setWindowId] = useState('chats');
   const [windowHash, setWindowHash] = useState('/');
-  const [refs, setRefs] = useState([]);
+  const [refs, setRefs] = useState({ ini: false, arr: [] });
+  const [chatObj, setChatObj] = useState({});
+
 
   const onNavButtonClick = (btnId) => {
     setWindowId(btnId);
   };
-  const onChatSelected = () => {
+  const onChatSelected = (uid) => {
+    for(let ix = 0; ix < refs.arr.length; ix++){
+      if(refs.arr[ix].uid == uid){
+        setChatObj({uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since})
+      }
+    }
     setWindowId('chat');
   }
   const onBackButton = () => {
@@ -58,21 +66,26 @@ function Home() {
   }
   useEffect(() => {
     // onValue(ref(database, '/authTokens'), (snap) => {console.log(`${JSON.stringify((snap.val()))} | tx:${Date.now()}`)})
-    if(!authorized){
-      axios.post('https://ring-relay-api-prod.vercel.app/api/auth?val=0', { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+    if (!authorized) {
+      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           if (res.data.redirect)
             window.location.hash = `#${res.data.redirect}`;
           setAuthorized(false)
         } else {
           setAuthorized(true)
+          if (!refs.ini) {
+            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+              setRefs({ ini: true, arr: res.data.refs });
+            })
+          }
         }
         if (authorized) {
           window.location.hash = windowHash;
         }
       });
     }
-  }, [windowHash])
+  }, [windowHash, refs])
   const logout = () => {
     localStorage.clear();
     setWindowHash('/login');
@@ -81,8 +94,8 @@ function Home() {
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
-      <Chats onChatSelected={onChatSelected} show={windowId == 'chats'} wid={windowId}></Chats>
-      <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={{ name: 'MCRN 3rd Jupi Fleet', status: 'Online', since: '' }}></Chat>
+      <Chats refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
+      <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
     </div>
   );
 }

@@ -6,13 +6,14 @@ import Label from '../components/Label.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
+import DomainGetter from '../components/DomainGetter.js'
 import axios from 'axios';
 
 function NavBar(props) {
     const [systemStatus, setSystemStatus] = useState({ text: '[Checking]', color: '#001AFF', last: 0 });
 
     function checkSys() {
-        axios.get('https://ring-relay-api-prod.vercel.app/api/auth?val=0', { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+        axios.get(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setSystemStatus({ text: 'Systems Nominal', color: '#00FF85', last: Date.now() });
         }).catch(e => {
             setSystemStatus({ text: 'System Error', color: '#FF002E', last: Date.now() });

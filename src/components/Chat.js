@@ -55,7 +55,7 @@ function Chat(props) {
             setMsgArray([...msgArray, { liked: false, seen: Math.random() < .5 ? false : true, content: newMessageContents, type: 'tx', tx: Date.now(), secure: Math.random() < .5 ? false : true }]);
             setMsgListscrollToY(30000);
             setNewMessageContents('');
-            axios.post('https://ring-relay-api-prod.vercel.app/api/dbop?demo=0', {msgObj: {uid: localStorage.getItem('uid'), content: newMessageContents, type: 'tx', tx: Date.now(), secure: true, seen: false, liked: false}}).then(res => {console.log(res)})
+            // axios.post('https://ring-relay-api-prod.vercel.app/api/dbop?demo=0', {msgObj: {uid: localStorage.getItem('uid'), content: newMessageContents, type: 'tx', tx: Date.now(), secure: true, seen: false, liked: false}}).then(res => {console.log(res)})
         }
     }
 

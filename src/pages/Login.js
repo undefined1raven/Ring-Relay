@@ -7,6 +7,7 @@ import Label from '../components/Label.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
+import DomainGetter from '../components/DomainGetter.js'
 import axios from 'axios';
 
 
@@ -33,7 +34,7 @@ function Login() {
     }
 
     function auth(cip) {
-        axios.post('https://ring-relay-api-prod.vercel.app/api/auth', {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
+        axios.post(`${DomainGetter('prodx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
             ip: cip
@@ -87,7 +88,7 @@ function Login() {
         setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
         e.preventDefault();
         if (userid.length > 2 && password.length > 5) {
-            axios.get('https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c').then(res => {
+            axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
                 auth(res.data.ip_address);
             }).catch(e => {
                 auth('Failed To Get');
