@@ -402,9 +402,14 @@ rect {
   background: #00008325;
 }
 
-@keyframes msgAni{
-  0%{transform: scaleY(0.2);}
-  100%{transform: scaleY(1);}
+@keyframes msgAni {
+  0% {
+    transform: scaleY(0.2);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
 }
 
 .msgContainer {
@@ -446,9 +451,14 @@ rect {
   top: 4.8vh;
 }
 
-@keyframes likedDecoAni{
-  0%{opacity: 0;}
-  100%{opacity: 1;}
+@keyframes likedDecoAni {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 .msgLikedDeco {
@@ -456,4 +466,29 @@ rect {
   animation: likedDecoAni ease-in-out 0.2s;
   top: -0.2vh;
   left: 0%;
+}
+
+#chatsFetchingLabel {
+  position: absolute;
+  top: 60%;
+  width: 60%;
+  height: 5%;
+  @include VAlign();
+  @include flex();
+  border-radius: 5px;
+}
+#chatsFetchingDeco{
+  position: absolute;
+  top: 30%;
+}
+@keyframes chatsFetchingDecoElmAni {
+  0%{fill: #6100DC; background-color: #6100DC30; color: #E09FFF }
+  50%{fill: #4200FF; background-color: #4200FF30; color: #4200FF}
+  100%{fill: #6100DC; background-color: #6100DC30; color: #E09FFF}
+}
+.chatsFetchingDecoElm{
+  animation: chatsFetchingDecoElmAni ease-in-out 1s infinite;
+}
+.chatsFetchingLabel{
+  animation: chatsFetchingDecoElmAni ease-in-out 1s infinite;
 }

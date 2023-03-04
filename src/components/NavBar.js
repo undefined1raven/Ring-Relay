@@ -12,7 +12,7 @@ function NavBar(props) {
     const [systemStatus, setSystemStatus] = useState({ text: '[Checking]', color: '#001AFF', last: 0 });
 
     function checkSys() {
-        axios.get('https://ring-relay-api-prod.vercel.app/api/auth?val=0', { AT: sessionStorage.getItem('AT'), CIP: sessionStorage.getItem('CIP') }).then(res => {
+        axios.get('https://ring-relay-api-prod.vercel.app/api/auth?val=0', { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setSystemStatus({ text: 'Systems Nominal', color: '#00FF85', last: Date.now() });
         }).catch(e => {
             setSystemStatus({ text: 'System Error', color: '#FF002E', last: Date.now() });
@@ -24,7 +24,7 @@ function NavBar(props) {
         setInterval(() => {
             checkSys()
         }, 300000);
-    });
+    }, []);
 
     function navButtonBkgController(btnId) {
         if (btnId == props.wid) {

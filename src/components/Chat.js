@@ -8,6 +8,32 @@ import BackDeco from '../components/BackDeco.js'
 import Message from '../components/Message.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
+// import { initializeApp } from "firebase/app";
+// import { getDatabase, get, ref, onValue } from "firebase/database";
+// import { getAuth, signInWithCustomToken } from "firebase/auth";
+
+
+// const firebaseConfig = {};
+
+// // Initialize Firebase
+// const app = initializeApp(firebaseConfig);
+
+
+// // Initialize Realtime Database and get a reference to the service
+// const database = getDatabase(app);
+
+// const auth = getAuth();
+// signInWithCustomToken(auth, '')
+//   .then((userCredential) => {
+//     // Signed in
+//     const user = userCredential.user;
+//     // ...
+//   })
+//   .catch((error) => {
+//     const errorCode = error.code;
+//     const errorMessage = error.message;
+//     // ...
+//   });
 
 function Chat(props) {
     const [statusProps, setStatusProps] = useState({ color: '#FF002E' });
@@ -29,6 +55,7 @@ function Chat(props) {
             setMsgArray([...msgArray, { liked: false, seen: Math.random() < .5 ? false : true, content: newMessageContents, type: 'tx', tx: Date.now(), secure: Math.random() < .5 ? false : true }]);
             setMsgListscrollToY(30000);
             setNewMessageContents('');
+            axios.post('http://localhost:3001/api/dbop?demo=0', {msgObj: {uid: localStorage.getItem('uid'), content: newMessageContents, type: 'tx', tx: Date.now(), secure: true, seen: false, liked: false}}).then(res => {console.log(res)})
         }
     }
 
@@ -47,6 +74,17 @@ function Chat(props) {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
         }, 50);
 
+        // onValue(ref(database, `messageBuffer/${uid}`), (snap) => {
+        //     let data = snap.val();
+        //     let newMsgArr = []
+        //     for(let key in data){
+        //         newMsgArr.push({...data[key]})
+        //     }
+        //     if(msgArray.length != newMsgArr.length){
+        //         setMsgArray(newMsgArr);
+        //     }
+        // })
+
     }, [props, scrollToY, msgArray, msgListscrollToY])
 
     if (props.show) {
@@ -60,7 +98,7 @@ function Chat(props) {
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
                 <div className='chatInput'>
-                    <InputField autocomplete="off" value={newMessageContents} onChange={(e) => setNewMessageContents(e.target.value)} fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
+                    <InputField autoComplete="off" value={newMessageContents} onChange={(e) => setNewMessageContents(e.target.value)} fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
                 <ul id="msgsList" className='msgsList'>

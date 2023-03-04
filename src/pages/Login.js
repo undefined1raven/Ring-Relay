@@ -11,7 +11,7 @@ import axios from 'axios';
 
 
 function setItem(key, value) {
-    window.sessionStorage.setItem(key, value);
+    window.localStorage.setItem(key, value);
 }
 
 
