@@ -16,7 +16,7 @@ function Chats(props) {
 
     useEffect(() => {
         if (!refs.ini) {
-            axios.post(`http://localhost:3001/api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`https://ring-relay-api-prod.vercel.app/api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                 setRefs({ ini: true, arr: res.data.refs });
             })
         }
