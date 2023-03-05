@@ -102,7 +102,7 @@ function NewAccount() {
             if (privateKeyPem != undefined) {
                 localStorage.setItem(`${email}-PK`, privateKeyPem);
                 keyToPem(keyPair.publicKey).then(pem => {
-                    axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
+                    axios.post(`${DomainGetter('devx')}api/dbop?newUser`, {
                         username: username,
                         email: email,
                         password: password,
