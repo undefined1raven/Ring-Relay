@@ -6,7 +6,7 @@ import Label from '../components/Label.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
-import DomainGetter from '../components/DomainGetter.js'
+import DomainGetter from '../fn/DomainGetter.js'
 import axios from 'axios';
 
 function NavBar(props) {

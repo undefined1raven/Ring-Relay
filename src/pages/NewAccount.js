@@ -7,7 +7,8 @@ import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
 import * as EmailValidator from 'email-validator';
-import DomainGetter from '../components/DomainGetter.js'
+import DomainGetter from '../fn/DomainGetter.js'
+import { getKeyPair, keyToPem, encryptMessage, decryptMessage } from '../fn/crypto.js';
 import axios from 'axios';
 
 function NewAccount() {
@@ -19,6 +20,31 @@ function NewAccount() {
     const [password, setPassword] = useState("");
     const [windowHash, setWindowHash] = useState("#/newAccount");
     const [newAccountStatus, setNewAccountStatus] = useState({ status: true, error: '', label: '' });
+    const [backupPrivateKeyButtonProps, setBackupPrivateKeyButtonProps] = useState({ label: '', color: '#0057FF' });
+    const [hasKeys, setHasKeys] = useState(false);
+
+    let keyPair;
+    let privateKeyPem;
+    getKeyPair().then(keys => {
+        keyPair = keys;
+        setHasKeys(true)
+        keyToPem(keys.privateKey).then(pem => {
+            privateKeyPem = pem;
+        })
+    });
+
+    function download(filename, text) {
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename);
+
+        element.style.display = 'none';
+        document.body.appendChild(element);
+
+        element.click();
+
+        document.body.removeChild(element);
+    }
 
     const fieldOnChange = (e, setFn) => {
         setFn(e.target.value);
@@ -26,8 +52,15 @@ function NewAccount() {
     }
 
     useEffect(() => {
+
         window.location.hash = windowHash;
     }, [windowHash])
+
+    const privateKeyBackupOnClick = () => {
+        if (privateKeyPem != undefined) {
+            download('ring-relay-key.pem', privateKeyPem);
+        }
+    }
 
     const validateInput = (continous) => {
         if (username.length < 2 || username.indexOf('@') != -1) {
@@ -66,25 +99,31 @@ function NewAccount() {
         validateInput(false);
         e.preventDefault();
         if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
-                username: username,
-                email: email,
-                password: password,
-            }).then(res => {
-                if (res.data.status == 'Success') {
-                    setWindowHash('/login');
-                } else {
-                    setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
-                    setTimeout(() => {
-                        setNewAccountStatus({ status: true, label: `` })
-                    }, 2000);
-                }
-            }).catch(e => {
-                setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
-                setTimeout(() => {
-                    setNewAccountStatus({ status: true, label: `` })
-                }, 2000);
-            });
+            if (privateKeyPem != undefined) {
+                localStorage.setItem(`${email}-PK`, privateKeyPem);
+                keyToPem(keyPair.publicKey).then(pem => {
+                    axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
+                        username: username,
+                        email: email,
+                        password: password,
+                        PUBKEY: pem,
+                    }).then(res => {
+                        if (res.data.status == 'Success') {
+                            setWindowHash('/login');
+                        } else {
+                            setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
+                            setTimeout(() => {
+                                setNewAccountStatus({ status: true, label: `` })
+                            }, 2000);
+                        }
+                    }).catch(e => {
+                        setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
+                        setTimeout(() => {
+                            setNewAccountStatus({ status: true, label: `` })
+                        }, 2000);
+                    });
+                });
+            }
         }
     }
     return (
@@ -103,7 +142,8 @@ function NewAccount() {
             <Label id="NoPlainLabel" className="newAccountLabel x2" text="Plaintext never hits the servers" color="#9745FF" bkg="#6100DC40" fontSize="1.9vh"></Label>
             <HorizontalLine id="newAccountLn" color="#6100DC" left="10.277777778%" top="55%" width="79.444444444%"></HorizontalLine>
             <LinkDeco id="linkDeco"></LinkDeco>
-            <Button id="privateKeyBackup" width="79.444444444%" height="5.46875%" color="#FF002E" bkg="#FF002E" label="Tap here to back-up your private key"></Button>
+            <Button id="privateKeyBackup" show={hasKeys} onClick={privateKeyBackupOnClick} width="79.444444444%" height="5.46875%" color="#FF002E" bkg="#FF002E" label="Tap here to back-up your private key"></Button>
+            <Label id="generatingKeyPairLabel" fontSize="2vh" show={!hasKeys} bkg="#0057FF40" color="#0057FF" text="<Generating Key Pair>"></Label>
             <Label id="newAccountFailedLabel" fontSize="2vh" show={!newAccountStatus.status} bkg="#FF002E30" color="#FF002E" text={newAccountStatus.label}></Label>
             <Link to={"/login"}><Button show={newAccountStatus.status} id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
         </div>

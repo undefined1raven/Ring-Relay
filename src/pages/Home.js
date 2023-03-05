@@ -9,7 +9,8 @@ import Button from '../components/Button.js'
 import NavBar from '../components/NavBar.js'
 import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
-import DomainGetter from '../components/DomainGetter.js'
+import DomainGetter from '../fn/DomainGetter.js'
+import { getKeyPair, keyToPem, encryptMessage, decryptMessage } from '../fn/crypto.js';
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 // import { initializeApp } from "firebase/app";
@@ -29,19 +30,6 @@ import axios from 'axios';
 // // Initialize Realtime Database and get a reference to the service
 // const database = getDatabase(app);
 
-// const auth = getAuth();
-// signInWithCustomToken(auth, '')
-//   .then((userCredential) => {
-//     // Signed in
-//     const user = userCredential.user;
-//     // ...
-//   })
-//   .catch((error) => {
-//     const errorCode = error.code;
-//     const errorMessage = error.message;
-//     // ...
-//   });
-
 function Home() {
   const [authorized, setAuthorized] = useState(false);
   const [windowId, setWindowId] = useState('chats');
@@ -54,9 +42,9 @@ function Home() {
     setWindowId(btnId);
   };
   const onChatSelected = (uid) => {
-    for(let ix = 0; ix < refs.arr.length; ix++){
-      if(refs.arr[ix].uid == uid){
-        setChatObj({uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since})
+    for (let ix = 0; ix < refs.arr.length; ix++) {
+      if (refs.arr[ix].uid == uid) {
+        setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since })
       }
     }
     setWindowId('chat');
@@ -65,6 +53,16 @@ function Home() {
     setWindowId('chats');
   }
   useEffect(() => {
+    getKeyPair().then((keyPair) => {
+      keyToPem(keyPair.privateKey).then(pem => { })
+
+      let ci;
+      encryptMessage(keyPair.publicKey).then(r => ci = r).finally(() => {
+        console.log(`raw: ${typeof (ci.buffer)} | b64: ${typeof (ci.base64)}`);
+        decryptMessage(keyPair.privateKey, ci.base64, 'base64').then(res => { console.log(new TextDecoder().decode(res)) })
+      });
+
+    });
     // onValue(ref(database, '/authTokens'), (snap) => {console.log(`${JSON.stringify((snap.val()))} | tx:${Date.now()}`)})
     if (!authorized) {
       axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {

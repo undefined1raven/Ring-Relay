@@ -167,13 +167,15 @@ html {
   top: 48.7%;
   @include VAlign();
 }
-#newAccountFailedLabel{
+
+#newAccountFailedLabel {
   top: 48.7%;
   @include VAlign();
   width: 79.444444444%;
   height: 3.46875%;
   @include flex();
 }
+
 #linkDeco {
   top: 56.9%;
   @include VAlign();
@@ -187,11 +189,18 @@ html {
 }
 
 #privateKeyBackup,
+#generatingKeyPairLabel,
 #resetPasswordButton,
 #createAccountButton {
   top: 84.21875%;
   font-size: var(--FS_M_SmallMedium);
   @include VAlign();
+}
+
+#generatingKeyPairLabel {
+  width: 79.444444444%;
+  height: 5.46875%;
+  @include flex();
 }
 
 #resetPasswordButton {
@@ -483,18 +492,36 @@ rect {
   @include flex();
   border-radius: 5px;
 }
-#chatsFetchingDeco{
+
+#chatsFetchingDeco {
   position: absolute;
   top: 30%;
 }
+
 @keyframes chatsFetchingDecoElmAni {
-  0%{fill: #6100DC; background-color: #6100DC30; color: #E09FFF }
-  50%{fill: #4200FF; background-color: #4200FF30; color: #4200FF}
-  100%{fill: #6100DC; background-color: #6100DC30; color: #E09FFF}
+  0% {
+    fill: #6100DC;
+    background-color: #6100DC30;
+    color: #E09FFF
+  }
+
+  50% {
+    fill: #4200FF;
+    background-color: #4200FF30;
+    color: #4200FF
+  }
+
+  100% {
+    fill: #6100DC;
+    background-color: #6100DC30;
+    color: #E09FFF
+  }
 }
-.chatsFetchingDecoElm{
+
+.chatsFetchingDecoElm {
   animation: chatsFetchingDecoElmAni ease-in-out 1s infinite;
 }
-.chatsFetchingLabel{
+
+.chatsFetchingLabel {
   animation: chatsFetchingDecoElmAni ease-in-out 1s infinite;
 }
