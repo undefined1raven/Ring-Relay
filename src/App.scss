@@ -167,7 +167,13 @@ html {
   top: 48.7%;
   @include VAlign();
 }
-
+#newAccountFailedLabel{
+  top: 48.7%;
+  @include VAlign();
+  width: 79.444444444%;
+  height: 3.46875%;
+  @include flex();
+}
 #linkDeco {
   top: 56.9%;
   @include VAlign();

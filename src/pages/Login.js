@@ -34,7 +34,7 @@ function Login() {
     }
 
     function auth(cip) {
-        axios.post(`${DomainGetter('prodx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
+        axios.post(`${DomainGetter('devx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
             ip: cip
@@ -85,14 +85,19 @@ function Login() {
 
     const submit = (e) => {
         validateInput(false);
-        setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
         e.preventDefault();
         if (userid.length > 2 && password.length > 5) {
+            setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
             axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
                 auth(res.data.ip_address);
             }).catch(e => {
                 auth('Failed To Get');
             });
+        }else{
+            setAuthStatusLabelObj({ text: '[Invalid Input]', color: '#D80027', bkg: '#D80027' });
+            setTimeout(() => {
+                setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
+            }, 1000);
         }
 
     }

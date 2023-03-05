@@ -5,7 +5,7 @@ import InputField from '../components/InputField.js'
 import Label from '../components/Label.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import Button from '../components/Button.js'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as EmailValidator from 'email-validator';
 import DomainGetter from '../components/DomainGetter.js'
 import axios from 'axios';
@@ -17,11 +17,17 @@ function NewAccount() {
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [windowHash, setWindowHash] = useState("#/newAccount");
+    const [newAccountStatus, setNewAccountStatus] = useState({ status: true, error: '', label: '' });
 
     const fieldOnChange = (e, setFn) => {
         setFn(e.target.value);
         validateInput(true);
     }
+
+    useEffect(() => {
+        window.location.hash = windowHash;
+    }, [windowHash])
 
     const validateInput = (continous) => {
         if (username.length < 2 || username.indexOf('@') != -1) {
@@ -60,12 +66,25 @@ function NewAccount() {
         validateInput(false);
         e.preventDefault();
         if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
+            axios.post(`${DomainGetter('devx')}api/dbop?newUser`, {
                 username: username,
                 email: email,
                 password: password,
             }).then(res => {
-            }).catch(e => { console.log(e) });
+                if (res.data.status == 'Success') {
+                    setWindowHash('/login');
+                } else {
+                    setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
+                    setTimeout(() => {
+                        setNewAccountStatus({ status: true, label: `` })
+                    }, 2000);
+                }
+            }).catch(e => {
+                setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
+                setTimeout(() => {
+                    setNewAccountStatus({ status: true, label: `` })
+                }, 2000);
+            });
         }
     }
     return (
@@ -85,7 +104,8 @@ function NewAccount() {
             <HorizontalLine id="newAccountLn" color="#6100DC" left="10.277777778%" top="55%" width="79.444444444%"></HorizontalLine>
             <LinkDeco id="linkDeco"></LinkDeco>
             <Button id="privateKeyBackup" width="79.444444444%" height="5.46875%" color="#FF002E" bkg="#FF002E" label="Tap here to back-up your private key"></Button>
-            <Link to={"/login"}><Button id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
+            <Label id="newAccountFailedLabel" fontSize="2vh" show={!newAccountStatus.status} bkg="#FF002E30" color="#FF002E" text={newAccountStatus.label}></Label>
+            <Link to={"/login"}><Button show={newAccountStatus.status} id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
         </div>
     );
 }
