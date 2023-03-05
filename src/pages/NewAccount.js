@@ -23,16 +23,6 @@ function NewAccount() {
     const [backupPrivateKeyButtonProps, setBackupPrivateKeyButtonProps] = useState({ label: '', color: '#0057FF' });
     const [hasKeys, setHasKeys] = useState(false);
 
-    let keyPair;
-    let privateKeyPem;
-    getKeyPair().then(keys => {
-        keyPair = keys;
-        setHasKeys(true)
-        keyToPem(keys.privateKey).then(pem => {
-            privateKeyPem = pem;
-        })
-    });
-
     function download(filename, text) {
         var element = document.createElement('a');
         element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
@@ -46,20 +36,20 @@ function NewAccount() {
         document.body.removeChild(element);
     }
 
+
     const fieldOnChange = (e, setFn) => {
         setFn(e.target.value);
         validateInput(true);
     }
 
     useEffect(() => {
-
         window.location.hash = windowHash;
     }, [windowHash])
 
     const privateKeyBackupOnClick = () => {
-        if (privateKeyPem != undefined) {
-            download('ring-relay-key.pem', privateKeyPem);
-        }
+        // if (privateKeyPem != undefined) {
+        //     download('ring-relay-key.pem', privateKeyPem);
+        // }
     }
 
     const validateInput = (continous) => {
@@ -99,31 +89,35 @@ function NewAccount() {
         validateInput(false);
         e.preventDefault();
         if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
-            if (privateKeyPem != undefined) {
-                localStorage.setItem(`${email}-PK`, privateKeyPem);
-                keyToPem(keyPair.publicKey).then(pem => {
-                    axios.post(`${DomainGetter('devx')}api/dbop?newUser`, {
-                        username: username,
-                        email: email,
-                        password: password,
-                        PUBKEY: pem,
-                    }).then(res => {
-                        if (res.data.status == 'Success') {
-                            setWindowHash('/login');
-                        } else {
-                            setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
+            getKeyPair().then(keys => {
+                setHasKeys(true)
+                keyToPem(keys.privateKey).then(privatePem => {
+                    window.crypto.subtle.exportKey("jwk", keys.publicKey).then(publickJWK => {
+                        localStorage.setItem(`${email}-PK`, privatePem);
+                        axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
+                            username: username,
+                            email: email,
+                            password: password,
+                            PUBKEY: JSON.stringify(publickJWK),
+                        }).then(res => {
+                            if (res.data.status == 'Success') {
+                                setWindowHash('/login');
+                            } else {
+                                setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
+                                setTimeout(() => {
+                                    setNewAccountStatus({ status: true, label: `` })
+                                }, 2000);
+                            }
+                        }).catch(e => {
+                            setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
                             setTimeout(() => {
                                 setNewAccountStatus({ status: true, label: `` })
                             }, 2000);
-                        }
-                    }).catch(e => {
-                        setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
-                        setTimeout(() => {
-                            setNewAccountStatus({ status: true, label: `` })
-                        }, 2000);
-                    });
-                });
-            }
+                        });
+                    })
+                })
+
+            });
         }
     }
     return (

@@ -18,6 +18,15 @@ function btoaTobuf(base64) {
     return bytes.buffer;
 }
 
+function str2ab(str) {
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+        bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
+}
+
 
 export const getKeyPair = (len) => {
     const keyPairPromise = window.crypto.subtle.generateKey(
@@ -41,8 +50,22 @@ export const keyToPem = async (key) => {
 }
 
 
-export const encryptMessage = async (key) => {
-    let encoded = new TextEncoder().encode('MCRN Command has no idea how long that would actually take, so stand down')
+export const pemToBuffer = (pem => {
+    // fetch the part of the PEM string between header and footer
+    const pemHeader = "-----BEGIN PRIVATE KEY-----";
+    const pemFooter = "-----END PRIVATE KEY-----";
+    const pemContents = pem.substring(
+        pemHeader.length,
+        pem.length - pemFooter.length
+    );
+    // base64 decode the string to get the binary data
+    const binaryDerString = window.atob(pemContents);
+    // convert from a binary string to an ArrayBuffer
+    return str2ab(binaryDerString);
+})
+
+export const encryptMessage = async (key, plaintext) => {
+    let encoded = new TextEncoder().encode(plaintext)
     let ciphertext = await window.crypto.subtle.encrypt(
         {
             name: "RSA-OAEP"
@@ -71,6 +94,6 @@ export const decryptMessage = async (key, ciphertext, cipherEncoding) => {
         cipherActual
     );
 
-    return decrypted;
+    return new TextDecoder().decode(decrypted);
 }
 
