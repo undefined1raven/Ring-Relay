@@ -66,7 +66,7 @@ function NewAccount() {
         validateInput(false);
         e.preventDefault();
         if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
-            axios.post(`${DomainGetter('devx')}api/dbop?newUser`, {
+            axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
                 username: username,
                 email: email,
                 password: password,

@@ -67,7 +67,7 @@ function Home() {
   useEffect(() => {
     // onValue(ref(database, '/authTokens'), (snap) => {console.log(`${JSON.stringify((snap.val()))} | tx:${Date.now()}`)})
     if (!authorized) {
-      axios.post(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           if (res.data.redirect)
             window.location.hash = `#${res.data.redirect}`;
@@ -75,7 +75,7 @@ function Home() {
         } else {
           setAuthorized(true)
           if (!refs.ini) {
-            axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               setRefs({ ini: true, arr: res.data.refs });
             })
           }
