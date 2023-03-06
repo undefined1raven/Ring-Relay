@@ -55,6 +55,7 @@ function Home() {
     setWindowId('chats');
   }
   useEffect(() => {
+    window.location.hash = windowHash;
     // onValue(ref(database, '/authTokens'), (snap) => {console.log(`${JSON.stringify((snap.val()))} | tx:${Date.now()}`)})
     if (!authorized) {
       axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
@@ -93,8 +94,9 @@ function Home() {
     }
   }, [windowHash, refs])
   const logout = () => {
-    localStorage.clear();
-    setWindowHash('/login');
+    localStorage.removeItem('AT');
+    localStorage.removeItem('CIP');
+    setWindowHash('#/login');
   }
   return (
     <div>

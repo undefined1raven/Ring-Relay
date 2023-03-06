@@ -16,6 +16,8 @@ function NewContact(props) {
     const [matches, setMatches] = useState([]);
     const [matchesList, setMatchesList] = useState([]);
     const [showSearchDeco, setShowSearchDeco] = useState(false);
+    const [activeRequests, setActiveRequests] = useState({ ini: false, array: [] });
+    const [activeRequestsList, setActiveRequestsList] = useState([]);
 
     const searchInputOnChange = (e) => {
         setSearchParam(e.target.value);
@@ -41,20 +43,29 @@ function NewContact(props) {
     }
 
     useEffect(() => {
+        if (!activeRequests.ini) {
+            axios.post(`${DomainGetter('prodx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                setActiveRequests({ ini: true, array: res.data.activeRequests });
+            }).catch(e => setActiveRequests({ ini: true, array: [] }));
+        }
+        setActiveRequestsList(activeRequests.array.map(req => { return <li className='matchTileContainer' key={`${req.username}${Math.random()}`}><NewContactMatchTile username={req.username} type={req.type} qid={`<${req.foreignUID.toString().split('-')[4]}>`}></NewContactMatchTile></li> }))
         setMatchesList(matches.map(elm => { return <li key={`${elm.username}${Math.random()}`} className='matchTileContainer'><NewContactMatchTile onClick={() => newContactOnClick(elm.uid)} username={elm.username} qid={`<${elm.uid.toString().split('-')[4]}>`} /></li> }));
         setShowSearchDeco(false);
-    }, [matches])
+    }, [matches, activeRequests])
 
     if (props.show) {
         return (
             <div className="newContactContainer">
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
                 <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text="Active Requests"></Label>
-                <Label id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
+                <Label show={activeRequests.array.length > 0 ? false : true} id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
                 <InputField value={searchParam} onChange={searchInputOnChange} color="#6300E0" id="newContactSearchInput"></InputField>
                 <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco} />
                 <ul id='newContactMatchesList'>
                     {matchesList}
+                </ul>
+                <ul style={{ opcaity: `${activeRequests.array.length > 0 ? 1 : 0}` }} id='activeRequests'>
+                    {activeRequestsList}
                 </ul>
             </div>
         )

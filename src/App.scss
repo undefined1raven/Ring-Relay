@@ -559,7 +559,7 @@ rect {
   left: 2.5%;
 }
 
-#newContactMatchesList {
+#newContactMatchesList, #activeRequests {
   position: absolute;
   top: 22.96875%;
   left: 2.5%;
@@ -570,7 +570,11 @@ rect {
   margin: 0;
   border-bottom: solid 1px #6100DC;
 }
-
+#activeRequests{
+  top: 58.28125%;
+  height: 33.28125%;
+  border: none;
+}
 .newContactMatchTileContainer {
   width: 100%;
   height: 100%;
