@@ -525,3 +525,61 @@ rect {
 .chatsFetchingLabel {
   animation: chatsFetchingDecoElmAni ease-in-out 1s infinite;
 }
+
+//newContact | New Contact
+
+#newContactLabel {
+  position: absolute;
+  top: 10.78125%;
+  left: 2.5%;
+}
+
+#newContactSearchInput:focus {
+  background-color: #6100DC50;
+}
+
+#newContactSearchInput {
+  width: 95% !important;
+  top: 15%;
+  left: 2.5%;
+}
+
+#newContactMatchesList {
+  position: absolute;
+  top: 22.96875%;
+  left: 2.5%;
+  width: 95.6%;
+  height: 69.0625%;
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+.newContactMatchTileContainer{
+  width: 100%;
+  height: 100%;
+  border-left: solid 1px #6100DC;
+  background-color: #36007A50;
+  @include flex();
+}
+.newContactTileUsername{
+  left: 3.5%;
+  font-size: 2.3vh;
+}
+.newContactQID{
+  font-size: 1.7vh;
+  width: 37%;
+  text-align: center;
+  left: 63%;
+}
+@keyframes newContactMatchAni {
+  0%{transform: scaleY(0) translateX(-100%);}
+  50%{transform: scaleY(0.3) translateY(-40%);}
+  100%{transform: scaleY(1) translateY(0%);}
+}
+.matchTileContainer{
+  position: relative;
+  width: 99.9%;
+  height: 9.502262443%;
+  margin-bottom: 8%;
+  animation: newContactMatchAni ease-in-out 0.2s;
+}

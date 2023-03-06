@@ -9,6 +9,7 @@ import Button from '../components/Button.js'
 import NavBar from '../components/NavBar.js'
 import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
+import NewContact from '../components/NewContact.js'
 import DomainGetter from '../fn/DomainGetter.js'
 import { getKeyPair, keyToPem, encryptMessage, decryptMessage } from '../fn/crypto.js';
 import { useEffect, useState } from 'react'
@@ -84,6 +85,7 @@ function Home() {
       <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
       <Chats refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
+      <NewContact show={windowId == 'newContact'}></NewContact>
     </div>
   );
 }
