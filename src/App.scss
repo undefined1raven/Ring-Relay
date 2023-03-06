@@ -572,14 +572,22 @@ rect {
   left: 63%;
 }
 @keyframes newContactMatchAni {
-  0%{transform: scaleY(0) translateX(-100%);}
-  50%{transform: scaleY(0.3) translateY(-40%);}
-  100%{transform: scaleY(1) translateY(0%);}
+  0%{transform: scaleY(0.6);}
+  50%{transform: scaleY(0.9);}
+  100%{transform: scaleY(1);}
 }
 .matchTileContainer{
   position: relative;
   width: 99.9%;
   height: 9.502262443%;
   margin-bottom: 8%;
-  animation: newContactMatchAni ease-in-out 0.2s;
+  // animation: newContactMatchAni ease-in-out 0.1s;
+}
+.newContactLoadingDecoTile{
+  transition: fill linear 0.1s;
+}
+#newContactSearchDeco{
+  position: absolute;
+  top: 10.3125%;
+  left: 86.666666667%;
 }
