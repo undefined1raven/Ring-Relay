@@ -20,7 +20,7 @@ A chatting app that lets you see different stats about your texts and conversati
 
 ### Backend
 
-Even if the most efficient back-end solution for this type of real-time app is to use websockets, Heroku removed their free tier so as a result I'm gonna use Vercel Serverless functions as the basis for the backend. I'll use the Firebase Realtime DB as a conversation buffer to enable near-instant delivery of the messages between users while the backend also sends the message objects to Planet Scale for permanent storage. 
+Even if the most efficient back-end solution for this type of real-time app is to use websockets, Heroku removed their free tier so as a result I'm gonna use Vercel Serverless functions as the basis for the backend. I'll use the Firebase Realtime DB as a conversation buffer to enable near-instant delivery of the messages between users while the backend also sends the message objects to Planet Scale (mySql) for permanent storage. 
 
 ### Frontend
 
@@ -28,7 +28,7 @@ I feel like I'm already profficient with Vue because I used it for more than a y
 
 ### Databases
 
-Since I already have 3 years of experience working with Mongo DB, I'll try out PlanetScale just for some novelty (this isn't a techinal driven decision cuz I'll be using this app with friends only anyway)(also I'd like to get some experience with SQL based DBs). I'll stick to Firebase Realtime DB for storing sessions and any other temporary data such as reset password tokens.
+Since I already have 3 years of experience working with Mongo DB, I'll try out Planet Scale just for some novelty (this isn't a techinal driven decision cuz I'll be using this app with friends only anyway)(also I'd like to get some experience with SQL based DBs). I'll stick to Firebase Realtime DB for storing sessions and any other temporary data such as reset password tokens.
 
 ## Development Method
 
