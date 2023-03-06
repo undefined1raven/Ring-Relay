@@ -31,7 +31,13 @@ function NewContact(props) {
 
 
     const newContactOnClick = (uid) => {
-        console.log(uid)
+        axios.post(`${DomainGetter('prodx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
+            if (res.data.error == undefined) {
+                console.log('added')
+            } else {
+                console.log('failed')
+            }
+        })
     }
 
     useEffect(() => {
@@ -43,8 +49,10 @@ function NewContact(props) {
         return (
             <div className="newContactContainer">
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
+                <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text="Active Requests"></Label>
+                <Label id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
                 <InputField value={searchParam} onChange={searchInputOnChange} color="#6300E0" id="newContactSearchInput"></InputField>
-                <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco}/>
+                <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco} />
                 <ul id='newContactMatchesList'>
                     {matchesList}
                 </ul>

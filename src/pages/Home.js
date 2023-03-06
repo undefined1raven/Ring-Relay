@@ -11,7 +11,7 @@ import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
 import NewContact from '../components/NewContact.js'
 import DomainGetter from '../fn/DomainGetter.js'
-import { getKeyPair, keyToPem, encryptMessage, decryptMessage } from '../fn/crypto.js';
+import { pemToBuffer } from '../fn/crypto.js';
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 // import { initializeApp } from "firebase/app";
@@ -37,6 +37,7 @@ function Home() {
   const [windowHash, setWindowHash] = useState('/');
   const [refs, setRefs] = useState({ ini: false, arr: [] });
   const [chatObj, setChatObj] = useState({});
+  const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
 
 
   const onNavButtonClick = (btnId) => {
@@ -63,6 +64,22 @@ function Home() {
           setAuthorized(false)
         } else {
           setAuthorized(true)
+          if (localStorage.getItem('-PK') != undefined) {
+            localStorage.setItem(res.data.PKGetter, localStorage.getItem('-PK'));
+            localStorage.removeItem('-PK');
+          }
+          if (localStorage.getItem(res.data.PKGetter) != undefined) {
+            const pkBuf = pemToBuffer(localStorage.getItem(res.data.PKGetter));
+            window.crypto.subtle.importKey('pkcs8', pkBuf, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt']).then(pk => {
+              if (pk.algorithm.name == 'RSA-OAEP') {
+                setPrivateKeyStatus({ valid: true, found: true, ini: true });
+              } else {
+                setPrivateKeyStatus({ valid: false, found: true, ini: true });
+              }
+            }).catch(e => { setPrivateKeyStatus({ valid: false, found: true, ini: true }); })
+          } else {
+            setPrivateKeyStatus({ valid: false, found: false, ini: true });
+          }
           if (!refs.ini) {
             axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               setRefs({ ini: true, arr: res.data.refs });
@@ -83,7 +100,7 @@ function Home() {
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
-      <Chats refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
+      <Chats keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
       <NewContact show={windowId == 'newContact'}></NewContact>
     </div>

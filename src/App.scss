@@ -282,6 +282,22 @@ html {
   margin: 0;
 }
 
+#privateKeyStatusLabel {
+  top: 66.09375%;
+  width: 60%;
+  height: 5%;
+  @include VAlign();
+  @include flex();
+  border-radius: 5px;
+}
+
+#privateKeyStatusAuthedDeco {
+  top: 72.175%;
+  width: 3.6vh !important;
+  height: 3.6vh !important;
+  @include VAlign();
+}
+
 .chatCardListContainer {
   margin-bottom: 20%;
 }
@@ -529,7 +545,6 @@ rect {
 //newContact | New Contact
 
 #newContactLabel {
-  position: absolute;
   top: 10.78125%;
   left: 2.5%;
 }
@@ -549,44 +564,75 @@ rect {
   top: 22.96875%;
   left: 2.5%;
   width: 95.6%;
-  height: 69.0625%;
+  height: 30%;
   list-style-type: none;
   padding: 0;
   margin: 0;
+  border-bottom: solid 1px #6100DC;
 }
-.newContactMatchTileContainer{
+
+.newContactMatchTileContainer {
   width: 100%;
   height: 100%;
   border-left: solid 1px #6100DC;
   background-color: #36007A50;
   @include flex();
 }
-.newContactTileUsername{
+
+.newContactTileUsername {
   left: 3.5%;
   font-size: 2.3vh;
 }
-.newContactQID{
+
+.newContactQID {
   font-size: 1.7vh;
   width: 37%;
   text-align: center;
   left: 63%;
 }
+
 @keyframes newContactMatchAni {
-  0%{transform: scaleY(0.6);}
-  50%{transform: scaleY(0.9);}
-  100%{transform: scaleY(1);}
+  0% {
+    transform: scaleY(0.6);
+  }
+
+  50% {
+    transform: scaleY(0.9);
+  }
+
+  100% {
+    transform: scaleY(1);
+  }
 }
-.matchTileContainer{
+
+.matchTileContainer {
   position: relative;
   width: 99.9%;
-  height: 9.502262443%;
+  height: 21.875%;
   margin-bottom: 8%;
   // animation: newContactMatchAni ease-in-out 0.1s;
 }
-.newContactLoadingDecoTile{
+
+.newContactLoadingDecoTile {
   transition: fill linear 0.1s;
 }
-#newContactSearchDeco{
+
+#requestsLabel {
+  top: 53.90625%;
+  left: 2.5%;
+}
+
+#noRequestsLabel {
+  left: 2.5%;
+  top: 69.53125%;
+  width: 95.6%;
+  @include VAlign();
+  @include flex();
+  height: 5%;
+  border-radius: 5px;
+}
+
+#newContactSearchDeco {
   position: absolute;
   top: 10.3125%;
   left: 86.666666667%;

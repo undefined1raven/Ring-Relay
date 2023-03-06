@@ -93,7 +93,7 @@ function NewAccount() {
                 setHasKeys(true)
                 keyToPem(keys.privateKey).then(privatePem => {
                     window.crypto.subtle.exportKey("jwk", keys.publicKey).then(publickJWK => {
-                        localStorage.setItem(`${email}-PK`, privatePem);
+                        localStorage.setItem(`-PK`, privatePem);
                         axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
                             username: username,
                             email: email,
