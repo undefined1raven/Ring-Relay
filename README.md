@@ -6,11 +6,11 @@
 
 ## Status
 ```diff
-+ Front-end required for the features mentioned below completed ( - new contacts)
++ Front-end required for the features mentioned below completed [This repo]
 @@ Implementing Back-end @@
 ```
 
-##### Note: this isn't the repo for the app mentioned on my linkedin or resume, this is a refreshed version of the Ring Relay I've built a year ago
+##### Note: this isn't the repo for the app mentioned on my linkedin or resume, this is a complete remake of the Ring Relay I've built a year ago
 
 ## About
 
