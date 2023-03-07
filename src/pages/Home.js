@@ -37,6 +37,7 @@ function Home() {
   const [windowHash, setWindowHash] = useState('/');
   const [refs, setRefs] = useState({ ini: false, arr: [] });
   const [chatObj, setChatObj] = useState({});
+  const [currentUsername, setCurrentUsername] = useState(0);
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
 
 
@@ -68,6 +69,7 @@ function Home() {
           setAuthorized(false)
         } else {
           setAuthorized(true)
+          setCurrentUsername(res.data.username);
           if (localStorage.getItem('-PK') != undefined) {
             localStorage.setItem(res.data.PKGetter, localStorage.getItem('-PK'));
             localStorage.removeItem('-PK');
@@ -105,6 +107,7 @@ function Home() {
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
+      <Label show={currentUsername != 0} color="#6100DC" fontSize="1.3vh" bkg="#00000000" id="loggedInAsLabel" text={`Logged in as ${currentUsername}`}></Label>
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
       <NewContact show={windowId == 'newContact'}></NewContact>
