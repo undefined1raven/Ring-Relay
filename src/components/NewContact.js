@@ -22,7 +22,7 @@ function NewContact(props) {
 
 
     const getActiveRequests = () => {
-        axios.post(`${DomainGetter('devx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setActiveRequests({ ini: true, array: res.data.activeRequests });
             setReqSentLabelOpacity(0);
         }).catch(e => setActiveRequests({ ini: true, array: [] }));
@@ -32,7 +32,7 @@ function NewContact(props) {
         setSearchParam(e.target.value);
         if (searchParam.length > 0) {
             setShowSearchDeco(true);
-            axios.post(`${DomainGetter('devx')}api/dbop?searchUser`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), value: searchParam }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?searchUser`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), value: searchParam }).then(res => {
                 setMatches(res.data.matches);
             });
         } else {
@@ -43,7 +43,7 @@ function NewContact(props) {
 
     const newContactOnClick = (uid) => {
         setReqSentLabelOpacity(1);
-        axios.post(`${DomainGetter('devx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
             }
