@@ -709,7 +709,7 @@ rect {
   left: 2.5%;
 }
 
-#noRequestsLabel {
+#noRequestsLabel, #updatingRequestsLabel {
   left: 2.5%;
   top: 69.53125%;
   width: 95.6%;
@@ -717,6 +717,11 @@ rect {
   @include flex();
   height: 5%;
   border-radius: 5px;
+}
+#updatingRequestsLabel{
+  top: 80%;
+  width: 60%;
+  z-index: 100;
 }
 
 #newContactSearchDeco {

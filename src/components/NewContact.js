@@ -22,12 +22,13 @@ function NewContact(props) {
     const [reqSentLabelOpacity, setReqSentLabelOpacity] = useState(0);
     const [noMatchesLabel, setNoMatchesLabel] = useState({ opacity: 1, label: '[Awaiting Search Params]', color: '#6100DC' });
     const [selectedRequest, setSelectedRequest] = useState({ uid: '', username: '', qid: '', opacity: 0, type: '', listLabel: 'Active Requests' });
-
+    const [updatingRequestsLabelOpacity, setUpdatingRequestsLabelOpacity] = useState(0);
 
     const getActiveRequests = () => {
         axios.post(`${DomainGetter('prodx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setActiveRequests({ ini: true, array: res.data.activeRequests });
             setReqSentLabelOpacity(0);
+            setUpdatingRequestsLabelOpacity(0)
         }).catch(e => setActiveRequests({ ini: true, array: [] }));
     }
 
@@ -61,6 +62,8 @@ function NewContact(props) {
 
     const newContactOnClick = (uid) => {
         setReqSentLabelOpacity(1);
+        setSearchParam('');
+        setMatches([]);
         axios.post(`${DomainGetter('prodx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
@@ -78,6 +81,7 @@ function NewContact(props) {
     }
 
     const TXReqOnCancel = () => {
+        setUpdatingRequestsLabelOpacity(1);
         axios.post(`${DomainGetter('prodx')}api/dbop?cancelRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
@@ -86,6 +90,7 @@ function NewContact(props) {
         requestControlsToActiveRequests();
     }
     const RXReqOnUpdate = (status) => {
+        setUpdatingRequestsLabelOpacity(1);
         axios.post(`${DomainGetter('prodx')}api/dbop?updateRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid, approved: status }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
@@ -110,6 +115,7 @@ function NewContact(props) {
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
                 <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text={selectedRequest.listLabel}></Label>
                 <Label show={activeRequests.array?.length > 0 ? false : true} id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
+                <Label show={updatingRequestsLabelOpacity} id="updatingRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Updating Requests]"></Label>
                 <InputField value={searchParam} onChange={searchInputOnChange} color="#6300E0" id="newContactSearchInput"></InputField>
                 <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco} />
                 <ul id='newContactMatchesList'>
