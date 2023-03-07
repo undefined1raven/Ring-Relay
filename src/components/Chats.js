@@ -54,6 +54,8 @@ function Chats(props) {
                 </ul>
                 <Label className="chatsFetchingLabel" id="chatsFetchingLabel" bkg="#6100DC30" color="#E09FFF" fontSize="2.3vh" show={!props.refs.ini} text="[Fetching Data]"></Label>
                 <Label id="privateKeyStatusLabel" bkg={`${keyStatusLabelController().color}30`} color={keyStatusLabelController().color} show={!props.refs.ini} fontSize="2.1vh" text={keyStatusLabelController().label}></Label>
+                <Label fontSize="2.5vh" show={props.refs.arr.length == 0 && props.refs.ini} id="noConvosLabel" bkg="#001AFF30" color="#001AFF" text="[No Conversations]"></Label>
+                <Button onClick={props.switchToNewContactSection} fontSize="2.2vh" show={props.refs.arr.length == 0 && props.refs.ini} id="noConvosButton" bkg="#001AFF30" color="#001AFF" label="Add New Contact"></Button>
                 {keyStatusDecoController()}
                 <GenericLoadingDeco id="chatsFetchingDeco" show={!props.refs.ini} pathCN="chatsFetchingDecoElm"></GenericLoadingDeco>
             </div>

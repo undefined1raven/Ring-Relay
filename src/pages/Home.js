@@ -51,6 +51,9 @@ function Home() {
     }
     setWindowId('chat');
   }
+  const switchToNewContacts = () => {
+    setWindowId('newContact')
+  }
   const onBackButton = () => {
     setWindowId('chats');
   }
@@ -58,7 +61,7 @@ function Home() {
     window.location.hash = windowHash;
     // onValue(ref(database, '/authTokens'), (snap) => {console.log(`${JSON.stringify((snap.val()))} | tx:${Date.now()}`)})
     if (!authorized) {
-      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      axios.post(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           if (res.data.redirect)
             window.location.hash = `#${res.data.redirect}`;
@@ -82,7 +85,7 @@ function Home() {
             setPrivateKeyStatus({ valid: false, found: false, ini: true });
           }
           if (!refs.ini) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               setRefs({ ini: true, arr: res.data.refs });
             })
           }
@@ -102,7 +105,7 @@ function Home() {
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
-      <Chats keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
+      <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
       <NewContact show={windowId == 'newContact'}></NewContact>
     </div>
