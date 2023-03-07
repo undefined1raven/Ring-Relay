@@ -91,6 +91,7 @@ function NewContact(props) {
                 getActiveRequests();
             }
         });
+        requestControlsToActiveRequests();
     }
     useEffect(() => {
         if (!activeRequests.ini) {
