@@ -18,7 +18,10 @@ function NewContact(props) {
     const [showSearchDeco, setShowSearchDeco] = useState(false);
     const [activeRequests, setActiveRequests] = useState({ ini: false, array: [] });
     const [activeRequestsList, setActiveRequestsList] = useState([]);
+    const [activeRequestsListOpacity, setActiveRequestsListOpacity] = useState(1);
     const [reqSentLabelOpacity, setReqSentLabelOpacity] = useState(0);
+    const [noMatchesLabel, setNoMatchesLabel] = useState({ opacity: 1, label: '[Awaiting Search Params]', color: '#6100DC' });
+    const [selectedRequest, setSelectedRequest] = useState({ uid: '', username: '', qid: '', opacity: 0, type: '', listLabel: 'Active Requests' });
 
 
     const getActiveRequests = () => {
@@ -31,15 +34,30 @@ function NewContact(props) {
     const searchInputOnChange = (e) => {
         setSearchParam(e.target.value);
         if (searchParam.length > 0) {
+            setNoMatchesLabel({ opacity: 0, label: '[No Matches]', color: '#FF002E' });
             setShowSearchDeco(true);
             axios.post(`${DomainGetter('prodx')}api/dbop?searchUser`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), value: searchParam }).then(res => {
-                setMatches(res.data.matches);
+                if (e.target.value.length > 0) {
+                    setMatches(res.data.matches);
+                }
+                if (res.data.matches?.length == 0) {
+                    setNoMatchesLabel({ opacity: 1, label: '[No Matches]', color: '#FF002E' });
+                }
             });
-        } else {
-            setMatches([]);
+        }
+        if (e.target.value.length == 0) {
+            setTimeout(() => {
+                setMatches([]);
+                setNoMatchesLabel({ opacity: 1, label: '[Awaiting Search Params]', color: '#6100DC' });
+            }, 200);
         }
     }
 
+
+    const onRequestSelected = (req) => {
+        setSelectedRequest({ listLabel: 'Request Controls', type: req.type, username: req.username, qid: `<${req.foreignUID.toString().split('-')[4]}>`, uid: req.foreignUID, opacity: 1 });
+        setActiveRequestsListOpacity(0);
+    }
 
     const newContactOnClick = (uid) => {
         setReqSentLabelOpacity(1);
@@ -50,11 +68,35 @@ function NewContact(props) {
         })
     }
 
+    function requestControlsToActiveRequests() {
+        setSelectedRequest({ listLabel: 'Active Requests', type: '', username: '', qid: '', opacity: 0 });
+        setActiveRequestsListOpacity(1);
+    }
+
+    const selectedReqOnBack = () => {
+        requestControlsToActiveRequests();
+    }
+
+    const TXReqOnCancel = () => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?cancelRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid }).then(res => {
+            if (res.data.error == undefined) {
+                getActiveRequests();
+            }
+        });
+        requestControlsToActiveRequests();
+    }
+    const RXReqOnUpdate = (status) => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?updateRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid, approved: status }).then(res => {
+            if (res.data.error == undefined) {
+                getActiveRequests();
+            }
+        });
+    }
     useEffect(() => {
         if (!activeRequests.ini) {
             getActiveRequests();
         }
-        setActiveRequestsList(activeRequests.array.map(req => { return <li className='matchTileContainer' key={`${req.username}${Math.random()}`}><NewContactMatchTile username={req.username} type={req.type} qid={`<${req.foreignUID.toString().split('-')[4]}>`}></NewContactMatchTile></li> }))
+        setActiveRequestsList(activeRequests.array?.map(req => { return <li className='matchTileContainer' key={`${req.username}${Math.random()}`}><NewContactMatchTile onClick={() => onRequestSelected(req)} username={req.username} type={req.type} qid={`<${req.foreignUID.toString().split('-')[4]}>`}></NewContactMatchTile></li> }))
         setMatchesList(matches.map(elm => { return <li key={`${elm.username}${Math.random()}`} className='matchTileContainer'><NewContactMatchTile onClick={() => newContactOnClick(elm.uid)} username={elm.username} qid={`<${elm.uid.toString().split('-')[4]}>`} /></li> }));
         setShowSearchDeco(false);
     }, [matches, activeRequests])
@@ -63,17 +105,26 @@ function NewContact(props) {
         return (
             <div className="newContactContainer">
                 <Label style={{ opacity: `${reqSentLabelOpacity}` }} id="reqSentLabel" text="Request Sent" color="#00FFD1" bkg="#00FFD130"></Label>
+                <Label style={{ opacity: `${noMatchesLabel.opacity}` }} id="noSearchResultsLabel" text={noMatchesLabel.label} color={noMatchesLabel.color} bkg={`${noMatchesLabel.color}30`}></Label>
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
-                <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text="Active Requests"></Label>
-                <Label show={activeRequests.array.length > 0 ? false : true} id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
+                <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text={selectedRequest.listLabel}></Label>
+                <Label show={activeRequests.array?.length > 0 ? false : true} id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
                 <InputField value={searchParam} onChange={searchInputOnChange} color="#6300E0" id="newContactSearchInput"></InputField>
                 <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco} />
                 <ul id='newContactMatchesList'>
                     {matchesList}
                 </ul>
-                <ul style={{ opcaity: `${activeRequests.array.length > 0 ? 1 : 0}` }} id='activeRequests'>
-                    {activeRequestsList}
+                <ul id='activeRequests'>
+                    {activeRequestsListOpacity == 1 ? activeRequestsList : ''}
                 </ul>
+                <div id='selectedReqTitle' style={{ opacity: `${selectedRequest.opacity}` }}>
+                    <Label fontSize="2.5vh" id="selectedReqUsername" color="#FFF" text={selectedRequest.username} ></Label>
+                    <Label fontSize="1.9vh" id="selectedReqQID" color="#6300E0" text={selectedRequest.qid}></Label>
+                </div>
+                {selectedRequest.type == 'Pending.RX' ? <Button onClick={() => RXReqOnUpdate(true)} show={selectedRequest.opacity == 1} id="selectedReqRXAcceptButton" color="#00FFD1" label="Accept"></Button> : ''}
+                {selectedRequest.type == 'Pending.RX' ? <Button onClick={() => RXReqOnUpdate(false)} show={selectedRequest.opacity == 1} id="selectedReqRXDenyButton" color="#FF002E" label="Deny"></Button> : ''}
+                {selectedRequest.type == 'Pending.TX' ? <Button onClick={TXReqOnCancel} show={selectedRequest.opacity == 1} id="selectedReqRXDenyButton" color="#FF002E" label="Cancel"></Button> : ''}
+                <Button show={selectedRequest.opacity == 1} onClick={selectedReqOnBack} id="selectedReqBackButton" color="#7C7C7C" label="Back"></Button>
             </div>
         )
     } else {

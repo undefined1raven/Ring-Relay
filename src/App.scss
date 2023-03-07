@@ -271,18 +271,21 @@ html {
 }
 
 //chats
-#noConvosLabel, #noConvosButton{
+#noConvosLabel,
+#noConvosButton {
   top: 20.78125%;
   width: 66.944444444%;
   height: 6.71875%;
-  border-radius: 5px; 
+  border-radius: 5px;
   @include VAlign();
   @include flex();
 }
-#noConvosButton{
+
+#noConvosButton {
   top: 33%;
   border-radius: 0px;
 }
+
 #chatsContainer {
   position: absolute;
   top: 10.3125%;
@@ -555,8 +558,28 @@ rect {
 }
 
 //newContact | New Contact
+#noSearchResultsLabel {
+  top: 33.625%;
+  @include VAlign();
+  @include flex();
+  width: 66.944444444%;
+  height: 6.71875%;
+  border-radius: 5px;
+}
 
-#reqSentLabel{
+#selectedReqTitle {
+  position: absolute;
+  top: 58.28125%;
+  width: 95.6%;
+  height: 6.5625%;
+  @include VAlign();
+  @include flex();
+  border-left: solid 1px #6100DC;
+  background-color: #6100DC20;
+  z-index: 20;
+}
+
+#reqSentLabel {
   top: 47.1875%;
   width: 55.277777778%;
   height: 5%;
@@ -581,7 +604,8 @@ rect {
   left: 2.5%;
 }
 
-#newContactMatchesList, #activeRequests {
+#newContactMatchesList,
+#activeRequests {
   position: absolute;
   top: 22.96875%;
   left: 2.5%;
@@ -592,16 +616,48 @@ rect {
   margin: 0;
   overflow-y: scroll;
   border-bottom: solid 1px #6100DC;
+  z-index: 5;
 }
-#activeRequests{
+
+#selectedReqUsername {
+  left: 5%;
+}
+
+#selectedReqRXAcceptButton,
+#selectedReqRXDenyButton,
+#selectedReqBackButton {
+  top: 67.1875%;
+  @include VAlign();
+  width: 66.944444444%;
+  height: 6.71875%;
+  z-index: 50;
+}
+
+#selectedReqRXDenyButton {
+  top: 75.9375%;
+}
+
+#selectedReqBackButton {
+  top: 84.6875%;
+}
+
+#selectedReqQID {
+  left: 62%;
+}
+
+#activeRequests {
   top: 58.28125%;
   height: 33.28125%;
   border: none;
+  z-index: 50;
 }
-#newContactMatchesList::-webkit-scrollbar, #activeRequests::-webkit-scrollbar {
+
+#newContactMatchesList::-webkit-scrollbar,
+#activeRequests::-webkit-scrollbar {
   width: 0vh;
   height: 0vh;
 }
+
 .newContactMatchTileContainer {
   width: 100%;
   height: 100%;
