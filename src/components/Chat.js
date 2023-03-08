@@ -74,9 +74,10 @@ function Chat(props) {
     const addMsgToMsgArr = (msgObj => {
         setMsgArray({ ini: true, array: [...msgArray.array, msgObj] });
         msgArrBatch.push(msgObj);
-        if(msgArrBatch[msgArrBatch.length - 1]['end']){
+        console.log(msgArrBatch)
+        if (msgArrBatch[msgArrBatch.length - 1]['end']) {
             msgArrBatch.pop();
-            setMsgArray({ini: true, array: [...msgArray.array, ...msgArrBatch]})
+            setMsgArray({ ini: true, array: [...msgArray.array, ...msgArrBatch] })
         }
     });
 
@@ -98,7 +99,7 @@ function Chat(props) {
                                 });
                             } else {
                                 decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                    setMsgArray({ ini: true, array: [...msgArray.array, { liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }] });
+                                    addMsgToMsgArr({ liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
                                     if (ix == rawMsgArr.length - 1) {
                                         addMsgToMsgArr({ end: true });
                                     }
