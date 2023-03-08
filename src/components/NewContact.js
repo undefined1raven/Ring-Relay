@@ -19,7 +19,7 @@ function NewContact(props) {
     const [activeRequests, setActiveRequests] = useState({ ini: false, array: [] });
     const [activeRequestsList, setActiveRequestsList] = useState([]);
     const [activeRequestsListOpacity, setActiveRequestsListOpacity] = useState(1);
-    const [reqSentLabelOpacity, setReqSentLabelOpacity] = useState(0);
+    const [reqSentLabel, setReqSentLabel] = useState({ opacity: 0, label: '', color: '' });
     const [noMatchesLabel, setNoMatchesLabel] = useState({ opacity: 1, label: '[Awaiting Search Params]', color: '#6100DC' });
     const [selectedRequest, setSelectedRequest] = useState({ uid: '', username: '', qid: '', opacity: 0, type: '', listLabel: 'Active Requests' });
     const [updatingRequestsLabelOpacity, setUpdatingRequestsLabelOpacity] = useState(0);
@@ -27,9 +27,12 @@ function NewContact(props) {
     const getActiveRequests = () => {
         axios.post(`${DomainGetter('prodx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setActiveRequests({ ini: true, array: res.data.activeRequests });
-            setReqSentLabelOpacity(0);
+            setReqSentLabel({ opacity: 0, label: 'Request Sent', color: '#00FFD1' });
             setUpdatingRequestsLabelOpacity(0)
-        }).catch(e => setActiveRequests({ ini: true, array: [] }));
+        }).catch(e => {
+            setReqSentLabel({ opacity: 0, label: 'Request Already Sent', color: '#FF002E' });
+            setActiveRequests({ ini: true, array: [] })
+        });
     }
 
     const searchInputOnChange = (e) => {
@@ -61,12 +64,17 @@ function NewContact(props) {
     }
 
     const newContactOnClick = (uid) => {
-        setReqSentLabelOpacity(1);
+        setReqSentLabel({ opacity: 1, label: 'Request Sent', color: '#00FFD1' });
         setSearchParam('');
         setMatches([]);
         axios.post(`${DomainGetter('prodx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
+            } else {
+                setReqSentLabel({ opacity: 1, label: 'Request Already Sent', color: '#FF002E' });
+                setTimeout(() => {
+                    setReqSentLabel({ opacity: 0, label: 'Request Already Sent', color: '#FF002E' });
+                }, 2000);
             }
         })
     }
@@ -110,7 +118,7 @@ function NewContact(props) {
     if (props.show) {
         return (
             <div className="newContactContainer">
-                <Label style={{ opacity: `${reqSentLabelOpacity}` }} id="reqSentLabel" text="Request Sent" color="#00FFD1" bkg="#00FFD130"></Label>
+                <Label style={{ opacity: `${reqSentLabel.opacity}` }} id="reqSentLabel" text={reqSentLabel.label} color={reqSentLabel.color} bkg={`${reqSentLabel.color}30`}></Label>
                 <Label style={{ opacity: `${noMatchesLabel.opacity}` }} id="noSearchResultsLabel" text={noMatchesLabel.label} color={noMatchesLabel.color} bkg={`${noMatchesLabel.color}30`}></Label>
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
                 <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text={selectedRequest.listLabel}></Label>

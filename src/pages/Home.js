@@ -106,7 +106,7 @@ function Home() {
   return (
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
-      <Button show={windowId != 'chat'} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
+      <Button show={windowId != 'chat' && refs.ini} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
       <Label show={currentUsername != 0} color="#6100DC" fontSize="1.3vh" bkg="#00000000" id="loggedInAsLabel" text={`Logged in as ${currentUsername}`}></Label>
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>

@@ -32,10 +32,10 @@ function Chats(props) {
     }
 
     const keyStatusDecoController = () => {
-        if(keyStatusLabelController().color != '#0057FF' && !props.refs.ini){
-            if(keyStatusLabelController().color == '#00FFD1'){
+        if (keyStatusLabelController().color != '#0057FF' && !props.refs.ini) {
+            if (keyStatusLabelController().color == '#00FFD1') {
                 return <AuthedMsgDeco bkgOpacity="0" id="privateKeyStatusAuthedDeco"></AuthedMsgDeco>
-            }else{
+            } else {
                 return <NotAuthedMsgDeco bkgOpacity="0" id="privateKeyStatusAuthedDeco"></NotAuthedMsgDeco>
             }
         }
@@ -46,7 +46,6 @@ function Chats(props) {
     }, [props.refs.ini])
 
     if (props.show) {
-
         return (
             <div>
                 <ul id="chatsContainer">
