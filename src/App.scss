@@ -315,19 +315,22 @@ html {
 }
 
 .chatCardListContainer {
-  margin-bottom: 20%;
+  margin-bottom: 4%;
+  height: 8%;
 }
 
 .chatCard,
 .chatHeader {
-  position: absolute;
+  position: relative;
   padding: 0;
   margin: 0;
   width: 100%;
-  height: 7.722007722%;
+  height: 100.722007722%;
   @include flex();
 }
-
+.chatCard{
+  margin-bottom: 20%;
+}
 .chatHeader {
   position: absolute;
   top: 8.90625%;
