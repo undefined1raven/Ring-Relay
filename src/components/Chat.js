@@ -53,6 +53,38 @@ function Chat(props) {
     }
 
 
+    const getMessagesAndUpdateChat = () => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
+            if (res.data.error == undefined) {
+                let privateKeyID = localStorage.getItem('PKGetter');
+                let rawMsgArr = res.data.messages;
+                pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                    for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                        let rawMsg = res.data.messages[ix];
+                        if (rawMsgArr[ix].type == 'tx') {
+                            decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
+                                addMsgToMsgArr({ liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                if (ix == rawMsgArr.length - 1) {
+                                    addMsgToMsgArr({ end: true });
+                                }
+                            });
+                        } else {
+                            decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
+                                addMsgToMsgArr({ liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
+                                if (ix == rawMsgArr.length - 1) {
+                                    addMsgToMsgArr({ end: true });
+                                }
+                            });
+                        }
+                    }
+                }).catch(e => {
+                    setMsgArray({ ini: true, array: res.data.messages });
+                })
+            }
+
+        });
+    }
+
     const onSend = () => {
         if (newMessageContents.length > 0) {
             setMsgListscrollToY(30000);
@@ -74,44 +106,19 @@ function Chat(props) {
     const addMsgToMsgArr = (msgObj => {
         setMsgArray({ ini: true, array: [...msgArray.array, msgObj] });
         msgArrBatch.push(msgObj);
-        console.log(msgArrBatch)
         if (msgArrBatch[msgArrBatch.length - 1]['end']) {
             msgArrBatch.pop();
             setMsgArray({ ini: true, array: [...msgArray.array, ...msgArrBatch] })
+            msgArrBatch = [];
         }
     });
 
     useEffect(() => {
         if (!msgArray.ini && props.visible) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
-                if (res.data.error == undefined) {
-                    let privateKeyID = localStorage.getItem('PKGetter');
-                    let rawMsgArr = res.data.messages;
-                    pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                        for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                            let rawMsg = res.data.messages[ix];
-                            if (rawMsgArr[ix].type == 'tx') {
-                                decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                    addMsgToMsgArr({ liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-                                    if (ix == rawMsgArr.length - 1) {
-                                        addMsgToMsgArr({ end: true });
-                                    }
-                                });
-                            } else {
-                                decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                    addMsgToMsgArr({ liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
-                                    if (ix == rawMsgArr.length - 1) {
-                                        addMsgToMsgArr({ end: true });
-                                    }
-                                });
-                            }
-                        }
-                    }).catch(e => {
-                        setMsgArray({ ini: true, array: res.data.messages });
-                    })
-                }
-
-            });
+            setInterval(() => {
+                msgArrBatch = [];
+                getMessagesAndUpdateChat();
+            }, 5000)
             if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
                     localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);

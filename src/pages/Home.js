@@ -45,6 +45,7 @@ function Home() {
     setWindowId(btnId);
   };
   const onChatSelected = (uid) => {
+    console.log(uid)
     for (let ix = 0; ix < refs.arr.length; ix++) {
       if (refs.arr[ix].uid == uid) {
         setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since })
