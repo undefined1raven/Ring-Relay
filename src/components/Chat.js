@@ -89,15 +89,15 @@ function Chat(props) {
                     window.crypto.subtle.importKey('pkcs8', pemToBuffer(localStorage.getItem(privateKeyID)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt']).then(privateKey => {
                         for (let ix = 0; ix < rawMsgArr.length; ix++) {
                             if (rawMsgArr[ix].type == 'tx') {
-                                console.log(privateKey)
+                                // console.log(privateKey)
                                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
-                                    console.log(ownPubkey)
+                                    // console.log(ownPubkey)
                                     encryptMessage(ownPubkey, 'fu').then(cipher => {
-                                        console.log(cipher)
+                                        // console.log(cipher)
                                         window.crypto.subtle.decrypt({
                                             name: "RSA-OAEP"
                                         }, privateKey, cipher.buffer).then(plain => {
-                                            console.log(plain)
+                                            // console.log(plain)
                                         }).catch(e => console.log(e))
                                     })
                                 })
