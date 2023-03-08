@@ -11,9 +11,9 @@ import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
 import NewContact from '../components/NewContact.js'
 import DomainGetter from '../fn/DomainGetter.js'
-import { pemToBuffer } from '../fn/crypto.js';
 import { useEffect, useState } from 'react'
 import axios from 'axios';
+import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
 // import { initializeApp } from "firebase/app";
 // import { getDatabase, get, ref, onValue } from "firebase/database";
 // import { getAuth, signInWithCustomToken } from "firebase/auth";
@@ -83,14 +83,13 @@ function Home() {
           }
           localStorage.setItem('PKGetter', res.data.PKGetter);
           if (localStorage.getItem(res.data.PKGetter) != undefined) {
-            const pkBuf = pemToBuffer(localStorage.getItem(res.data.PKGetter));
-            window.crypto.subtle.importKey('pkcs8', pkBuf, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt']).then(pk => {
+            pemToKey(localStorage.getItem(res.data.PKGetter)).then(pk => {
               if (pk.algorithm.name == 'RSA-OAEP') {
                 setPrivateKeyStatus({ valid: true, found: true, ini: true });
               } else {
                 setPrivateKeyStatus({ valid: false, found: true, ini: true });
               }
-            }).catch(e => { setPrivateKeyStatus({ valid: false, found: true, ini: true }); })
+            });
           } else {
             setPrivateKeyStatus({ valid: false, found: false, ini: true });
           }

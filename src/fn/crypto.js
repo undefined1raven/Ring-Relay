@@ -50,7 +50,7 @@ export const keyToPem = async (key) => {
 }
 
 
-export const pemToBuffer = (pem => {
+export const pemToKey = (pem => {
     try {
         // fetch the part of the PEM string between header and footer
         const pemHeader = "-----BEGIN PRIVATE KEY-----";
@@ -62,8 +62,33 @@ export const pemToBuffer = (pem => {
         // base64 decode the string to get the binary data
         const binaryDerString = window.atob(pemContents);
         // convert from a binary string to an ArrayBuffer
-        return str2ab(binaryDerString);
+        const binaryDer = str2ab(binaryDerString);
+
+        return window.crypto.subtle.importKey(
+            "pkcs8",
+            binaryDer,
+            {
+                name: "RSA-OAEP",
+                hash: "SHA-256",
+            },
+            true,
+            ["decrypt"]
+        );
     } catch (e) { return e }
+})
+
+
+export const JSONtoKey = (jwk => {
+    return window.crypto.subtle.importKey(
+        "jwk",
+        jwk,
+        {
+            name: "RSA-OAEP",
+            hash: "SHA-256",
+        },
+        true,
+        ["encrypt"]
+    );
 })
 
 export const encryptMessage = async (key, plaintext) => {

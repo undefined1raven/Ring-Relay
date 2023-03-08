@@ -9,7 +9,7 @@ import Message from '../components/Message.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter.js'
-import { pemToBuffer, encryptMessage, decryptMessage } from '../fn/crypto.js'
+import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
 // import { initializeApp } from "firebase/app";
 // import { getDatabase, get, ref, onValue } from "firebase/database";
 // import { getAuth, signInWithCustomToken } from "firebase/auth";
@@ -70,14 +70,15 @@ function Chat(props) {
         }
     }
 
-    function btoaTobuf(base64) {
-        let binStr = window.atob(base64)//base64 to binary string
-        let bytes = new Uint8Array(binStr.length);
-        for (let ix = 0; ix < binStr.length; ix++) {
-            bytes[ix] = binStr.charCodeAt(ix);
+    let msgArrBatch = [];
+    const addMsgToMsgArr = (msgObj => {
+        setMsgArray({ ini: true, array: [...msgArray.array, msgObj] });
+        msgArrBatch.push(msgObj);
+        if(msgArrBatch[msgArrBatch.length - 1]['end']){
+            msgArrBatch.pop();
+            setMsgArray({ini: true, array: [...msgArray.array, ...msgArrBatch]})
         }
-        return bytes.buffer;
-    }
+    });
 
     useEffect(() => {
         if (!msgArray.ini && props.visible) {
@@ -85,36 +86,30 @@ function Chat(props) {
                 if (res.data.error == undefined) {
                     let privateKeyID = localStorage.getItem('PKGetter');
                     let rawMsgArr = res.data.messages;
-                    let decryptedMsgArray = []
-                    window.crypto.subtle.importKey('pkcs8', pemToBuffer(localStorage.getItem(privateKeyID)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt']).then(privateKey => {
+                    pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
                         for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                            let rawMsg = res.data.messages[ix];
                             if (rawMsgArr[ix].type == 'tx') {
-                                // console.log(privateKey)
-                                window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
-                                    // console.log(ownPubkey)
-                                    encryptMessage(ownPubkey, 'fu').then(cipher => {
-                                        // console.log(cipher)
-                                        window.crypto.subtle.decrypt({
-                                            name: "RSA-OAEP"
-                                        }, privateKey, cipher.buffer).then(plain => {
-                                            // console.log(plain)
-                                        }).catch(e => console.log(e))
-                                    })
-                                })
-                                // decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                //     decryptedMsgArray.push({ ...rawMsgArr[ix], content: plain });
-                                // });
+                                decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
+                                    addMsgToMsgArr({ liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                    if (ix == rawMsgArr.length - 1) {
+                                        addMsgToMsgArr({ end: true });
+                                    }
+                                });
                             } else {
                                 decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                    decryptedMsgArray.push({ ...rawMsgArr[ix], content: plain });
+                                    setMsgArray({ ini: true, array: [...msgArray.array, { liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }] });
+                                    if (ix == rawMsgArr.length - 1) {
+                                        addMsgToMsgArr({ end: true });
+                                    }
                                 });
                             }
                         }
-                        setMsgArray({ ini: true, array: decryptedMsgArray });
                     }).catch(e => {
                         setMsgArray({ ini: true, array: res.data.messages });
-                    });
+                    })
                 }
+
             });
             if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
