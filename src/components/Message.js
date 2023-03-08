@@ -48,10 +48,10 @@ function Message(props) {
 
     return (
         <div>
-            <Label onClick={(e) => onMsgClick(e)} className="msgContainer" color={props.msgObj.type == 'rx' ? '#FFF' : '#863DFF'} text={props.msgObj.content} fontSize="4.5vw" bkg="#6100DC20" child={
+            <Label onClick={(e) => onMsgClick(e)} className="msgContainer" color={props.msgObj.type == 'rx' ? '#FFF' : '#863DFF'} text={props.msgObj.content != undefined ? props.msgObj.content : '[Failed to decrypt]'} fontSize="4.5vw" bkg="#6100DC20" child={
                 <div>
                     <Label className="msgTime" bkg="#55007340" color="#8300B0" text={`${new Date(props.msgObj.tx).getHours().toString().padStart(2, '0')}:${new Date(props.msgObj.tx).getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
-                    {props.msgObj.secure ? <AuthedMsgDeco /> : <NotAuthedMsgDeco />}
+                    {props.msgObj.auth ? <AuthedMsgDeco /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco /> : <MsgTXDeco />}
                     {props.msgObj.seen ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
                     {liked ? <MsgLikedDeco /> : ''}

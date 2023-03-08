@@ -51,7 +51,7 @@ export const keyToPem = async (key) => {
 
 
 export const pemToBuffer = (pem => {
-    try{
+    try {
         // fetch the part of the PEM string between header and footer
         const pemHeader = "-----BEGIN PRIVATE KEY-----";
         const pemFooter = "-----END PRIVATE KEY-----";
@@ -63,7 +63,7 @@ export const pemToBuffer = (pem => {
         const binaryDerString = window.atob(pemContents);
         // convert from a binary string to an ArrayBuffer
         return str2ab(binaryDerString);
-    }catch(e){return e}
+    } catch (e) { return e }
 })
 
 export const encryptMessage = async (key, plaintext) => {
@@ -81,21 +81,25 @@ export const encryptMessage = async (key, plaintext) => {
 
 
 export const decryptMessage = async (key, ciphertext, cipherEncoding) => {
-    let cipherActual;
-    if (cipherEncoding == 'base64') {
-        cipherActual = btoaTobuf(ciphertext);
-    }
-    if (cipherEncoding == 'buffer') {
-        cipherActual = ciphertext;
-    }
-    let decrypted = await window.crypto.subtle.decrypt(
-        {
-            name: "RSA-OAEP"
-        },
-        key,
-        cipherActual
-    );
+    try {
 
-    return new TextDecoder().decode(decrypted);
+        let cipherActual;
+        if (cipherEncoding == 'base64') {
+            cipherActual = btoaTobuf(ciphertext);
+        }
+        if (cipherEncoding == 'buffer') {
+            cipherActual = ciphertext;
+        }
+        let decrypted = await window.crypto.subtle.decrypt(
+            {
+                name: "RSA-OAEP"
+            },
+            key,
+            cipherActual
+        );
+
+        return new TextDecoder().decode(decrypted);
+
+    } catch (e) { console.log(e) }
 }
 

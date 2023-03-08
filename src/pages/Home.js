@@ -36,7 +36,7 @@ function Home() {
   const [windowId, setWindowId] = useState('chats');
   const [windowHash, setWindowHash] = useState('/');
   const [refs, setRefs] = useState({ ini: false, arr: [] });
-  const [chatObj, setChatObj] = useState({});
+  const [chatObj, setChatObj] = useState({ uid: '', name: '', status: '', since: '' });
   const [currentUsername, setCurrentUsername] = useState(0);
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
 
@@ -50,19 +50,26 @@ function Home() {
         setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since })
       }
     }
-    setWindowId('chat');
   }
   const switchToNewContacts = () => {
     setWindowId('newContact')
   }
   const onBackButton = () => {
+    setChatObj({ uid: '', name: '', status: '', since: '' })
     setWindowId('chats');
   }
+
+  useEffect(() => {
+    if (chatObj.uid != '') {
+      setWindowId('chat');
+    }
+  });
+
   useEffect(() => {
     window.location.hash = windowHash;
     // onValue(ref(database, '/authTokens'), (snap) => {console.log(`${JSON.stringify((snap.val()))} | tx:${Date.now()}`)})
     if (!authorized) {
-      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      axios.post(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           if (res.data.redirect)
             window.location.hash = `#${res.data.redirect}`;
@@ -74,6 +81,7 @@ function Home() {
             localStorage.setItem(res.data.PKGetter, localStorage.getItem('-PK'));
             localStorage.removeItem('-PK');
           }
+          localStorage.setItem('PKGetter', res.data.PKGetter);
           if (localStorage.getItem(res.data.PKGetter) != undefined) {
             const pkBuf = pemToBuffer(localStorage.getItem(res.data.PKGetter));
             window.crypto.subtle.importKey('pkcs8', pkBuf, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['decrypt']).then(pk => {
@@ -87,7 +95,7 @@ function Home() {
             setPrivateKeyStatus({ valid: false, found: false, ini: true });
           }
           if (!refs.ini) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               setRefs({ ini: true, arr: res.data.refs });
             })
           }
@@ -109,7 +117,7 @@ function Home() {
       <Button show={windowId != 'chat' && refs.ini} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
       <Label show={currentUsername != 0 && windowId != 'chat'} color="#6100DC" fontSize="1.3vh" bkg="#00000000" id="loggedInAsLabel" text={`Logged in as ${currentUsername}`}></Label>
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
-      <Chat onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
+      <Chat visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
       <NewContact show={windowId == 'newContact'}></NewContact>
     </div>
   );
