@@ -42,6 +42,7 @@ function Message(props) {
 
     const onDoubleClick = () => {
         setLiked(!liked)
+        props.likeMessageUpdate({state: !liked, MID: props.msgObj.MID});
     }
 
     const onMsgClick = useSingleAndDoubleClick(() => {}, onDoubleClick)

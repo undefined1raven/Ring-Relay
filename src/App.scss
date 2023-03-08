@@ -747,3 +747,21 @@ rect {
   width: 100%;
   @include flex();
 }
+
+@keyframes chatLoadingLabelAni {
+  0%{opacity: 0;}
+  100%{opacity: 1;}
+}
+.chatLoadingStatus, .failedMessageAction{
+  top: 45%;
+  @include VAlign();
+  @include flex();
+  width: 80%;
+  height: 5%;
+  border-radius: 5px;
+  transition: all linear 0.1s;
+  animation: chatLoadingLabelAni linear 0.1s;
+}
+.failedMessageAction{
+  animation: none;
+}

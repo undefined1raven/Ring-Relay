@@ -45,7 +45,6 @@ function Home() {
     setWindowId(btnId);
   };
   const onChatSelected = (uid) => {
-    console.log(uid)
     for (let ix = 0; ix < refs.arr.length; ix++) {
       if (refs.arr[ix].uid == uid) {
         setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since })
@@ -61,7 +60,7 @@ function Home() {
   }
 
   useEffect(() => {
-    if (chatObj.uid != '') {
+    if (chatObj.uid != '' && windowId != 'newContact') {
       setWindowId('chat');
     }
   });
@@ -117,7 +116,7 @@ function Home() {
       <Button show={windowId != 'chat' && refs.ini} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
       <Label show={currentUsername != 0 && windowId != 'chat'} color="#6100DC" fontSize="1.3vh" bkg="#00000000" id="loggedInAsLabel" text={`Logged in as ${currentUsername}`}></Label>
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
-      <Chat visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat>
+      {windowId == 'chat' ? <Chat visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       <NewContact show={windowId == 'newContact'}></NewContact>
     </div>
   );
