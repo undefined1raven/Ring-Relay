@@ -222,8 +222,12 @@ function Chat(props) {
             }
             RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
             let privateKeyID = localStorage.getItem('PKGetter');
+            if (RTrawMessagesArray.length > 3) {
+                remove(ref(db, `messageBuffer/${props.ownUID}`));//resetting the firebase buffer wont delete messages in chat since we dont reset state 
+            }
+
             pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
+                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
                     if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
                         let rawMsg = RTrawMessagesArray[ix];
                         decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
