@@ -52,13 +52,13 @@ function Chat(props) {
     const [msgList, setMsgList] = useState(0);
     const [IH, setIH] = useState(window.innerHeight);
     const [remotePublicKeyJSON, setRemotePublicKeyJSON] = useState(0);
-    const [msgCount, setMsgCount] = useState(100)
+    const [msgCount, setMsgCount] = useState(30)
     const [MSUID, setMSUID] = useState('')
     const [chatLoadingLabel, setChatLoadingLabel] = useState({ label: '[Fetching Conversation]', opacity: 1 });
     const [failedMessageActionLabel, setFailedMessageActionLabel] = useState({ opacity: 0, label: 'Message Action Failed' })
     const [realtimeBuffer, setRealtimeBuffer] = useState([])
     const [realtimeBufferList, setRealtimeBufferList] = useState([])
-    const [showRealtimeBuffer, setShowRealtimeBuffer] = useState(true)
+    const [bufferReset, setBufferReset] = useState(false)
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -91,12 +91,18 @@ function Chat(props) {
         })
     }
 
-    const getMessagesAndUpdateChat = () => {
-        setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
+    const getMessagesAndUpdateChat = (args) => {
+        if (args?.reason == undefined) {
+            setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
+        } else {
+            setChatLoadingLabel({ opacity: 1, label: '[Resetting Buffer]' });
+        }
+        setBufferReset(false)
         axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
             if (res.data.error == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
+                rawMsgArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
                 setMSUID(res.data.MSUID);
                 decryptMessages(rawMsgArr);
             }
@@ -170,12 +176,16 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
+            try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
             setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} msgObj={x}></Message></li>))
-            setTimeout(() => {
-                try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
-            }, 50);
         }
     }, [realtimeBuffer])
+
+    useEffect(() => {
+        if (bufferReset) {
+            getMessagesAndUpdateChat({ reason: 'buffer' });
+        }
+    }, [bufferReset])
 
     useEffect(() => {
         if (!msgArray.ini && props.visible) {
@@ -214,36 +224,41 @@ function Chat(props) {
             for (let MID in RXrealtimeBuffer) {
                 RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });
             }
-            RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
-            for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
-                if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid || RTrawMessagesArray[ix].targetUID == props.ownUID) {
-                    let privateKeyID = localStorage.getItem('PKGetter');
-                    pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                        let rawMsg = RTrawMessagesArray[ix];
-                        if (RTrawMessagesArray[ix].targetUID != props.ownUID) {
-                            decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
-                                setRealtimeBuffer((prevBuf) => {
-                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                    } else {
-                                        return [...prevBuf]
-                                    }
+            if (RTrawMessagesArray.length > 5) {
+                remove(ref(db, `messageBuffer/${props.ownUID}`));
+                setBufferReset(true)
+            } else {
+                RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
+                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
+                    if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid || RTrawMessagesArray[ix].targetUID == props.ownUID) {
+                        let privateKeyID = localStorage.getItem('PKGetter');
+                        pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                            let rawMsg = RTrawMessagesArray[ix];
+                            if (RTrawMessagesArray[ix].targetUID != props.ownUID) {
+                                decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
+                                    setRealtimeBuffer((prevBuf) => {
+                                        if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                            return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                        } else {
+                                            return [...prevBuf]
+                                        }
+                                    })
                                 })
-                            })
-                        } else {
-                            decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                                setRealtimeBuffer((prevBuf) => {
-                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                    } else {
-                                        return [...prevBuf]
-                                    }
-                                })
-                            });
-                        }
-                    }).catch(e => {
-                        console.log(e)
-                    })
+                            } else {
+                                decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                                    setRealtimeBuffer((prevBuf) => {
+                                        if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                            return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                        } else {
+                                            return [...prevBuf]
+                                        }
+                                    })
+                                });
+                            }
+                        }).catch(e => {
+                            console.log(e)
+                        })
+                    }
                 }
             }
         })
@@ -265,8 +280,8 @@ function Chat(props) {
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
                 <ul id="msgsList" className='msgsList'>
-                    {msgList}
-                    {realtimeBufferList}
+                    {chatLoadingLabel.label != '[Resetting Buffer]' ? msgList : ''}
+                    {chatLoadingLabel.label != '[Resetting Buffer]' ? realtimeBufferList : ''}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
