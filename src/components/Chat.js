@@ -114,11 +114,17 @@ function Chat(props) {
         if (newMessageContents.length > 0) {
             setMsgListscrollToY(30000);
             setNewMessageContents('');
+            let MID = `${v4()}-${v4()}`;
+            let local_nMsgObj = { targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
+            //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
+            setRealtimeBuffer((prevBuf) => {
+                return [...prevBuf, { MID: local_nMsgObj.MID, liked: local_nMsgObj.liked, type: local_nMsgObj.type, content: local_nMsgObj.content, tx: local_nMsgObj.tx, auth: local_nMsgObj.auth, seen: local_nMsgObj.seen }]
+            })
+
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
                     encryptMessage(remotePubkey, newMessageContents).then(remoteCipher => {
                         encryptMessage(ownPubkey, newMessageContents).then(ownCipher => {
-                            let MID = `${v4()}-${v4()}`;
                             let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false }
                             set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
                             set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
@@ -150,17 +156,6 @@ function Chat(props) {
     });
 
 
-    let RTmsgArrBatch = [];
-
-    const RTaddMsgToMsgArr = (msgObj => {
-        setRealtimeBuffer([...realtimeBuffer, msgObj]);
-        RTmsgArrBatch.push(msgObj);
-        if (RTmsgArrBatch[RTmsgArrBatch.length - 1]['end']) {
-            RTmsgArrBatch.pop();
-            setRealtimeBuffer([...realtimeBuffer, ...RTmsgArrBatch])
-            RTmsgArrBatch = [];
-        }
-    });
 
     const likeMessageUpdate = (args) => {
         axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
@@ -176,8 +171,10 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
-            try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
             setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} msgObj={x}></Message></li>))
+            setTimeout(() => {
+                try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
+            }, 100);
         }
     }, [realtimeBuffer])
 
@@ -217,49 +214,36 @@ function Chat(props) {
 
         onValue(ref(db, `messageBuffer/${props.ownUID}`), (snap) => {
             let RXrealtimeBuffer = snap.val();
-            setRealtimeBuffer([]);
-            setRealtimeBufferList([]);
-            RTmsgArrBatch = [];
+            // setRealtimeBuffer([]);
+            // setRealtimeBufferList([]);
             let RTrawMessagesArray = []
             for (let MID in RXrealtimeBuffer) {
                 RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });
             }
             if (RTrawMessagesArray.length > 5) {
-                remove(ref(db, `messageBuffer/${props.ownUID}`));
-                setBufferReset(true)
+                // remove(ref(db, `messageBuffer/${props.ownUID}`));
+                // setBufferReset(true)
             } else {
                 RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
-                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
-                    if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid || RTrawMessagesArray[ix].targetUID == props.ownUID) {
-                        let privateKeyID = localStorage.getItem('PKGetter');
-                        pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                let privateKeyID = localStorage.getItem('PKGetter');
+                pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                    for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
+                        if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
                             let rawMsg = RTrawMessagesArray[ix];
-                            if (RTrawMessagesArray[ix].targetUID != props.ownUID) {
-                                decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
-                                    setRealtimeBuffer((prevBuf) => {
-                                        if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                            return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                        } else {
-                                            return [...prevBuf]
-                                        }
-                                    })
+                            decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                                setRealtimeBuffer((prevBuf) => {
+                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                    } else {
+                                        return [...prevBuf]
+                                    }
                                 })
-                            } else {
-                                decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                                    setRealtimeBuffer((prevBuf) => {
-                                        if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                            return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                        } else {
-                                            return [...prevBuf]
-                                        }
-                                    })
-                                });
-                            }
-                        }).catch(e => {
-                            console.log(e)
-                        })
+                            });
+                        }
                     }
-                }
+                }).catch(e => {
+                    console.log(e)
+                })
             }
         })
     }, [props, scrollToY, msgArray, msgListscrollToY])
