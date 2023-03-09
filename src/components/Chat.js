@@ -98,7 +98,7 @@ function Chat(props) {
             setChatLoadingLabel({ opacity: 1, label: '[Resetting Buffer]' });
         }
         setBufferReset(false)
-        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
+        axios.post(`${DomainGetter('devx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
             if (res.data.error == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
@@ -128,7 +128,7 @@ function Chat(props) {
                             let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false }
                             set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
                             set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
-                            axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
+                            axios.post(`${DomainGetter('devx')}api/dbop?messageSent`, {
                                 AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj
                             }).then(res => { }).catch(e => {
                                 setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
@@ -158,7 +158,7 @@ function Chat(props) {
 
 
     const likeMessageUpdate = (args) => {
-        axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
+        axios.post(`${DomainGetter('devx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
 
         }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1 })
@@ -190,10 +190,10 @@ function Chat(props) {
             remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
             if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
-                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
                     localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);
                 });
-                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
                     localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
                 });
             }
@@ -220,31 +220,26 @@ function Chat(props) {
             for (let MID in RXrealtimeBuffer) {
                 RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });
             }
-            if (RTrawMessagesArray.length > 5) {
-                // remove(ref(db, `messageBuffer/${props.ownUID}`));
-                // setBufferReset(true)
-            } else {
-                RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
-                let privateKeyID = localStorage.getItem('PKGetter');
-                pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                    for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
-                        if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
-                            let rawMsg = RTrawMessagesArray[ix];
-                            decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                                setRealtimeBuffer((prevBuf) => {
-                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                    } else {
-                                        return [...prevBuf]
-                                    }
-                                })
-                            });
-                        }
+            RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
+            let privateKeyID = localStorage.getItem('PKGetter');
+            pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
+                    if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
+                        let rawMsg = RTrawMessagesArray[ix];
+                        decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                            setRealtimeBuffer((prevBuf) => {
+                                if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                    return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                } else {
+                                    return [...prevBuf]
+                                }
+                            })
+                        });
                     }
-                }).catch(e => {
-                    console.log(e)
-                })
-            }
+                }
+            }).catch(e => {
+                console.log(e)
+            })
         })
     }, [props, scrollToY, msgArray, msgListscrollToY])
 
