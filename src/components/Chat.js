@@ -10,19 +10,25 @@ import { useEffect, useState } from 'react'
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter.js'
 import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
-// import { initializeApp } from "firebase/app";
-// import { getDatabase, get, ref, onValue } from "firebase/database";
-// import { getAuth, signInWithCustomToken } from "firebase/auth";
+import { v4 } from 'uuid'
 
+import { initializeApp } from "firebase/app";
+import { getDatabase, remove, get, set, ref, onValue } from "firebase/database";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 
-// const firebaseConfig = {};
+const firebaseConfig = {
+    apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
+    authDomain: "ring-relay.firebaseapp.com",
+    databaseURL: "https://ring-relay-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "ring-relay",
+    storageBucket: "ring-relay.appspot.com",
+    messagingSenderId: "931166613472",
+    appId: "1:931166613472:web:a7ab26055d59cc2535c585"
+};
 
-// // Initialize Firebase
-// const app = initializeApp(firebaseConfig);
+const app = initializeApp(firebaseConfig);
 
-
-// // Initialize Realtime Database and get a reference to the service
-// const database = getDatabase(app);
+const db = getDatabase(app);
 
 // const auth = getAuth();
 // signInWithCustomToken(auth, '')
@@ -50,42 +56,49 @@ function Chat(props) {
     const [MSUID, setMSUID] = useState('')
     const [chatLoadingLabel, setChatLoadingLabel] = useState({ label: '[Fetching Conversation]', opacity: 1 });
     const [failedMessageActionLabel, setFailedMessageActionLabel] = useState({ opacity: 0, label: 'Message Action Failed' })
+    const [realtimeBuffer, setRealtimeBuffer] = useState([])
+    const [realtimeBufferList, setRealtimeBufferList] = useState([])
+
     const onInputFocus = () => {
         setScrollToY(30000);
     }
 
+
+    const decryptMessages = (rawMsgArr) => {
+        let privateKeyID = localStorage.getItem('PKGetter');
+        pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+            for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                let rawMsg = rawMsgArr[ix];
+                if (rawMsgArr[ix].type == 'tx') {
+                    decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
+                        addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                        if (ix == rawMsgArr.length - 1) {
+                            addMsgToMsgArr({ end: true });
+                        }
+                    });
+                } else {
+                    decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
+                        addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
+                        if (ix == rawMsgArr.length - 1) {
+                            addMsgToMsgArr({ end: true });
+                        }
+                    });
+                }
+            }
+            setChatLoadingLabel({ opacity: 0, label: '[Decrypting Conversation]' });
+        }).catch(e => {
+            setMsgArray({ ini: true, array: rawMsgArr });
+        })
+    }
 
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
         axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
             if (res.data.error == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
-                let privateKeyID = localStorage.getItem('PKGetter');
                 let rawMsgArr = res.data.messages;
                 setMSUID(res.data.MSUID);
-                pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                    for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                        let rawMsg = res.data.messages[ix];
-                        if (rawMsgArr[ix].type == 'tx') {
-                            decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-                                if (ix == rawMsgArr.length - 1) {
-                                    addMsgToMsgArr({ end: true });
-                                }
-                            });
-                        } else {
-                            decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
-                                if (ix == rawMsgArr.length - 1) {
-                                    addMsgToMsgArr({ end: true });
-                                }
-                            });
-                        }
-                    }
-                    setChatLoadingLabel({ opacity: 0, label: '[Decrypting Conversation]' });
-                }).catch(e => {
-                    setMsgArray({ ini: true, array: res.data.messages });
-                })
+                decryptMessages(rawMsgArr);
             }
 
         });
@@ -94,12 +107,23 @@ function Chat(props) {
     const onSend = () => {
         if (newMessageContents.length > 0) {
             setMsgListscrollToY(30000);
+            setTimeout(() => {
+                setTimeout(() => {
+                    try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
+                }, 50);
+            }, 100);
             setNewMessageContents('');
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
                     encryptMessage(remotePubkey, newMessageContents).then(remoteCipher => {
                         encryptMessage(ownPubkey, newMessageContents).then(ownCipher => {
-                            axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, type: 'tx', tx: Date.now(), auth: true, seen: false, liked: false }).then(res => { }).catch(e => {
+                            let MID = `${v4()}-${v4()}`;
+                            let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, type: 'tx', tx: Date.now(), auth: true, seen: false, liked: false }
+                            set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
+                            set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
+                            axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
+                                AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj
+                            }).then(res => { }).catch(e => {
                                 setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
                                 setTimeout(() => {
                                     setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
@@ -113,6 +137,7 @@ function Chat(props) {
     }
 
     let msgArrBatch = [];
+
     const addMsgToMsgArr = (msgObj => {
         setMsgArray({ ini: true, array: [...msgArray.array, msgObj] });
         msgArrBatch.push(msgObj);
@@ -123,6 +148,18 @@ function Chat(props) {
         }
     });
 
+
+    let RTmsgArrBatch = [];
+
+    const RTaddMsgToMsgArr = (msgObj => {
+        setRealtimeBuffer([...realtimeBuffer, msgObj]);
+        RTmsgArrBatch.push(msgObj);
+        if (RTmsgArrBatch[RTmsgArrBatch.length - 1]['end']) {
+            RTmsgArrBatch.pop();
+            setRealtimeBuffer([...realtimeBuffer, ...RTmsgArrBatch])
+            RTmsgArrBatch = [];
+        }
+    });
 
     const likeMessageUpdate = (args) => {
         axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
@@ -135,9 +172,20 @@ function Chat(props) {
         });
     }
 
+
+    useEffect(() => {
+        if (realtimeBuffer.length > 0) {
+            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} msgObj={x}></Message></li>))
+            setTimeout(() => {
+                try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
+            }, 50);
+        }
+    }, [realtimeBuffer])
+
     useEffect(() => {
         if (!msgArray.ini && props.visible) {
             msgArrBatch = [];
+            remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
             if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
@@ -162,17 +210,45 @@ function Chat(props) {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
         }, 50);
 
-        // onValue(ref(database, `messageBuffer/${uid}`), (snap) => {
-        //     let data = snap.val();
-        //     let newMsgArr = []
-        //     for(let key in data){
-        //         newMsgArr.push({...data[key]})
-        //     }
-        //     if(msgArray.length != newMsgArr.length){
-        //         setMsgArray(newMsgArr);
-        //     }
-        // })
+        onValue(ref(db, `messageBuffer/${props.ownUID}`), (snap) => {
+            let RXrealtimeBuffer = snap.val();
+            setRealtimeBuffer([]);
+            setRealtimeBufferList([]);
+            RTmsgArrBatch = [];
+            let RTrawMessagesArray = []
+            for (let MID in RXrealtimeBuffer) {
+                RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });
+            }
+            RTrawMessagesArray.sort((a, b) => {return parseInt(a.tx) - parseInt(b.tx)})
+            for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
+                if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid) {
+                    let privateKeyID = localStorage.getItem('PKGetter');
+                    pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                        let rawMsg = RTrawMessagesArray[ix];
+                        if (RTrawMessagesArray[ix].type == 'tx') {
+                            decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
+                                RTaddMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                if (ix == RTrawMessagesArray.length - 1) {
+                                    RTaddMsgToMsgArr({ end: true });
+                                }
+                            });
+                        } else {
+                            decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                                RTaddMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                if (ix == RTrawMessagesArray.length - 1) {
+                                    RTaddMsgToMsgArr({ end: true });
+                                }
+                            });
+                        }
+                        setChatLoadingLabel({ opacity: 0, label: '[Decrypting Conversation]' });
+                    }).catch(e => {
+                        console.log(e)
+                    })
+                }
+            }
+        })
     }, [props, scrollToY, msgArray, msgListscrollToY])
+
 
     if (props.show) {
         return (
@@ -190,6 +266,7 @@ function Chat(props) {
                 </div>
                 <ul id="msgsList" className='msgsList'>
                     {msgList}
+                    {realtimeBufferList}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
