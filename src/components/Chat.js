@@ -58,7 +58,7 @@ function Chat(props) {
     const [failedMessageActionLabel, setFailedMessageActionLabel] = useState({ opacity: 0, label: 'Message Action Failed' })
     const [realtimeBuffer, setRealtimeBuffer] = useState([])
     const [realtimeBufferList, setRealtimeBufferList] = useState([])
-
+    const [showRealtimeBuffer, setShowRealtimeBuffer] = useState(true)
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -107,18 +107,13 @@ function Chat(props) {
     const onSend = () => {
         if (newMessageContents.length > 0) {
             setMsgListscrollToY(30000);
-            setTimeout(() => {
-                setTimeout(() => {
-                    try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
-                }, 50);
-            }, 100);
             setNewMessageContents('');
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
                     encryptMessage(remotePubkey, newMessageContents).then(remoteCipher => {
                         encryptMessage(ownPubkey, newMessageContents).then(ownCipher => {
                             let MID = `${v4()}-${v4()}`;
-                            let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, type: 'tx', tx: Date.now(), auth: true, seen: false, liked: false }
+                            let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false }
                             set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
                             set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
                             axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
@@ -219,28 +214,33 @@ function Chat(props) {
             for (let MID in RXrealtimeBuffer) {
                 RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });
             }
-            RTrawMessagesArray.sort((a, b) => {return parseInt(a.tx) - parseInt(b.tx)})
+            RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
             for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
-                if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid || RTrawMessagesArray[ix].targetUID == props.ownUID){
+                if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid || RTrawMessagesArray[ix].targetUID == props.ownUID) {
                     let privateKeyID = localStorage.getItem('PKGetter');
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
                         let rawMsg = RTrawMessagesArray[ix];
                         if (RTrawMessagesArray[ix].targetUID != props.ownUID) {
                             decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
-                                RTaddMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-                                if (ix == RTrawMessagesArray.length - 1) {
-                                    RTaddMsgToMsgArr({ end: true });
-                                }
-                            });
+                                setRealtimeBuffer((prevBuf) => {
+                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                    } else {
+                                        return [...prevBuf]
+                                    }
+                                })
+                            })
                         } else {
                             decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                                RTaddMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-                                if (ix == RTrawMessagesArray.length - 1) {
-                                    RTaddMsgToMsgArr({ end: true });
-                                }
+                                setRealtimeBuffer((prevBuf) => {
+                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                    } else {
+                                        return [...prevBuf]
+                                    }
+                                })
                             });
                         }
-                        setChatLoadingLabel({ opacity: 0, label: '[Decrypting Conversation]' });
                     }).catch(e => {
                         console.log(e)
                     })
