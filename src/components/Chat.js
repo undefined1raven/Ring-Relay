@@ -214,8 +214,6 @@ function Chat(props) {
 
         onValue(ref(db, `messageBuffer/${props.ownUID}`), (snap) => {
             let RXrealtimeBuffer = snap.val();
-            // setRealtimeBuffer([]);
-            // setRealtimeBufferList([]);
             let RTrawMessagesArray = []
             for (let MID in RXrealtimeBuffer) {
                 RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });

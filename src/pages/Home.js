@@ -9,6 +9,7 @@ import Button from '../components/Button.js'
 import NavBar from '../components/NavBar.js'
 import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
+import Settings from '../components/Settings.js'
 import NewContact from '../components/NewContact.js'
 import DomainGetter from '../fn/DomainGetter.js'
 import { useEffect, useState } from 'react'
@@ -122,6 +123,7 @@ function Home() {
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       <NewContact show={windowId == 'newContact'}></NewContact>
+      {windowId == 'settings' ? <Settings show={windowId == 'settings'}></Settings> : ''}
     </div>
   );
 }

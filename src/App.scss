@@ -765,3 +765,16 @@ rect {
 .failedMessageAction{
   animation: none;
 }
+
+
+// settings
+
+#pkShare, #pkShare1, #pkShare2{
+  position: absolute;
+  top: 30%;
+  @include VAlign();
+  width: 30vh;
+  height: 30vh;
+  background-color: #6100DC20;
+  border: solid 1px #4200FF;
+}
