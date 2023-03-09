@@ -1,13 +1,16 @@
 import QRCode from 'qrcode'
 import { useState } from 'react';
 import { QrReader } from 'react-qr-reader';
+import Label from './Label';
 
 
 const Test = (props) => {
     const [data, setData] = useState('No result');
+
     return (
         <>
             <QrReader
+                constraints={{ facingMode: 'environment' }}
                 onResult={(result, error) => {
                     if (!!result) {
                         setData(result?.text);
@@ -19,7 +22,7 @@ const Test = (props) => {
                 }}
                 style={{ width: '100%' }}
             />
-            <p>{data}</p>
+            <Label text={data} id="results" color="#FFF"></Label>
         </>
     );
 };
