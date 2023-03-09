@@ -221,11 +221,11 @@ function Chat(props) {
             }
             RTrawMessagesArray.sort((a, b) => {return parseInt(a.tx) - parseInt(b.tx)})
             for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {
-                if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid) {
+                if (RTrawMessagesArray[ix].targetUID == props.chatObj.uid || RTrawMessagesArray[ix].targetUID == props.ownUID){
                     let privateKeyID = localStorage.getItem('PKGetter');
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
                         let rawMsg = RTrawMessagesArray[ix];
-                        if (RTrawMessagesArray[ix].type == 'tx') {
+                        if (RTrawMessagesArray[ix].targetUID != props.ownUID) {
                             decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
                                 RTaddMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
                                 if (ix == RTrawMessagesArray.length - 1) {
