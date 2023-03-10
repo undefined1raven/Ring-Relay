@@ -214,16 +214,18 @@ html {
 
 #createAccount,
 #logoutBtn {
-  top: 93.4375%;
+  top: 93.5%;
+  border-right: none !important;
+  border-left: none !important;
   font-size: var(--FS_M_BigMedium);
   @include VAlign();
-  border-left: none !important;
-  border-right: none !important;
 }
 
 #logoutBtn {
-  padding-top: 2%;
+  top: 90.78125%;
   z-index: 50;
+  border: solid 1px #410093 !important;
+  border-radius: 5px;  
 }
 
 //nav
@@ -479,7 +481,7 @@ rect {
   padding-right: 8.454810496%;
   border-left: solid 1px #7000FF;
   margin-bottom: 5%;
-  // animation: msgAni linear 0.06s;
+  animation: msgAni linear 0.06s;
 }
 
 .msgTime,
@@ -743,9 +745,20 @@ rect {
 }
 
 #loggedInAsLabel {
-  top: 94.5%;
-  width: 100%;
+  top: 10.15625%;
+  width: 86%;
+  height: 4.21875%;
+  border-radius: 5px;
   @include flex();
+  padding-left: 4%;
+  justify-content: start;
+  @include VAlign();
+}
+#loggedInAsQidLabel{
+  top: 10.15625%;
+  height: 4.21875%;
+  @include flex();
+  left: 60%;
 }
 
 @keyframes chatLoadingLabelAni {
@@ -784,4 +797,37 @@ rect {
   width: 100%;
   height: 40%;
   text-align: center;
+}
+.settingsMenuLabel{
+  left: 5%;
+}
+#accountLabel{
+  top: 18.125%;
+}
+.settingsMenuButton{
+  border-radius: 5px;
+  width: 89.3%;
+  left: 5%;
+  height: 6.46875%;
+}
+#changeUsernameButton{
+  top: 22.65625%;
+}
+#changePasswordButton{
+  top: 32.1875%;
+}
+#deleteAccountButton{
+  top: 41.71875%;
+}
+#securityLabel{
+  top: 53.59375%;
+}
+#authDeviceButton{
+  top: 58.59375%;
+}
+#regenKeyPairButton{
+  top: 68.125%;
+}
+#logsButton{
+  top: 77.65625%;
 }

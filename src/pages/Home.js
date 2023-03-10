@@ -118,12 +118,11 @@ function Home() {
   return (
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
-      <Button show={windowId != 'chat' && refs.ini} onClick={logout} id="logoutBtn" width="99.9%" height="6.46875%" color="#6100DD" bkg="#410094" label="Log Out"></Button>
-      <Label show={currentUsername != 0 && windowId != 'chat'} color="#6100DC" fontSize="1.3vh" bkg="#00000000" id="loggedInAsLabel" text={`Logged in as ${currentUsername}`}></Label>
+      {windowId == 'settings' ? <Button show={windowId != 'chat' && refs.ini} onClick={logout} id="logoutBtn" width="90%" fontSize="2.3vh" height="6.46875%" color="#878787" bkg="#410093" label="Log Out"></Button> : ''}
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       <NewContact show={windowId == 'newContact'}></NewContact>
-      {windowId == 'settings' ? <Settings show={windowId == 'settings'}></Settings> : ''}
+      {windowId == 'settings' ? <Settings user={{username: currentUsername, ownUID: ownUID}} show={windowId == 'settings'}></Settings> : ''}
     </div>
   );
 }

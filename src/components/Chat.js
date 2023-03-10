@@ -171,7 +171,7 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
-            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} msgObj={x}></Message></li>))
+            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
             setTimeout(() => {
                 try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
             }, 100);
@@ -206,7 +206,7 @@ function Chat(props) {
         setInterval(() => {
             setIH(window.innerHeight)
         }, 100);
-        setMsgList(msgArray.array.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} msgObj={x}></Message></li>))
+        setMsgList(msgArray.array.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
         setTimeout(() => {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
