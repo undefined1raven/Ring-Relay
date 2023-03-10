@@ -7,6 +7,8 @@ import Button from '../components/Button.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import AuthDeviceImportDeco from '../components/authDeviceImportDeco.js'
 import AuthDeviceExportDeco from '../components/authDeviceExportDeco.js'
+import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
+import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
 
 const Test = (props) => {
     const [data, setData] = useState('No result');
@@ -79,13 +81,30 @@ function Settings(props) {
                         <Label className="mainButtonLabel" text="Import Identity" color="#D9D9D9"></Label>
                         <AuthDeviceImportDeco className="mainButtonDeco"></AuthDeviceImportDeco>
                     </div>
-                    <div id='exportIDButton' className='mainButton'>
+                    <div onClick={() => setActiveWindowId('exportID')} id='exportIDButton' className='mainButton'>
                         <Label className="mainButtonLabel" text="Export Identity" color="#D9D9D9"></Label>
                         <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco>
                     </div>
                     <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
                     <Label className='settingsLabel' fontSize="2.1vh" id="authDeviceInfo0Label" text="This process allows you to authenticate your identity across multiple devices or to create a backup of your private key" color="#7000FF" bkg="#7000FF30"></Label>
                     <Button onClick={() => setActiveWindowId('home')} id="authDevicebackButton" className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
+                </div>
+                : ''}
+            {activeWindowId == 'exportID' ?
+                <div id='authAnotherDeviceContainer'>
+                    <Label className="settingsMenuLabel" id="accountLabel" text="Export Identity" fontSize="2.4vh" color="#FFF"></Label>
+                    <div id='scanFromDeviceOptionButton' className='mainButton bottomNoBorderRadius'>
+                        <Label className="mainButtonLabel" text="Scan From Another Device" color="#D9D9D9"></Label>
+                        <AuthDeviceScanDeco className="mainButtonDeco"></AuthDeviceScanDeco>
+                    </div>
+                    <Label fontSize="2vh" id="scanFromDeviceOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text="Scan QR Codes using the target device"></Label>
+                    <div id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
+                        <Label className="mainButtonLabel" text="Make a backup" color="#D9D9D9"></Label>
+                        <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco>
+                    </div>
+                    <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text="Make a copy of your private key"></Label>
+                    <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" style={{top: '80%'}}  text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
+                    <Button onClick={() => setActiveWindowId('authDevice0')} id="authDevicebackButton" style={{top: '90%'}} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
                 </div>
                 : ''}
             {/* <canvas id="pkShare"></canvas> */}

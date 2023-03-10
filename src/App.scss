@@ -225,7 +225,7 @@ html {
   top: 90.78125%;
   z-index: 50;
   border: solid 1px #410093 !important;
-  border-radius: 5px;  
+  border-radius: 5px;
 }
 
 //nav
@@ -754,7 +754,8 @@ rect {
   justify-content: start;
   @include VAlign();
 }
-#loggedInAsQidLabel{
+
+#loggedInAsQidLabel {
   top: 10.15625%;
   height: 4.21875%;
   @include flex();
@@ -762,10 +763,17 @@ rect {
 }
 
 @keyframes chatLoadingLabelAni {
-  0%{opacity: 0;}
-  100%{opacity: 1;}
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
-.chatLoadingStatus, .failedMessageAction{
+
+.chatLoadingStatus,
+.failedMessageAction {
   top: 45%;
   @include VAlign();
   @include flex();
@@ -775,14 +783,17 @@ rect {
   transition: all linear 0.1s;
   animation: chatLoadingLabelAni linear 0.1s;
 }
-.failedMessageAction{
+
+.failedMessageAction {
   animation: none;
 }
 
 
 // settings
 
-#pkShare, #pkShare1, #pkShare2{
+#pkShare,
+#pkShare1,
+#pkShare2 {
   position: absolute;
   top: 30%;
   @include VAlign();
@@ -792,46 +803,57 @@ rect {
   border: solid 1px #4200FF;
 }
 
-#results{
+#results {
   top: 60%;
   width: 100%;
   height: 40%;
   text-align: center;
 }
-.settingsMenuLabel{
+
+.settingsMenuLabel {
   left: 5%;
 }
-#accountLabel{
+
+#accountLabel {
   top: 18.125%;
 }
-.settingsMenuButton{
+
+.settingsMenuButton {
   border-radius: 5px;
   width: 89.3%;
   left: 5%;
   height: 6.46875%;
 }
-#changeUsernameButton{
+
+#changeUsernameButton {
   top: 22.65625%;
 }
-#changePasswordButton{
+
+#changePasswordButton {
   top: 32.1875%;
 }
-#deleteAccountButton{
+
+#deleteAccountButton {
   top: 41.71875%;
 }
-#securityLabel{
+
+#securityLabel {
   top: 53.59375%;
 }
-#authDeviceButton{
+
+#authDeviceButton {
   top: 58.59375%;
 }
-#regenKeyPairButton{
+
+#regenKeyPairButton {
   top: 68.125%;
 }
-#logsButton{
+
+#logsButton {
   top: 77.65625%;
 }
-.mainButton{
+
+.mainButton {
   position: absolute;
   width: 90%;
   height: 18.90625%;
@@ -840,21 +862,55 @@ rect {
   @include flex();
   @include VAlign();
 }
-#importIDButton{
+
+#importIDButton {
   top: 22.65625%;
 }
-#exportIDButton{
+
+#exportIDButton {
   top: 46.09375%;
 }
-.mainButtonLabel{
+
+#downloadBackupOptionButton {
+  top: 52.1875%;
+}
+#scanFromDeviceOptionButton{
+  top: 22.65625%;
+}
+.mainButtonLabel {
   position: absolute;
   top: 22%;
 }
-.mainButtonDeco{
+
+.mainButtonDeco {
   position: absolute;
   top: 49%;
 }
-.settingsLabel{
+.bottomNoBorderRadius{
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  @include VAlign();
+  @include flex();
+}
+.topNoBorderRadius{
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+  @include VAlign();
+  @include flex();
+  width: 90.5%;
+  height: 5.46875%;
+}
+#scanFromDeviceOptionLabel{
+  top: 41.5625%;
+} 
+#downloadBackupOptionLabel{
+  top: 71.09375%;
+}
+.settingsLabel {
   width: 90%;
   height: 6.875%;
   border-radius: 5px;
@@ -862,13 +918,19 @@ rect {
   @include flex();
   text-align: center;
 }
-#authDeviceWarningLabel{
+
+#authDeviceWarningLabel {
   top: 67.34375%;
 }
-#authDeviceInfo0Label{
+
+#authDeviceInfo0Label {
   top: 75.9375%;
   height: 9.84375%;
 }
-#authDevicebackButton{
+
+#authDevicebackButton {
   top: 87.5%;
+}
+stop{
+  transition: all linear 0.5s;
 }
