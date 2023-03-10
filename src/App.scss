@@ -831,3 +831,44 @@ rect {
 #logsButton{
   top: 77.65625%;
 }
+.mainButton{
+  position: absolute;
+  width: 90%;
+  height: 18.90625%;
+  border: solid 1px #7000FF;
+  border-radius: 5px;
+  @include flex();
+  @include VAlign();
+}
+#importIDButton{
+  top: 22.65625%;
+}
+#exportIDButton{
+  top: 46.09375%;
+}
+.mainButtonLabel{
+  position: absolute;
+  top: 22%;
+}
+.mainButtonDeco{
+  position: absolute;
+  top: 49%;
+}
+.settingsLabel{
+  width: 90%;
+  height: 6.875%;
+  border-radius: 5px;
+  @include VAlign();
+  @include flex();
+  text-align: center;
+}
+#authDeviceWarningLabel{
+  top: 67.34375%;
+}
+#authDeviceInfo0Label{
+  top: 75.9375%;
+  height: 9.84375%;
+}
+#authDevicebackButton{
+  top: 87.5%;
+}

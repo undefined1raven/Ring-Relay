@@ -1,10 +1,12 @@
 import QRCode from 'qrcode'
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QrReader } from 'react-qr-reader';
 import Label from './Label';
 import InputField from '../components/InputField.js'
 import Button from '../components/Button.js'
 import HorizontalLine from '../components/HorizontalLine.js'
+import AuthDeviceImportDeco from '../components/authDeviceImportDeco.js'
+import AuthDeviceExportDeco from '../components/authDeviceExportDeco.js'
 
 const Test = (props) => {
     const [data, setData] = useState('No result');
@@ -29,30 +31,63 @@ const Test = (props) => {
     );
 };
 
-function Settings(props) {
 
+function Settings(props) {
+    const [activeWindowId, setActiveWindowId] = useState('home')
+    const [windowHash, setWindowHash] = useState('/');
 
     // QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[0], { color: { dark: '#B479FF', light: '#090003' } }, (res) => { console.log(res) })
     // QRCode.toCanvas(document.getElementById('pkShare1'), splittedPKArr[0], { color: { dark: '#B479FF', light: '#090003' } }, (res) => { console.log(res) })
     // QRCode.toCanvas(document.getElementById('pkShare2'), splittedPKArr[0], { color: { dark: '#050045', light: '#7000FF' } }, (res) => { console.log(res) })
 
+    useEffect(() => {
+        window.location.hash = windowHash;
+    }, [windowHash]);
+
+    const onDeviceAuth = () => {
+        setActiveWindowId('authDevice0')
+    }
+    const logout = () => {
+        localStorage.removeItem('AT');
+        localStorage.removeItem('CIP');
+        setWindowHash('#/login');
+    }
     return (
         <div>
-            <div id='mainMenuContainer'>
-                <Label show={props.user.username != 0} color="#9644FF" fontSize="2.1vh" bkg="#7000FF20" id="loggedInAsLabel" text={`${props.user.username}`}></Label>
-                <Label show={props.user.ownUID != 0} color="#9644FF" fontSize="1.8vh" bkg="#7000FF00" id="loggedInAsQidLabel" text={`<${props.user.ownUID.toString().split('-')[4]}>`}></Label>
-                <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="16.5625%"></HorizontalLine>
-                <Label className="settingsMenuLabel" id="accountLabel" text="Account" fontSize="2.4vh" color="#FFF"></Label>
-                <Button id="changeUsernameButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Username"></Button>
-                <Button id="changePasswordButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Password"></Button>
-                <Button id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
-                <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
-                <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
-                <Button id="authDeviceButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
-                <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Regenerate Key Pair"></Button>
-                <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
-                <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
-            </div>
+            <Label show={props.user.username != 0} color="#9644FF" fontSize="2.1vh" bkg="#7000FF20" id="loggedInAsLabel" text={`${props.user.username}`}></Label>
+            <Label show={props.user.ownUID != 0} color="#9644FF" fontSize="1.8vh" bkg="#7000FF00" id="loggedInAsQidLabel" text={`<${props.user.ownUID.toString().split('-')[4]}>`}></Label>
+            <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="16.5625%"></HorizontalLine>
+            {activeWindowId == 'home' ?
+                <div id='mainMenuContainer'>
+                    <Label className="settingsMenuLabel" id="accountLabel" text="Account" fontSize="2.4vh" color="#FFF"></Label>
+                    <Button onClick={logout} id="logoutBtn" width="90%" fontSize="2.3vh" height="6.46875%" color="#878787" bkg="#410093" label="Log Out"></Button>
+                    <Button id="changeUsernameButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Username"></Button>
+                    <Button id="changePasswordButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Password"></Button>
+                    <Button id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
+                    <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
+                    <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
+                    <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
+                    <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Regenerate Key Pair"></Button>
+                    <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
+                    <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
+                </div>
+                : ''}
+            {activeWindowId == 'authDevice0' ?
+                <div id='authAnotherDeviceContainer'>
+                    <Label className="settingsMenuLabel" id="accountLabel" text="Authenticate Another Device" fontSize="2.4vh" color="#FFF"></Label>
+                    <div id='importIDButton' className='mainButton'>
+                        <Label className="mainButtonLabel" text="Import Identity" color="#D9D9D9"></Label>
+                        <AuthDeviceImportDeco className="mainButtonDeco"></AuthDeviceImportDeco>
+                    </div>
+                    <div id='exportIDButton' className='mainButton'>
+                        <Label className="mainButtonLabel" text="Export Identity" color="#D9D9D9"></Label>
+                        <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco>
+                    </div>
+                    <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
+                    <Label className='settingsLabel' fontSize="2.1vh" id="authDeviceInfo0Label" text="This process allows you to authenticate your identity across multiple devices or to create a backup of your private key" color="#7000FF" bkg="#7000FF30"></Label>
+                    <Button onClick={() => setActiveWindowId('home')} id="authDevicebackButton" className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
+                </div>
+                : ''}
             {/* <canvas id="pkShare"></canvas> */}
             {/* {/* <canvas style={{top: '0%'}} id="pkShare1"></canvas> */}
             {/* <canvas style={{ top: '10%' }} id="pkShare2"></canvas> */}
