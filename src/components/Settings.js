@@ -92,8 +92,6 @@ function Settings(props) {
                 }
             }
 
-            console.log(DPID)
-            console.log(cipher)
             if (!decryptionParams.ini) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
@@ -101,13 +99,13 @@ function Settings(props) {
                         let saltBuf = _base64ToArrayBuffer(res.data.salt)
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(plain) }).catch(e => setScanResult(e))
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(plain) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
                         }
                     } else {
-                        setScanResult('NO DPID')
+                        setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
                     }
 
-                }).catch(e => { setScanResult('req failewd') });
+                }).catch(e => { setScanResult(`req failewd | ${DPID} | ${cipher}`) });
             }
         } else {
             setScanResult('cff')
