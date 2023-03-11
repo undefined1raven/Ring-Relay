@@ -101,8 +101,11 @@ function Settings(props) {
                         if (exportPassword != '') {
                             symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(plain) }).catch(e => setScanResult(e))
                         }
+                    } else {
+                        setScanResult('NO DPID')
                     }
-                }).catch(e => { });
+
+                }).catch(e => { setScanResult('req failewd') });
             }
         } else {
             setScanResult('cff')
@@ -110,7 +113,7 @@ function Settings(props) {
     }, [scanResultArray])
 
     useEffect(() => {
-        setScanResult(`${scanResultArray[0]?.length}|${scanResultArray[1]?.length}|${scanResultArray[2]?.length}|${scanResultArray[3]?.length}|${scanResultArray[4]?.length}`)
+        // setScanResult(`${scanResultArray[0]?.length}|${scanResultArray[1]?.length}|${scanResultArray[2]?.length}|${scanResultArray[3]?.length}|${scanResultArray[4]?.length}`)
     }, [scanResultArray])
 
     function exportController() {
@@ -146,7 +149,7 @@ function Settings(props) {
 
     useEffect(() => {
         if (scanExportStage == 5) {
-            setActiveWindowId('home');
+            // setActiveWindowId('home');
             setScanExportStage(0)
             setAuthed({ ini: false })
         } else if (scanExportStage <= 4) {
