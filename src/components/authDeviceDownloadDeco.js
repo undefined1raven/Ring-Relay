@@ -6,7 +6,7 @@ function AuthDeviceDownloadDeco(props) {
 
     setInterval(() => {
         setRandom(Math.random());
-    }, 1500);
+    }, 500);
 
     useEffect(() => {}, [random])
 

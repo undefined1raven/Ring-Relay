@@ -9,7 +9,7 @@ function AuthDeviceScanDeco(props) {
 
     setInterval(() => {
         setRandom(Math.random());
-    }, 1500);
+    }, 1000);
 
     useEffect(() => {}, [random])
 

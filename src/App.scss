@@ -874,9 +874,11 @@ rect {
 #downloadBackupOptionButton {
   top: 52.1875%;
 }
-#scanFromDeviceOptionButton{
+
+#scanFromDeviceOptionButton {
   top: 22.65625%;
 }
+
 .mainButtonLabel {
   position: absolute;
   top: 22%;
@@ -886,7 +888,8 @@ rect {
   position: absolute;
   top: 49%;
 }
-.bottomNoBorderRadius{
+
+.bottomNoBorderRadius {
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
   border-top-left-radius: 5px;
@@ -894,7 +897,8 @@ rect {
   @include VAlign();
   @include flex();
 }
-.topNoBorderRadius{
+
+.topNoBorderRadius {
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   border-bottom-left-radius: 5px;
@@ -904,12 +908,15 @@ rect {
   width: 90.5%;
   height: 5.46875%;
 }
-#scanFromDeviceOptionLabel{
+
+#scanFromDeviceOptionLabel {
   top: 41.5625%;
-} 
-#downloadBackupOptionLabel{
+}
+
+#downloadBackupOptionLabel {
   top: 71.09375%;
 }
+
 .settingsLabel {
   width: 90%;
   height: 6.875%;
@@ -931,13 +938,77 @@ rect {
 #authDevicebackButton {
   top: 87.5%;
 }
-stop{
+
+stop {
   transition: all linear 0.5s;
 }
-#scanExpordIDLabel{
+
+#scanExpordIDLabel {
   top: 23.125%;
   width: 90%;
   height: 4.21875%;
+  border-radius: 5px;
+  @include VAlign();
+  @include flex();
+}
+
+#scanExportIDNextButton {
+  top: 83%;
+  width: 90%;
+  height: 6.25%;
+  @include VAlign();
+  @include flex();
+  border-radius: 5px;
+}
+
+#scanExpordIDStageLabel0 {
+  left: 15%;
+}
+
+#scanExpordIDStageLabel1 {
+  left: calc(15% + (15.11111111% * 1));
+}
+#scanExpordIDStageLabel2 {
+  left: calc(15% + (15.11111111% * 2));
+}
+#scanExpordIDStageLabel3 {
+  left: calc(15% + (15.11111111% * 3));
+}
+#scanExpordIDStageLabel4 {
+  left: calc(15% + (15.11111111% * 4));
+}
+.scanExpordIDStageLabelx {
+  width: 4.6vh;
+  height: 4.6vh;
+  @include flex();
+  top: 76.6375%;
+  transition: all linear 0.1s;
+}
+
+.passPromptContainer{
+  z-index: 50000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #0e001fee;
+  backdrop-filter: blur(5px);
+  @include flex();
+}
+.passPromptLabel{
+  top: 30.3125%;
+  left: 5%;
+}
+#passInput{
+  top: 34.53125%;
+  left: 5%;
+  width: 90%;
+}
+.passwordPromptFailedLabel{
+  top: 64%;
+  width: 90%;
+  height: 6%;
   border-radius: 5px;
   @include VAlign();
   @include flex();
