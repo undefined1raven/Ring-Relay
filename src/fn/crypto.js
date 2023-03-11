@@ -128,3 +128,67 @@ export const decryptMessage = async (key, ciphertext, cipherEncoding) => {
     } catch (e) { console.log(e) }
 }
 
+function getKeyMaterial(password) {
+    const enc = new TextEncoder();
+    return window.crypto.subtle.importKey(
+        "raw",
+        enc.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveBits", "deriveKey"]
+    );
+}
+
+
+function getKey(keyMaterial, salt) {
+    return window.crypto.subtle.deriveKey(
+        {
+            "name": "PBKDF2",
+            salt: salt,
+            "iterations": 100000,
+            "hash": "SHA-256"
+        },
+        keyMaterial,
+        { "name": "AES-GCM", "length": 256 },
+        true,
+        ["encrypt", "decrypt"]
+    );
+}
+
+export const symmetricEncrypt = async (salt, iv, plain, password) => {
+    let keyMaterial = await getKeyMaterial(password);
+    let key = await getKey(keyMaterial, salt);
+    let encoded = new TextEncoder().encode(plain);
+
+    let ciphertext = await window.crypto.subtle.encrypt(
+        {
+            name: "AES-GCM",
+            iv: iv
+        },
+        key,
+        encoded
+    );
+
+    return { buffer: ciphertext, base64: window.btoa(ab2str(ciphertext)) };
+}
+
+export const symmetricDecrypt = async (password, salt, iv, ciphertext) => {
+
+    let keyMaterial = await getKeyMaterial(password);
+    let key = await getKey(keyMaterial, salt);
+
+    try {
+        let decrypted = await window.crypto.subtle.decrypt(
+            {
+                name: "AES-GCM",
+                iv: iv
+            },
+            key,
+            ciphertext
+        );
+
+        return new TextDecoder().decode(decrypted);
+    } catch (e) {
+        return 'error';
+    }
+}

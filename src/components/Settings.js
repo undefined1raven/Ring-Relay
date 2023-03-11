@@ -9,7 +9,7 @@ import AuthDeviceImportDeco from '../components/authDeviceImportDeco.js'
 import AuthDeviceExportDeco from '../components/authDeviceExportDeco.js'
 import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
 import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
-
+import { symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
 const Test = (props) => {
     const [data, setData] = useState('No result');
 
@@ -37,10 +37,43 @@ const Test = (props) => {
 function Settings(props) {
     const [activeWindowId, setActiveWindowId] = useState('home')
     const [windowHash, setWindowHash] = useState('/');
+    const [scanExportStage, setScanExportStage] = useState(0);
 
-    // QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[0], { color: { dark: '#B479FF', light: '#090003' } }, (res) => { console.log(res) })
-    // QRCode.toCanvas(document.getElementById('pkShare1'), splittedPKArr[0], { color: { dark: '#B479FF', light: '#090003' } }, (res) => { console.log(res) })
-    // QRCode.toCanvas(document.getElementById('pkShare2'), splittedPKArr[0], { color: { dark: '#050045', light: '#7000FF' } }, (res) => { console.log(res) })
+    let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
+
+
+
+
+    let salt = window.crypto.getRandomValues(new Uint8Array(16))
+    let iv = window.crypto.getRandomValues(new Uint8Array(12))
+
+
+    useEffect(() => {
+        symmetricEncrypt(salt, iv, pkPem, 'nicer').then(cipher => {
+            symmetricDecrypt('nicer', salt, iv, cipher.buffer).then(plain => { })
+            let pk0 = ''
+            let pk1 = ''
+            let pk2 = ''
+            let pk3 = ''
+            let pk4 = ''
+            for (let ix = 0; ix < cipher.base64.length; ix++) {
+                let rd = cipher.base64.length / 5;
+                if (pk0.length <= rd) {
+                    pk0 += cipher.base64[ix];
+                } else if (pk1.length <= rd) {
+                    pk1 += cipher.base64[ix];
+                } else if (pk2.length <= rd) {
+                    pk2 += cipher.base64[ix];
+                } else if (pk3.length <= rd) {
+                    pk3 += cipher.base64[ix];
+                } else if (pk4.length <= rd) {
+                    pk4 += cipher.base64[ix];
+                }
+            }
+            let splittedPKArr = [pk0, pk1, pk2, pk3, pk4];
+            QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[0], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { console.log(res) })
+        })
+    }, [activeWindowId])
 
     useEffect(() => {
         window.location.hash = windowHash;
@@ -93,7 +126,7 @@ function Settings(props) {
             {activeWindowId == 'exportID' ?
                 <div id='authAnotherDeviceContainer'>
                     <Label className="settingsMenuLabel" id="accountLabel" text="Export Identity" fontSize="2.4vh" color="#FFF"></Label>
-                    <div id='scanFromDeviceOptionButton' className='mainButton bottomNoBorderRadius'>
+                    <div onClick={() => setActiveWindowId('scanExpordID')} id='scanFromDeviceOptionButton' className='mainButton bottomNoBorderRadius'>
                         <Label className="mainButtonLabel" text="Scan From Another Device" color="#D9D9D9"></Label>
                         <AuthDeviceScanDeco className="mainButtonDeco"></AuthDeviceScanDeco>
                     </div>
@@ -103,13 +136,20 @@ function Settings(props) {
                         <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco>
                     </div>
                     <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text="Make a copy of your private key"></Label>
-                    <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" style={{top: '80%'}}  text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
-                    <Button onClick={() => setActiveWindowId('authDevice0')} id="authDevicebackButton" style={{top: '90%'}} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
+                    <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" style={{ top: '80%' }} text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
+                    <Button onClick={() => setActiveWindowId('authDevice0')} id="authDevicebackButton" style={{ top: '90%' }} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
                 </div>
                 : ''}
-            {/* <canvas id="pkShare"></canvas> */}
-            {/* {/* <canvas style={{top: '0%'}} id="pkShare1"></canvas> */}
-            {/* <canvas style={{ top: '10%' }} id="pkShare2"></canvas> */}
+            {activeWindowId == 'scanExpordID' ?
+                <>
+                    <Label className="settingsMenuLabel" id="accountLabel" text="Export Identity" fontSize="2.4vh" color="#FFF"></Label>
+                    <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text="Scan this QR Code from the target device"></Label>
+                    <canvas id="pkShare"></canvas>
+                    {/* <canvas style={{ top: '0%' }} id="pkShare1"></canvas>
+                    <canvas style={{ top: '10%' }} id="pkShare2"></canvas> */}
+
+                </>
+                : ''}
             {/* <Test></Test> */}
         </div>
     )

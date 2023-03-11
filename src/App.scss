@@ -797,8 +797,8 @@ rect {
   position: absolute;
   top: 30%;
   @include VAlign();
-  width: 30vh;
-  height: 30vh;
+  width: 35vh !important;
+  height: 35vh !important;
   background-color: #6100DC20;
   border: solid 1px #4200FF;
 }
@@ -933,4 +933,12 @@ rect {
 }
 stop{
   transition: all linear 0.5s;
+}
+#scanExpordIDLabel{
+  top: 23.125%;
+  width: 90%;
+  height: 4.21875%;
+  border-radius: 5px;
+  @include VAlign();
+  @include flex();
 }
