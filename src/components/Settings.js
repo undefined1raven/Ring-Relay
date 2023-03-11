@@ -11,8 +11,13 @@ import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
 import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
 import PasswordPrompt from '../components/PasswordPrompt.js'
 import { symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
-const Test = (props) => {
+const Reader = (props) => {
     const [data, setData] = useState('No result');
+
+
+    useEffect(() => {
+        props.onDataChange(data);
+    }, [data])
 
     return (
         <>
@@ -22,14 +27,13 @@ const Test = (props) => {
                     if (!!result) {
                         setData(result?.text);
                     }
-
                     if (!!error) {
                         console.info(error);
                     }
                 }}
-                style={{ width: '100%' }}
+                style={{ width: '90%', top: '29.375%', left: '5%', border: 'solid 1px #001AFF', borderRadius: 'border-radius: 5px 5px 0px 0px' }}
             />
-            <Label text={data} id="results" color="#FFF"></Label>
+            <Label text={props.len} id="results" color="#FFF"></Label>
         </>
     );
 };
@@ -42,6 +46,8 @@ function Settings(props) {
     const [authed, setAuthed] = useState({ ini: false });
     const [passwordPrompt, setPasswordPrompt] = useState({ visible: false });
     const [exportPassword, setExportPassword] = useState('');
+    const [scanMode, setScanMode] = useState('export');
+    const [scanResult, setScanResult] = useState(0);
 
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
 
@@ -49,6 +55,20 @@ function Settings(props) {
     let salt = window.crypto.getRandomValues(new Uint8Array(16))
     let iv = window.crypto.getRandomValues(new Uint8Array(12))
 
+    let EPKSegs = [];
+    const onScanData = (data) => {
+        if (data.length >= 860 && EPKSegs.length <= 4) {
+            if (EPKSegs.indexOf(data) == -1) {
+                EPKSegs.push(data)
+                setScanExportStage(prev => prev + 1)
+            }
+        }
+        let xx = ''
+        for (let ix = 0; ix < EPKSegs.length; ix++) {
+            xx += EPKSegs[ix]
+        }
+        setScanResult(xx.length)
+    }
 
     function exportController() {
         if (exportPassword != '') {
@@ -134,11 +154,11 @@ function Settings(props) {
             {activeWindowId == 'authDevice0' ?
                 <div id='authAnotherDeviceContainer'>
                     <Label className="settingsMenuLabel" id="accountLabel" text="Authenticate Another Device" fontSize="2.4vh" color="#FFF"></Label>
-                    <div id='importIDButton' className='mainButton'>
+                    <div onClick={() => { setActiveWindowId('exportID'); setScanMode('import') }} id='importIDButton' className='mainButton'>
                         <Label className="mainButtonLabel" text="Import Identity" color="#D9D9D9"></Label>
                         <AuthDeviceImportDeco className="mainButtonDeco"></AuthDeviceImportDeco>
                     </div>
-                    <div onClick={() => setActiveWindowId('exportID')} id='exportIDButton' className='mainButton'>
+                    <div onClick={() => { setActiveWindowId('exportID'); setScanMode('export') }} id='exportIDButton' className='mainButton'>
                         <Label className="mainButtonLabel" text="Export Identity" color="#D9D9D9"></Label>
                         <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco>
                     </div>
@@ -149,17 +169,17 @@ function Settings(props) {
                 : ''}
             {activeWindowId == 'exportID' ?
                 <div id='authAnotherDeviceContainer'>
-                    <Label className="settingsMenuLabel" id="accountLabel" text="Export Identity" fontSize="2.4vh" color="#FFF"></Label>
+                    <Label className="settingsMenuLabel" id="accountLabel" text={scanMode == 'export' ? 'Export Identity' : 'Import Identity'} fontSize="2.4vh" color="#FFF"></Label>
                     <div onClick={() => { setActiveWindowId('scanExportID'); if (!authed.ini) { setPasswordPrompt({ visible: true }) } }} id='scanFromDeviceOptionButton' className='mainButton bottomNoBorderRadius'>
                         <Label className="mainButtonLabel" text="Scan From Another Device" color="#D9D9D9"></Label>
                         <AuthDeviceScanDeco className="mainButtonDeco"></AuthDeviceScanDeco>
                     </div>
-                    <Label fontSize="2vh" id="scanFromDeviceOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text="Scan QR Codes using the target device"></Label>
+                    <Label fontSize={scanMode == 'export' ? '2vh' : '1.6vh'} id="scanFromDeviceOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Scan QR Codes using the target device" : 'Scan the QR Code from the device you’re exporting from'}></Label>
                     <div id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
-                        <Label className="mainButtonLabel" text="Make a backup" color="#D9D9D9"></Label>
+                        <Label className="mainButtonLabel" text={scanMode == 'export' ? 'Make a backup' : 'Load a backup'} color="#D9D9D9"></Label>
                         <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco>
                     </div>
-                    <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text="Make a copy of your private key"></Label>
+                    <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Make a copy of your private key" : 'Load a copy of your private key'}></Label>
                     <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" style={{ top: '80%' }} text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
                     <Button onClick={() => setActiveWindowId('authDevice0')} id="authDevicebackButton" style={{ top: '90%' }} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
                 </div>
@@ -176,7 +196,8 @@ function Settings(props) {
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel4" bkg={`${colorFromExportStage(4)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(4)} text="5"></Label>
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '91.5%' }} className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" label="Cancel"></Button>
                     <PasswordPrompt setExportPassword={(EP) => setExportPassword(EP)} rtdbPayload={{ salt: window.btoa(salt), iv: window.btoa(iv) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
-                    {authed.ini ? <canvas id="pkShare"></canvas> : ''}
+                    {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
+                    {authed.ini && scanMode == 'import' ? <Reader len={scanResult} onDataChange={(data) => onScanData(data)}></Reader> : ''}
                 </>
                 : ''}
         </div>

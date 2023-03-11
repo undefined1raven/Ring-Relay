@@ -1013,3 +1013,14 @@ stop {
   @include VAlign();
   @include flex();
 }
+
+section{
+  position: absolute;
+  top: 28.775% !important;
+  width: 90%;
+  height: 46.25%;
+  @include VAlign();
+  top: 50%;
+  border: solid 1px #001AFF;
+  border-radius: 5px;
+}
