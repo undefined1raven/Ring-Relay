@@ -246,6 +246,7 @@ function Settings(props) {
                     <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(salt), iv: window.btoa(iv) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
                     {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
                     {authed.ini && scanMode == 'import' ? <Reader len={scanResult} onDataChange={(data) => onScanData(data)}></Reader> : ''}
+                    <Label text={scanResult} color="#FFF"></Label>
                 </>
                 : ''}
         </div>
