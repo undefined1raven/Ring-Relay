@@ -107,7 +107,7 @@ function Settings(props) {
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${exportPassword}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
+                            symmetricDecrypt('nicer', saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${'nicer'}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
                         }
                     } else {
                         setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
@@ -126,8 +126,8 @@ function Settings(props) {
 
     function exportController() {
         if (exportPassword != '') {
-            symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
-                symmetricDecrypt(exportPassword, salt, iv, cipher.buffer).then(plain => { })
+            symmetricEncrypt(salt, iv, pkPem, 'nicer').then(cipher => {
+                symmetricDecrypt('nicer', salt, iv, cipher.buffer).then(plain => { })
                 let pk0 = ''
                 let pk1 = ''
                 let pk2 = ''
