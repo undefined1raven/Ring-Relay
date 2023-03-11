@@ -103,8 +103,8 @@ function Settings(props) {
             if (!decryptionParams.ini) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
-                        let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
-                        let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
+                        let ivBuf = _base64ToArrayBuffer(JSON.parse(scanResultArray[0]).iv.toString())
+                        let saltBuf = _base64ToArrayBuffer(JSON.parse(scanResultArray[0]).salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
                             symmetricDecrypt('nicer', saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${'nicer'}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
@@ -149,7 +149,7 @@ function Settings(props) {
                 }
 
                 let decryptParamsID = props.user.ownUID;
-                let pk0s = { data: pk0, DPID: decryptParamsID };
+                let pk0s = { data: pk0, DPID: decryptParamsID, iv: window.btoa(ab2str(iv)), salt: window.btoa(ab2str(salt)) };
                 console.log(cipher.base64.length)
                 let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
                 QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { console.log(res) })
