@@ -121,7 +121,7 @@ function Home() {
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       <NewContact show={windowId == 'newContact'}></NewContact>
-      {windowId == 'settings' ? <Settings user={{username: currentUsername, ownUID: ownUID}} show={windowId == 'settings'}></Settings> : ''}
+      {windowId == 'settings' ? <Settings privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}
     </div>
   );
 }

@@ -145,7 +145,7 @@ function Settings(props) {
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
                     <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
                     <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
-                    <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Regenerate Key Pair"></Button>
+                    <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pair" : '[Not Available]'}></Button>
                     <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
                 </div>
@@ -157,9 +157,9 @@ function Settings(props) {
                         <Label className="mainButtonLabel" text="Import Identity" color="#D9D9D9"></Label>
                         <AuthDeviceImportDeco className="mainButtonDeco"></AuthDeviceImportDeco>
                     </div>
-                    <div onClick={() => { setActiveWindowId('exportID'); setScanMode('export') }} id='exportIDButton' className='mainButton'>
-                        <Label className="mainButtonLabel" text="Export Identity" color="#D9D9D9"></Label>
-                        <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco>
+                    <div onClick={() => { if (props.privateKeyStatus) { setActiveWindowId('exportID'); setScanMode('export') } }} id='exportIDButton' className='mainButton' style={{ border: `${props.privateKeyStatus ? 'solid 1px #7000FF' : 'solid 1px #5A5A5A'}` }}>
+                        <Label className="mainButtonLabel" text={props.privateKeyStatus ? "Export Identity" : '[Not Available]'} color={props.privateKeyStatus ? "#D9D9D9" : '#5A5A5A'}></Label>
+                        {props.privateKeyStatus ? <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco> : ''}
                     </div>
                     <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
                     <Label className='settingsLabel' fontSize="2.1vh" id="authDeviceInfo0Label" text="This process allows you to authenticate your identity across multiple devices or to create a backup of your private key" color="#7000FF" bkg="#7000FF30"></Label>
