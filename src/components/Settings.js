@@ -99,7 +99,7 @@ function Settings(props) {
                         let saltBuf = _base64ToArrayBuffer(res.data.salt)
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(plain) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
                         }
                     } else {
                         setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
