@@ -48,6 +48,7 @@ function Settings(props) {
     const [exportPassword, setExportPassword] = useState('');
     const [scanMode, setScanMode] = useState('export');
     const [scanResult, setScanResult] = useState(0);
+    const [scanResultArray, setScanResultArray] = useState([]);
 
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
 
@@ -55,20 +56,20 @@ function Settings(props) {
     let salt = window.crypto.getRandomValues(new Uint8Array(16))
     let iv = window.crypto.getRandomValues(new Uint8Array(12))
 
-    let EPKSegs = [];
     const onScanData = (data) => {
-        if (data.length >= 860 && EPKSegs.length <= 4) {
-            if (EPKSegs.indexOf(data) == -1) {
-                EPKSegs.push(data)
-                setScanExportStage(prev => prev + 1)
+        if (data.length >= 840 && scanResultArray.length <= 4) {
+            if (scanResultArray.indexOf(data) == -1) {
+                setScanResultArray((prev) => [...prev, data]);
             }
         }
-        let xx = ''
-        for (let ix = 0; ix < EPKSegs.length; ix++) {
-            xx += EPKSegs[ix]
-        }
-        setScanResult(`${EPKSegs[0]?.length}|${EPKSegs[1]?.length}|${EPKSegs[2]?.length}|${EPKSegs[3]?.length}|${EPKSegs[4]?.length}`)
     }
+
+    useEffect(() => {
+        setScanResult(`${scanResultArray[0]?.length}|${scanResultArray[1]?.length}|${scanResultArray[2]?.length}|${scanResultArray[3]?.length}|${scanResultArray[4]?.length}`)
+        if(scanResultArray.length - 1 == setScanExportStage){
+            setScanExportStage(prev => prev + 1)
+        }
+    }, [scanResultArray])
 
     function exportController() {
         if (exportPassword != '') {
