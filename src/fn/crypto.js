@@ -155,6 +155,8 @@ function getKey(keyMaterial, salt) {
     );
 }
 
+
+
 export const symmetricEncrypt = async (salt, iv, plain, password) => {
     let keyMaterial = await getKeyMaterial(password);
     let key = await getKey(keyMaterial, salt);

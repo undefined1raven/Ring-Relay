@@ -17,6 +17,9 @@ const Reader = (props) => {
     const [data, setData] = useState('No result');
 
 
+
+
+
     useEffect(() => {
         props.onDataChange(data);
     }, [data])
@@ -55,6 +58,10 @@ function Settings(props) {
 
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
 
+
+    function ab2str(buf) {
+        return String.fromCharCode.apply(null, new Uint8Array(buf));
+    }
 
     let salt = window.crypto.getRandomValues(new Uint8Array(16))
     let iv = window.crypto.getRandomValues(new Uint8Array(12))
@@ -139,8 +146,10 @@ function Settings(props) {
                         pk4 += cipher.base64[ix];
                     }
                 }
+
                 let decryptParamsID = props.user.ownUID;
                 let pk0s = { data: pk0, DPID: decryptParamsID };
+                console.log(cipher.base64.length)
                 let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
                 QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { console.log(res) })
             })
@@ -243,7 +252,7 @@ function Settings(props) {
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel3" bkg={`${colorFromExportStage(3)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(3)} text="4"></Label>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel4" bkg={`${colorFromExportStage(4)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(4)} text="5"></Label>
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '91.5%' }} className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" label="Cancel"></Button>
-                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(salt), iv: window.btoa(iv) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
+                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
                     {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
                     {authed.ini && scanMode == 'import' ? <Reader len={scanResult} onDataChange={(data) => onScanData(data)}></Reader> : ''}
                     <Label text={scanResult} color="#FFF"></Label>
