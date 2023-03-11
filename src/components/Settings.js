@@ -92,6 +92,8 @@ function Settings(props) {
                 }
             }
 
+            console.log(DPID)
+            console.log(cipher)
             if (!decryptionParams.ini) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
