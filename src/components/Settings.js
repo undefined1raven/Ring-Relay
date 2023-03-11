@@ -67,7 +67,7 @@ function Settings(props) {
         for (let ix = 0; ix < EPKSegs.length; ix++) {
             xx += EPKSegs[ix]
         }
-        setScanResult(xx.length)
+        setScanResult(`${EPKSegs[0]?.length}|${EPKSegs[1]?.length}|${EPKSegs[2]?.length}|${EPKSegs[3]?.length}|${EPKSegs[4]?.length}`)
     }
 
     function exportController() {
