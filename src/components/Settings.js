@@ -60,15 +60,13 @@ function Settings(props) {
         if (data.length >= 840 && scanResultArray.length <= 4) {
             if (scanResultArray.indexOf(data) == -1) {
                 setScanResultArray((prev) => [...prev, data]);
+                setScanExportStage(prev => prev + 1)
             }
         }
     }
 
     useEffect(() => {
         setScanResult(`${scanResultArray[0]?.length}|${scanResultArray[1]?.length}|${scanResultArray[2]?.length}|${scanResultArray[3]?.length}|${scanResultArray[4]?.length}`)
-        if(scanResultArray.length - 1 == setScanExportStage){
-            setScanExportStage(prev => prev + 1)
-        }
     }, [scanResultArray])
 
     function exportController() {
