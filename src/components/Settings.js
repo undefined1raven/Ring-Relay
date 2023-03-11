@@ -63,8 +63,9 @@ function Settings(props) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
-    let salt = window.crypto.getRandomValues(new Uint8Array(16))
-    let iv = window.crypto.getRandomValues(new Uint8Array(12))
+    const salt = window.crypto.getRandomValues(new Uint8Array(16))
+    const iv = window.crypto.getRandomValues(new Uint8Array(12))
+
 
     const onScanData = (data) => {
         if (data.length >= 840 && scanResultArray.length <= 4) {
@@ -102,11 +103,11 @@ function Settings(props) {
             if (!decryptionParams.ini) {
                 axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
-                        let ivBuf = _base64ToArrayBuffer(res.data.iv)
-                        let saltBuf = _base64ToArrayBuffer(res.data.salt)
+                        let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
+                        let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${exportPassword}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
                         }
                     } else {
                         setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
