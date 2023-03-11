@@ -11,6 +11,8 @@ import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
 import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
 import PasswordPrompt from '../components/PasswordPrompt.js'
 import { symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
+import axios from 'axios';
+import DomainGetter from '../fn/DomainGetter';
 const Reader = (props) => {
     const [data, setData] = useState('No result');
 
@@ -49,6 +51,7 @@ function Settings(props) {
     const [scanMode, setScanMode] = useState('export');
     const [scanResult, setScanResult] = useState(0);
     const [scanResultArray, setScanResultArray] = useState([]);
+    const [decryptionParams, setDecryptionParams] = useState({ ini: false });
 
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
 
@@ -64,6 +67,47 @@ function Settings(props) {
             }
         }
     }
+
+    function _base64ToArrayBuffer(base64) {
+        var binary_string = window.atob(base64);
+        var len = binary_string.length;
+        var bytes = new Uint8Array(len);
+        for (var i = 0; i < len; i++) {
+            bytes[i] = binary_string.charCodeAt(i);
+        }
+        return bytes.buffer;
+    }
+
+    useEffect(() => {
+        if (scanResultArray.length == 5) {
+
+            let cipher = ''
+            let DPID = ''
+            for (let ix = 0; ix < scanResultArray.length; ix++) {
+                if (ix == 0) {
+                    DPID = JSON.parse(scanResultArray[ix]).DPID;
+                    cipher += JSON.parse(scanResultArray[ix]).data;
+                } else {
+                    cipher += scanResultArray[ix];
+                }
+            }
+
+            if (!decryptionParams.ini) {
+                axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                    if (res.data.flag) {
+                        let ivBuf = _base64ToArrayBuffer(res.data.iv)
+                        let saltBuf = _base64ToArrayBuffer(res.data.salt)
+                        let cipherBuf = _base64ToArrayBuffer(cipher);
+                        if (exportPassword != '') {
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(plain) }).catch(e => setScanResult(e))
+                        }
+                    }
+                }).catch(e => { });
+            }
+        } else {
+            setScanResult('cff')
+        }
+    }, [scanResultArray])
 
     useEffect(() => {
         setScanResult(`${scanResultArray[0]?.length}|${scanResultArray[1]?.length}|${scanResultArray[2]?.length}|${scanResultArray[3]?.length}|${scanResultArray[4]?.length}`)
@@ -92,7 +136,9 @@ function Settings(props) {
                         pk4 += cipher.base64[ix];
                     }
                 }
-                let splittedPKArr = [pk0, pk1, pk2, pk3, pk4];
+                let decryptParamsID = props.user.ownUID;
+                let pk0s = { data: pk0, DPID: decryptParamsID };
+                let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
                 QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { console.log(res) })
             })
         }
@@ -194,7 +240,7 @@ function Settings(props) {
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel3" bkg={`${colorFromExportStage(3)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(3)} text="4"></Label>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel4" bkg={`${colorFromExportStage(4)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(4)} text="5"></Label>
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '91.5%' }} className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" label="Cancel"></Button>
-                    <PasswordPrompt setExportPassword={(EP) => setExportPassword(EP)} rtdbPayload={{ salt: window.btoa(salt), iv: window.btoa(iv) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
+                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(salt), iv: window.btoa(iv) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
                     {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
                     {authed.ini && scanMode == 'import' ? <Reader len={scanResult} onDataChange={(data) => onScanData(data)}></Reader> : ''}
                 </>
