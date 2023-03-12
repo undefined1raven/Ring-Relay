@@ -83,6 +83,11 @@ function Settings(props) {
         return bytes.buffer;
     }
 
+
+    const reloadPage = () => {
+        window.location.reload();
+    }
+
     useEffect(() => {
         if (scanResultArray.length == 5) {
             let cipher = ''
@@ -101,12 +106,18 @@ function Settings(props) {
                     if (res.data.flag) {
                         let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
+                        let nPKGetter = JSON.parse(scanResultArray[0]).PKGetter;
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
                             symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => {
-                                setScanResult(`${plain} | ${cipher.length} | ${res.data.iv}i | ${res.data.salt}s | ${exportPassword}`)
+                                setScanResult(`${plain} | ${cipher.length}`)
                                 pemToKey(plain).then(privateKey => {
                                     setScanResult(`Import Success`)
+                                    localStorage.setItem('PKGetter', nPKGetter);
+                                    localStorage.setItem(nPKGetter, plain);
+                                    reloadPage();
+                                }).catch(e => {
+                                    setScanResult(e)
                                 })
                             }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`
                             ))
@@ -123,9 +134,6 @@ function Settings(props) {
         }
     }, [scanResultArray])
 
-    useEffect(() => {
-        // setScanResult(`${scanResultArray[0]?.length}|${scanResultArray[1]?.length}|${scanResultArray[2]?.length}|${scanResultArray[3]?.length}|${scanResultArray[4]?.length}`)
-    }, [scanResultArray])
 
     function exportController() {
         if (exportPassword != '') {
@@ -153,7 +161,6 @@ function Settings(props) {
                 }
 
                 let decryptParamsID = props.user.ownUID;
-                console.log(`${exportPassword} | ${window.btoa(ab2str(salt))}s | ${window.btoa(ab2str(iv))}i`)
                 let pk0s = { data: pk0, DPID: decryptParamsID, PKGetter: localStorage.getItem('PKGetter') };
                 let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
                 QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { })
@@ -163,8 +170,8 @@ function Settings(props) {
 
     useEffect(() => {
         if (scanExportStage == 5) {
-            // setActiveWindowId('home');
             setScanExportStage(0)
+            setActiveWindowId('home');
             setAuthed({ ini: false })
         } else if (scanExportStage <= 4) {
             exportController();

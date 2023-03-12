@@ -50,7 +50,7 @@ export const keyToPem = async (key) => {
 }
 
 
-export const pemToKey = (pem => {
+export const pemToKey = ((pem) => {
     try {
         // fetch the part of the PEM string between header and footer
         const pemHeader = "-----BEGIN PRIVATE KEY-----";
