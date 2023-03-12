@@ -13,12 +13,14 @@ import PasswordPrompt from '../components/PasswordPrompt.js'
 import { symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
+
+
+const salt = window.crypto.getRandomValues(new Uint8Array(16))
+const iv = window.crypto.getRandomValues(new Uint8Array(12))
+
+
 const Reader = (props) => {
     const [data, setData] = useState('No result');
-
-
-
-
 
     useEffect(() => {
         props.onDataChange(data);
@@ -63,10 +65,6 @@ function Settings(props) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
-    const salt = window.crypto.getRandomValues(new Uint8Array(16))
-    const iv = window.crypto.getRandomValues(new Uint8Array(12))
-
-
     const onScanData = (data) => {
         if (data.length >= 840 && scanResultArray.length <= 4) {
             if (scanResultArray.indexOf(data) == -1) {
@@ -75,6 +73,7 @@ function Settings(props) {
             }
         }
     }
+
 
     function _base64ToArrayBuffer(base64) {
         var binary_string = window.atob(base64);
@@ -101,10 +100,10 @@ function Settings(props) {
             }
 
             if (!decryptionParams.ini) {
-                axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
-                        let ivBuf = _base64ToArrayBuffer(JSON.parse(scanResultArray[0]).iv.toString())
-                        let saltBuf = _base64ToArrayBuffer(JSON.parse(scanResultArray[0]).salt.toString())
+                        let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
+                        let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
                             symmetricDecrypt('nicer', saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${'nicer'}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
@@ -126,6 +125,7 @@ function Settings(props) {
 
     function exportController() {
         if (exportPassword != '') {
+
             symmetricEncrypt(salt, iv, pkPem, 'nicer').then(cipher => {
                 symmetricDecrypt('nicer', salt, iv, cipher.buffer).then(plain => { })
                 let pk0 = ''
@@ -149,8 +149,7 @@ function Settings(props) {
                 }
 
                 let decryptParamsID = props.user.ownUID;
-                let pk0s = { data: pk0, DPID: decryptParamsID, iv: window.btoa(ab2str(iv)), salt: window.btoa(ab2str(salt)) };
-                console.log(cipher.base64.length)
+                let pk0s = { data: pk0, DPID: decryptParamsID, PKGetter: localStorage.getItem('PKGetter') };
                 let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
                 QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { console.log(res) })
             })

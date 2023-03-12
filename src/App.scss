@@ -197,10 +197,23 @@ html {
   @include VAlign();
 }
 
-#generatingKeyPairLabel {
-  width: 79.444444444%;
-  height: 5.46875%;
+#privateKeyBackup {
   @include flex();
+  border-radius: 5px;
+  text-align: center;
+  top: 83.21875%;
+}
+
+#generatingKeyPairLabel {
+  top: 83.21875%;
+  width: 79.444444444%;
+  height: 7.46875%;
+  @include flex();
+  text-align: center;
+}
+
+#generatingKeyPairLabel {
+  border-radius: 5px;
 }
 
 #resetPasswordButton {
@@ -968,15 +981,19 @@ stop {
 #scanExpordIDStageLabel1 {
   left: calc(15% + (15.11111111% * 1));
 }
+
 #scanExpordIDStageLabel2 {
   left: calc(15% + (15.11111111% * 2));
 }
+
 #scanExpordIDStageLabel3 {
   left: calc(15% + (15.11111111% * 3));
 }
+
 #scanExpordIDStageLabel4 {
   left: calc(15% + (15.11111111% * 4));
 }
+
 .scanExpordIDStageLabelx {
   width: 4.6vh;
   height: 4.6vh;
@@ -985,7 +1002,7 @@ stop {
   transition: all linear 0.1s;
 }
 
-.passPromptContainer{
+.passPromptContainer {
   z-index: 50000;
   position: absolute;
   top: 0;
@@ -996,16 +1013,19 @@ stop {
   backdrop-filter: blur(5px);
   @include flex();
 }
-.passPromptLabel{
+
+.passPromptLabel {
   top: 30.3125%;
   left: 5%;
 }
-#passInput{
+
+#passInput {
   top: 34.53125%;
   left: 5%;
   width: 90%;
 }
-.passwordPromptFailedLabel{
+
+.passwordPromptFailedLabel {
   top: 64%;
   width: 90%;
   height: 6%;
@@ -1014,7 +1034,7 @@ stop {
   @include flex();
 }
 
-section{
+section {
   position: absolute;
   top: 28.775% !important;
   width: 90%;

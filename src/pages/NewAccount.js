@@ -22,6 +22,8 @@ function NewAccount() {
     const [newAccountStatus, setNewAccountStatus] = useState({ status: true, error: '', label: '' });
     const [backupPrivateKeyButtonProps, setBackupPrivateKeyButtonProps] = useState({ label: '', color: '#0057FF' });
     const [hasKeys, setHasKeys] = useState(false);
+    const [accountInfoLabel, setAccountInfoLabel] = useState({ color: '#0057FF', label: '[Awaiting for account info]' })
+
 
     function download(filename, text) {
         var element = document.createElement('a');
@@ -94,7 +96,7 @@ function NewAccount() {
                 keyToPem(keys.privateKey).then(privatePem => {
                     window.crypto.subtle.exportKey("jwk", keys.publicKey).then(publickJWK => {
                         localStorage.setItem(`-PK`, privatePem);
-                        axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
+                        axios.post(`${DomainGetter('devx')}api/dbop?newUser`, {
                             username: username,
                             email: email,
                             password: password,
@@ -118,6 +120,25 @@ function NewAccount() {
                 })
 
             });
+        } else {
+            if (!password.match(/[0-9]/)) {
+                setAccountInfoLabel({ color: '#FF001F', label: 'Password must contain at least a number' });
+            }
+            if (!password.match(/[A-Z]/)) {
+                setAccountInfoLabel({ color: '#FF001F', label: 'Password must contain at least an upper case letter' });
+            }
+            if (password.length <= 6) {
+                setAccountInfoLabel({ color: '#FF001F', label: 'Password has to have at least 7 chars' });
+            }
+            if (!EmailValidator.validate(email)) {
+                setAccountInfoLabel({ color: '#FF001F', label: 'Invalid Email' });
+            }
+            if (username.length <= 2) {
+                setAccountInfoLabel({ color: '#FF001F', label: 'Username has to have at least 2 chars' });
+            }
+            setTimeout(() => {
+                setAccountInfoLabel({ color: '#0057FF', label: '[Awaiting for account info]' });
+            }, 2000);
         }
     }
     return (
@@ -136,8 +157,8 @@ function NewAccount() {
             <Label id="NoPlainLabel" className="newAccountLabel x2" text="Plaintext never hits the servers" color="#9745FF" bkg="#6100DC40" fontSize="1.9vh"></Label>
             <HorizontalLine id="newAccountLn" color="#6100DC" left="10.277777778%" top="55%" width="79.444444444%"></HorizontalLine>
             <LinkDeco id="linkDeco"></LinkDeco>
-            <Button id="privateKeyBackup" show={hasKeys} onClick={privateKeyBackupOnClick} width="79.444444444%" height="5.46875%" color="#FF002E" bkg="#FF002E" label="Tap here to back-up your private key"></Button>
-            <Label id="generatingKeyPairLabel" fontSize="2vh" show={!hasKeys} bkg="#0057FF40" color="#0057FF" text="<Generating Key Pair>"></Label>
+            <Label fontSize="1.9vh" id="privateKeyBackup" show={hasKeys} style={{ width: '79.444444444%', height: '7.46875%' }} color="#FF002E" bkg="#FF002E30" text="Go to [Settings > Auth Other Devices] to backup your private key"></Label>
+            <Label id="generatingKeyPairLabel" fontSize="2.1vh" show={!hasKeys} bkg={`${accountInfoLabel.color}30`} color={accountInfoLabel.color} text={accountInfoLabel.label}></Label>
             <Label id="newAccountFailedLabel" fontSize="2vh" show={!newAccountStatus.status} bkg="#FF002E30" color="#FF002E" text={newAccountStatus.label}></Label>
             <Link to={"/login"}><Button show={newAccountStatus.status} id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
         </div>
