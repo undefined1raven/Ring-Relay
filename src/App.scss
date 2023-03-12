@@ -1073,3 +1073,29 @@ section {
   backdrop-filter: blur(2px);
 
 }
+
+.fileExportDeco {
+  @include VAlign();
+}
+#fileImportButton:focus {
+  background-color: #7000FF50;
+}
+#fileImportButton {
+  position: absolute;
+  top: 54.6875%;
+  width: 59%;
+  height: 4.25%;
+  border-radius: 5px;
+  border: solid 1px #7000FF;
+  background-color: #7000FF30;
+  color: #7000FF;
+  @include flex();
+  @include VAlign();
+  transition: all linear 0.1s;
+  font-size: 2.1vh;
+  padding-left: 31%;
+  padding-top: 4%;
+}
+input[type="file"]::file-selector-button{
+  display: none;
+}

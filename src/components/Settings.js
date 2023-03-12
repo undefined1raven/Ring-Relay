@@ -9,11 +9,13 @@ import AuthDeviceImportDeco from '../components/authDeviceImportDeco.js'
 import AuthDeviceExportDeco from '../components/authDeviceExportDeco.js'
 import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
 import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
+import AuthDeviceLoadDeco from '../components/AuthDeviceLoadDeco.js'
 import PasswordPrompt from '../components/PasswordPrompt.js'
 import { pemToKey, symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
-
+import { download } from '../fn/download';
+import { v4 } from 'uuid';
 
 const salt = window.crypto.getRandomValues(new Uint8Array(16))
 const iv = window.crypto.getRandomValues(new Uint8Array(12))
@@ -202,7 +204,37 @@ function Settings(props) {
             return '#00FFD1'
         }
     }
-
+    const onFileImportOrExport = () => {
+        if (scanMode == 'export') {
+            symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
+                let encryptedKey = JSON.stringify({ cipher: cipher.base64, iv: window.btoa(ab2str(iv)), salt: window.btoa(ab2str(salt)), PKGetter: localStorage.getItem('PKGetter') });
+                let encoded = window.btoa(encryptedKey)
+                download(`${v4().split('-')[1]}-${v4().split('-')[2]}.key`, encoded);
+            })
+        }
+    }
+    const importKey = (e) => {
+        let target = e.target;
+        let reader = new FileReader();
+        reader.onload = () => {
+            let encodedKey = reader.result;
+            let encryptedKeyObj = JSON.parse(window.atob(encodedKey));
+            let lsalt = _base64ToArrayBuffer(encryptedKeyObj.salt);
+            let liv = _base64ToArrayBuffer(encryptedKeyObj.iv);
+            let lPKGetter = encryptedKeyObj.PKGetter;
+            let cipher = _base64ToArrayBuffer(encryptedKeyObj.cipher);
+            symmetricDecrypt(exportPassword, lsalt, liv, cipher).then(lpkpem => {
+                pemToKey(lpkpem).then(pk => {
+                    if (pk.type == 'private') {
+                        localStorage.setItem('PKGetter', lPKGetter);
+                        localStorage.setItem(lPKGetter, lpkpem);
+                        window.location.reload()
+                    }
+                })
+            });
+        }
+        reader.readAsText(target.files[0])
+    }
     useEffect(() => {
         if (!revokeIDWindow.visible) {
             setRevokeIDFieldInput('');
@@ -260,9 +292,9 @@ function Settings(props) {
                         <AuthDeviceScanDeco className="mainButtonDeco"></AuthDeviceScanDeco>
                     </div>
                     <Label fontSize={scanMode == 'export' ? '2vh' : '1.6vh'} id="scanFromDeviceOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Scan QR Codes using the target device" : 'Scan the QR Code from the device you’re exporting from'}></Label>
-                    <div id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
+                    <div onClick={() => { setActiveWindowId('fileExportID'); setAuthShareType('file.export'); if (!authed.ini) { setPasswordPrompt({ visible: true }) } }} id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
                         <Label className="mainButtonLabel" text={scanMode == 'export' ? 'Make a backup' : 'Load a backup'} color="#D9D9D9"></Label>
-                        <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco>
+                        {scanMode == 'export' ? <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco className="mainButtonDeco"></AuthDeviceLoadDeco>}
                     </div>
                     <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Make a copy of your private key" : 'Load a copy of your private key'}></Label>
                     <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" style={{ top: '80%' }} text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
@@ -271,7 +303,7 @@ function Settings(props) {
                 : ''}
             {activeWindowId == 'scanExportID' ?
                 <>
-                    <Label className="settingsMenuLabel" id="accountLabel" text="Export Identity" fontSize="2.4vh" color="#FFF"></Label>
+                    <Label className="settingsMenuLabel" id="accountLabel" text={scanMode == 'export' ? "Export Identity" : 'Import Identity'} fontSize="2.4vh" color="#FFF"></Label>
                     <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text="Scan this QR Code from the target device"></Label>
                     <Button onClick={() => setScanExportStage(prev => prev + 1)} id="scanExportIDNextButton" className="settingsMenuButton" fontSize="2.3vh" color="#001AFF" bkg="#001AFF" label={scanExportStage == 4 ? 'Done' : 'Next'}></Button>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel0" bkg={`${colorFromExportStage(0)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(0)} text="1"></Label>
@@ -283,6 +315,20 @@ function Settings(props) {
                     <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" authShareType={authShareType} onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
                     {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
                     {authed.ini && scanMode == 'import' ? <Reader onDataChange={(data) => onScanData(data)}></Reader> : ''}
+                </>
+                : ''}
+            {activeWindowId == 'fileExportID' ?
+                <>
+                    <Label className="settingsMenuLabel" id="accountLabel" text={scanMode == 'export' ? "Export Identity" : 'Import Identity'} fontSize="2.4vh" color="#FFF"></Label>
+                    <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text={scanMode == 'export' ? 'Download a copy of your private key' : 'Load a copy of your private key'}></Label>
+                    <Label fontSize="2vh" id="scanExpordIDLabel" style={{ top: '47.375%' }} bkg="#FF002E30" color="#FF002E" text="Never share this file with anyone"></Label>
+                    {scanMode == 'export' ? <AuthDeviceDownloadDeco top="25.46875%" className="mainButtonDeco fileExportDeco" width="30vh" height="20vh"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco top="30.46875%" width="30vh" height="20vh" className="mainButtonDeco fileExportDeco"></AuthDeviceLoadDeco>}
+                    <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '65.15625%' }} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Cancel"></Button>
+                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" authShareType={authShareType} onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
+                    {scanMode == 'import' ? <input type='file' onChange={(e) => importKey(e)} id="fileImportButton"></input>
+                        :
+                        <Button onClick={onFileImportOrExport} id="authDevicebackButton" style={{ top: '54.6875%' }} className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label='Download'></Button>
+                    }
                 </>
                 : ''}
             <Label show={isRefreshing} className="settingsMenuLabel" id="waitingForRefreshLabel" text="[Validating]" fontSize="2.4vh" color="#001AFF"></Label>

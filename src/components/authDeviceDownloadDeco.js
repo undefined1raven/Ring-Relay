@@ -19,7 +19,7 @@ function AuthDeviceDownloadDeco(props) {
     }
 
     return (
-        <svg className={props.className} style={{ top: `${props.top ? props.top : '29%'}` }} width="40vh" height="13.2vh" viewBox="0 0 75 75" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <svg className={props.className} style={{ top: `${props.top ? props.top : '29%'}` }} width={props.width ? props.width : "40vh"} height={props.height ? props.height : "13.2vh"} viewBox="0 0 75 75" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M37.5 63.5593L5.02405 15.8898L69.976 15.8898L37.5 63.5593Z" fill="url(#paint0_linear_43_277)" fillOpacity="0.5" />
             <path d="M37.5 69.1889L5.02405 21.5194L69.976 21.5194L37.5 69.1889Z" fill="url(#paint1_linear_43_277)" fillOpacity="0.5" />
             <path d="M37.5 75L5.02405 27.3305L69.976 27.3305L37.5 75Z" fill="url(#paint2_linear_43_277)" fillOpacity="0.5" />
