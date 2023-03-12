@@ -104,7 +104,7 @@ function Settings(props) {
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${exportPassword}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${res.data.iv}i | ${res.data.salt}s | ${exportPassword}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
                         }
                     } else {
                         setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
@@ -147,7 +147,7 @@ function Settings(props) {
                 }
 
                 let decryptParamsID = props.user.ownUID;
-                console.log(exportPassword)
+                console.log(`${exportPassword} | ${window.btoa(ab2str(salt))}s | ${window.btoa(ab2str(iv))}i`)
                 let pk0s = { data: pk0, DPID: decryptParamsID, PKGetter: localStorage.getItem('PKGetter') };
                 let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
                 QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { })
