@@ -56,6 +56,8 @@ function Settings(props) {
     const [decryptionParams, setDecryptionParams] = useState({ ini: false });
     const [authShareType, setAuthShareType] = useState('scan.export')//specifies the auth share method
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [revokeIDWindow, setRevokeIDWindow] = useState({ visible: false, stage: 0 })
+    const [revokeIDFieldInput, setRevokeIDFieldInput] = useState('');
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
 
     function ab2str(buf) {
@@ -182,6 +184,9 @@ function Settings(props) {
     const onDeviceAuth = () => {
         setActiveWindowId('authDevice0')
     }
+    const onDeviceRemoveAuth = () => {
+        setRevokeIDWindow({ visible: true, stage: 0 });
+    }
     const logout = () => {
         localStorage.removeItem('AT');
         localStorage.removeItem('CIP');
@@ -197,6 +202,19 @@ function Settings(props) {
             return '#00FFD1'
         }
     }
+
+    useEffect(() => {
+        if (!revokeIDWindow.visible) {
+            setRevokeIDFieldInput('');
+        }
+    }, [revokeIDWindow])
+
+    const onRevokeID = () => {
+        setRevokeIDWindow({ visible: false, stage: 0 });
+        window.location.reload()
+        localStorage.removeItem(localStorage.getItem('PKGetter'))
+        localStorage.removeItem('PKGetter')
+    }
     return (
         <div>
             <Label show={props.user.username != 0} color="#9644FF" fontSize="2.1vh" bkg="#7000FF20" id="loggedInAsLabel" text={`${props.user.username}`}></Label>
@@ -211,7 +229,8 @@ function Settings(props) {
                     <Button id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
                     <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
-                    <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
+                    <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="2vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
+                    <Button onClick={onDeviceRemoveAuth} id="removeAuthFromDeviceButton" className="settingsMenuButton" fontSize="2vh" color="#7000FF" bkg="#7000FF" label="Revoke Identity From This Device"></Button>
                     <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pair" : '[Not Available]'}></Button>
                     <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
@@ -267,6 +286,23 @@ function Settings(props) {
                 </>
                 : ''}
             <Label show={isRefreshing} className="settingsMenuLabel" id="waitingForRefreshLabel" text="[Validating]" fontSize="2.4vh" color="#001AFF"></Label>
+            {revokeIDWindow.visible ?
+                <div id='revokeIDContainer'>
+                    {revokeIDWindow.stage == 0 ?
+                        <>
+                            <Label className="settingsMenuLabel" id="accountLabel" style={{ top: '43.90625%' }} text="Type 'I understand' to continue" fontSize="2.4vh" color="#9948FF"></Label>
+                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '26.5625%', height: '12.65625%' }} text="This will remove the private key from this device. Please make sure you have a backup on another device. Remember to delete all backups from this device if there are any." color="#FF002E" bkg="#FF002E30"></Label>
+                            <Button onClick={() => setRevokeIDWindow({ visible: false, stage: 0 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Back"></Button>
+                            {revokeIDFieldInput == 'I understand' ? <Button onClick={() => setRevokeIDWindow({ visible: true, stage: 1 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%' }} fontSize="2.3vh" color="#6300E0" bkg="#6300E0" label="Continue"></Button> : ''}
+                            <InputField type="text" id="passInput" color="#6300E0" style={{ top: '48.28125%' }} onChange={(e) => setRevokeIDFieldInput(e.target.value)} value={revokeIDFieldInput}></InputField>
+                        </> :
+                        <>
+                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '33.4375%', height: '12.65625%' }} text="If this device has the only private key for your account, all conversations will become unreadable and your contacts will know you refreshed your key pair " color="#FF002E" bkg="#FF002E30"></Label>
+                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '48.75%', height: '6%' }} text="This action is nonreversible" color="#FF002E" bkg="#FF002E30"></Label>
+                            <Button onClick={() => setRevokeIDWindow({ visible: false, stage: 0 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Cancel"></Button>
+                            <Button onClick={onRevokeID} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '60.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Confirm"></Button>
+                        </>}
+                </div> : ''}
         </div>
     )
 }

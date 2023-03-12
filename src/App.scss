@@ -854,8 +854,15 @@ rect {
   top: 53.59375%;
 }
 
-#authDeviceButton {
+#authDeviceButton,
+#removeAuthFromDeviceButton {
   top: 58.59375%;
+  width: 43.888888889% !important;
+  text-align: center;
+}
+
+#removeAuthFromDeviceButton {
+  left: 51.111111111% !important;
 }
 
 #regenKeyPairButton {
@@ -1044,11 +1051,25 @@ section {
   border: solid 1px #001AFF;
   border-radius: 5px;
 }
-#waitingForRefreshLabel{
+
+#waitingForRefreshLabel {
   left: 0%;
   width: 99.8%;
   @include flex();
   z-index: 15000;
   height: 99.8%;
   background-color: rgba(10, 0, 16, .9);
+  backdrop-filter: blur(2px);
+}
+
+#revokeIDContainer {
+  position: absolute;
+  left: 0%;
+  width: 99.8%;
+  @include flex();
+  z-index: 18000;
+  height: 99.8%;
+  background-color: rgba(7, 0, 2, .9);
+  backdrop-filter: blur(2px);
+
 }
