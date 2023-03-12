@@ -1044,3 +1044,11 @@ section {
   border: solid 1px #001AFF;
   border-radius: 5px;
 }
+#waitingForRefreshLabel{
+  left: 0%;
+  width: 99.8%;
+  @include flex();
+  z-index: 15000;
+  height: 99.8%;
+  background-color: rgba(10, 0, 16, .9);
+}

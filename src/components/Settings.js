@@ -52,12 +52,11 @@ function Settings(props) {
     const [passwordPrompt, setPasswordPrompt] = useState({ visible: false });
     const [exportPassword, setExportPassword] = useState('');
     const [scanMode, setScanMode] = useState('export');
-    const [scanResult, setScanResult] = useState(0);
     const [scanResultArray, setScanResultArray] = useState([]);
     const [decryptionParams, setDecryptionParams] = useState({ ini: false });
     const [authShareType, setAuthShareType] = useState('scan.export')//specifies the auth share method
+    const [isRefreshing, setIsRefreshing] = useState(false)
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
-
 
     function ab2str(buf) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
@@ -102,6 +101,7 @@ function Settings(props) {
             }
 
             if (!decryptionParams.ini) {
+                setIsRefreshing(true)
                 axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
                         let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
@@ -110,28 +110,25 @@ function Settings(props) {
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
                             symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => {
-                                setScanResult(`${plain} | ${cipher.length}`)
                                 pemToKey(plain).then(privateKey => {
-                                    setScanResult(`Import Success`)
                                     localStorage.setItem('PKGetter', nPKGetter);
                                     localStorage.setItem(nPKGetter, plain);
-                                    reloadPage();
+                                    axios.post(`${DomainGetter('prodx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                                        reloadPage();
+                                    });
+                                    setTimeout(() => {
+                                        setIsRefreshing(false)
+                                    }, 2000);
                                 }).catch(e => {
-                                    setScanResult(e)
                                 })
-                            }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`
-                            ))
-
+                            }).catch(e => { })
                         }
                     } else {
-                        setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
                     }
 
-                }).catch(e => { setScanResult(`req failewd | ${DPID} | ${cipher}`) });
+                }).catch(e => { });
             }
-        } else {
-            setScanResult('cff')
-        }
+        } else { }
     }, [scanResultArray])
 
 
@@ -264,12 +261,12 @@ function Settings(props) {
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel3" bkg={`${colorFromExportStage(3)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(3)} text="4"></Label>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel4" bkg={`${colorFromExportStage(4)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(4)} text="5"></Label>
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '91.5%' }} className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" label="Cancel"></Button>
-                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} authShareType={authShareType} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" authShareType={authShareType} onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
+                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" authShareType={authShareType} onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
                     {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
-                    {authed.ini && scanMode == 'import' ? <Reader len={scanResult} onDataChange={(data) => onScanData(data)}></Reader> : ''}
-                    <Label text={scanResult} color="#FFF"></Label>
+                    {authed.ini && scanMode == 'import' ? <Reader onDataChange={(data) => onScanData(data)}></Reader> : ''}
                 </>
                 : ''}
+            <Label show={isRefreshing} className="settingsMenuLabel" id="waitingForRefreshLabel" text="[Validating]" fontSize="2.4vh" color="#001AFF"></Label>
         </div>
     )
 }
