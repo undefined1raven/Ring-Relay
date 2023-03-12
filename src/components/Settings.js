@@ -34,9 +34,7 @@ const Reader = (props) => {
                     if (!!result) {
                         setData(result?.text);
                     }
-                    if (!!error) {
-                        console.info(error);
-                    }
+                    if (!!error) {}
                 }}
                 style={{ width: '90%', top: '29.375%', left: '5%', border: 'solid 1px #001AFF', borderRadius: 'border-radius: 5px 5px 0px 0px' }}
             />
@@ -106,7 +104,7 @@ function Settings(props) {
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt('nicer', saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${'nicer'}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${ivBuf.byteLength}x | ${saltBuf.byteLength}s | ${exportPassword}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
                         }
                     } else {
                         setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
@@ -126,8 +124,8 @@ function Settings(props) {
     function exportController() {
         if (exportPassword != '') {
 
-            symmetricEncrypt(salt, iv, pkPem, 'nicer').then(cipher => {
-                symmetricDecrypt('nicer', salt, iv, cipher.buffer).then(plain => { })
+            symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
+                symmetricDecrypt(exportPassword, salt, iv, cipher.buffer).then(plain => { })
                 let pk0 = ''
                 let pk1 = ''
                 let pk2 = ''
@@ -149,9 +147,10 @@ function Settings(props) {
                 }
 
                 let decryptParamsID = props.user.ownUID;
+                console.log(exportPassword)
                 let pk0s = { data: pk0, DPID: decryptParamsID, PKGetter: localStorage.getItem('PKGetter') };
                 let splittedPKArr = [JSON.stringify(pk0s), pk1, pk2, pk3, pk4];
-                QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { console.log(res) })
+                QRCode.toCanvas(document.getElementById('pkShare'), splittedPKArr[scanExportStage], { color: { dark: '#090003', light: '#B479FF' } }, (res) => { })
             })
         }
     }
