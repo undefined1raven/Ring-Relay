@@ -209,7 +209,7 @@ function Settings(props) {
             symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
                 let encryptedKey = JSON.stringify({ cipher: cipher.base64, iv: window.btoa(ab2str(iv)), salt: window.btoa(ab2str(salt)), PKGetter: localStorage.getItem('PKGetter') });
                 let encoded = window.btoa(encryptedKey)
-                download(`${v4().split('-')[1]}-${v4().split('-')[2]}.key`, encoded);
+                download(`${v4().split('-')[1]}-${v4().split('-')[2]}.key.txt`, encoded);
             })
         }
     }
