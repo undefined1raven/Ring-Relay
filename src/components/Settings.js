@@ -10,7 +10,7 @@ import AuthDeviceExportDeco from '../components/authDeviceExportDeco.js'
 import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
 import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
 import PasswordPrompt from '../components/PasswordPrompt.js'
-import { symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
+import { pemToKey, symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
 
@@ -34,7 +34,7 @@ const Reader = (props) => {
                     if (!!result) {
                         setData(result?.text);
                     }
-                    if (!!error) {}
+                    if (!!error) { }
                 }}
                 style={{ width: '90%', top: '29.375%', left: '5%', border: 'solid 1px #001AFF', borderRadius: 'border-radius: 5px 5px 0px 0px' }}
             />
@@ -55,7 +55,7 @@ function Settings(props) {
     const [scanResult, setScanResult] = useState(0);
     const [scanResultArray, setScanResultArray] = useState([]);
     const [decryptionParams, setDecryptionParams] = useState({ ini: false });
-
+    const [authShareType, setAuthShareType] = useState('scan.export')//specifies the auth share method
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
 
 
@@ -85,7 +85,6 @@ function Settings(props) {
 
     useEffect(() => {
         if (scanResultArray.length == 5) {
-
             let cipher = ''
             let DPID = ''
             for (let ix = 0; ix < scanResultArray.length; ix++) {
@@ -104,7 +103,14 @@ function Settings(props) {
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
-                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => { setScanResult(`${plain} | ${cipher.length} | ${res.data.iv}i | ${res.data.salt}s | ${exportPassword}`) }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`))
+                            symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => {
+                                setScanResult(`${plain} | ${cipher.length} | ${res.data.iv}i | ${res.data.salt}s | ${exportPassword}`)
+                                pemToKey(plain).then(privateKey => {
+                                    setScanResult(`Import Success`)
+                                })
+                            }).catch(e => setScanResult(`dE  | ${e} | ${DPID} | ${cipher}`
+                            ))
+
                         }
                     } else {
                         setScanResult(`rexq failewd | ${DPID} | ${cipher}`)
@@ -123,7 +129,7 @@ function Settings(props) {
 
     function exportController() {
         if (exportPassword != '') {
-
+            setAuthShareType('scan.export');
             symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
                 symmetricDecrypt(exportPassword, salt, iv, cipher.buffer).then(plain => { })
                 let pk0 = ''
@@ -210,11 +216,11 @@ function Settings(props) {
             {activeWindowId == 'authDevice0' ?
                 <div id='authAnotherDeviceContainer'>
                     <Label className="settingsMenuLabel" id="accountLabel" text="Authenticate Another Device" fontSize="2.4vh" color="#FFF"></Label>
-                    <div onClick={() => { setActiveWindowId('exportID'); setScanMode('import') }} id='importIDButton' className='mainButton'>
+                    <div onClick={() => { setActiveWindowId('exportID'); setScanMode('import'); setAuthShareType('scan.import') }} id='importIDButton' className='mainButton'>
                         <Label className="mainButtonLabel" text="Import Identity" color="#D9D9D9"></Label>
                         <AuthDeviceImportDeco className="mainButtonDeco"></AuthDeviceImportDeco>
                     </div>
-                    <div onClick={() => { if (props.privateKeyStatus) { setActiveWindowId('exportID'); setScanMode('export') } }} id='exportIDButton' className='mainButton' style={{ border: `${props.privateKeyStatus ? 'solid 1px #7000FF' : 'solid 1px #5A5A5A'}` }}>
+                    <div onClick={() => { if (props.privateKeyStatus) { setActiveWindowId('exportID'); setScanMode('export'); setAuthShareType('scan.export') } }} id='exportIDButton' className='mainButton' style={{ border: `${props.privateKeyStatus ? 'solid 1px #7000FF' : 'solid 1px #5A5A5A'}` }}>
                         <Label className="mainButtonLabel" text={props.privateKeyStatus ? "Export Identity" : '[Not Available]'} color={props.privateKeyStatus ? "#D9D9D9" : '#5A5A5A'}></Label>
                         {props.privateKeyStatus ? <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco> : ''}
                     </div>
@@ -251,7 +257,7 @@ function Settings(props) {
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel3" bkg={`${colorFromExportStage(3)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(3)} text="4"></Label>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel4" bkg={`${colorFromExportStage(4)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(4)} text="5"></Label>
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '91.5%' }} className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" label="Cancel"></Button>
-                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" exportType="scan" onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
+                    <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} authShareType={authShareType} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" authShareType={authShareType} onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
                     {authed.ini && scanMode == 'export' ? <canvas id="pkShare"></canvas> : ''}
                     {authed.ini && scanMode == 'import' ? <Reader len={scanResult} onDataChange={(data) => onScanData(data)}></Reader> : ''}
                     <Label text={scanResult} color="#FFF"></Label>
