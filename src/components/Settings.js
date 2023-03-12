@@ -100,7 +100,7 @@ function Settings(props) {
             }
 
             if (!decryptionParams.ini) {
-                axios.post(`${DomainGetter('devx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
                         let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
