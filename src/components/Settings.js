@@ -325,7 +325,7 @@ function Settings(props) {
                     {scanMode == 'export' ? <AuthDeviceDownloadDeco top="25.46875%" className="mainButtonDeco fileExportDeco" width="30vh" height="20vh"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco top="30.46875%" width="30vh" height="20vh" className="mainButtonDeco fileExportDeco"></AuthDeviceLoadDeco>}
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '65.15625%' }} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Cancel"></Button>
                     <PasswordPrompt setExportPassword={(EP) => { EP.then(ep => setExportPassword(ep)) }} rtdbPayload={{ salt: window.btoa(ab2str(salt)), iv: window.btoa(ab2str(iv)) }} onValid={() => { setAuthed({ ini: true }); setPasswordPrompt({ visible: false }); exportController(); }} type="password" authShareType={authShareType} onBack={() => setActiveWindowId('exportID')} show={passwordPrompt.visible}></PasswordPrompt>
-                    {scanMode == 'import' ? <input type='file' onChange={(e) => importKey(e)} id="fileImportButton"></input>
+                    {scanMode == 'import' ? <input type='file' accept='.key' onChange={(e) => importKey(e)} id="fileImportButton"></input>
                         :
                         <Button onClick={onFileImportOrExport} id="authDevicebackButton" style={{ top: '54.6875%' }} className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label='Download'></Button>
                     }
