@@ -85,7 +85,6 @@ function Chat(props) {
                     });
                 }
             }
-            setChatLoadingLabel({ opacity: 0, label: '[Decrypting Conversation]' });
         }).catch(e => {
             setMsgArray({ ini: true, array: rawMsgArr });
         })
@@ -152,6 +151,7 @@ function Chat(props) {
             msgArrBatch.pop();
             setMsgArray({ ini: true, array: [...msgArray.array, ...msgArrBatch] })
             msgArrBatch = [];
+            setChatLoadingLabel({opacity: 0, label: 'done'})
         }
     });
 
@@ -261,8 +261,8 @@ function Chat(props) {
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
                 <ul id="msgsList" className='msgsList'>
-                    {chatLoadingLabel.label != '[Resetting Buffer]' ? msgList : ''}
-                    {chatLoadingLabel.label != '[Resetting Buffer]' ? realtimeBufferList : ''}
+                    {chatLoadingLabel.label == 'done' ? msgList : ''}
+                    {chatLoadingLabel.label == 'done' ? realtimeBufferList : ''}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
