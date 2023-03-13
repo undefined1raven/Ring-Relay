@@ -11,7 +11,8 @@ import MsgTXDeco from '../components/MsgTXDeco.js'
 import MsgRXDeco from '../components/MsgRXDeco.js'
 import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import MsgLikedDeco from '../components/MsgLikedDeco.js'
-
+import CommonSigMismatchDeco from '../components/CommonSigMismatchDeco.js'
+import SignatureVerificationFailedDeco from '../components/SignatureVerificationFailedDeco.js'
 
 
 
@@ -65,6 +66,14 @@ function Message(props) {
                         {props.msgObj.type == 'rx' ? <MsgRXDeco /> : <MsgTXDeco />}
                         {props.msgObj.seen ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
                         {liked ? <MsgLikedDeco /> : ''}
+                        <div className='chashContainer'>
+                            <CommonSigMismatchDeco className="chashIndi"></CommonSigMismatchDeco>
+                            <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />
+                        </div>
+                        <div className='signatureContainer'>
+                            <SignatureVerificationFailedDeco className="sigIndi"></SignatureVerificationFailedDeco>
+                            <Label fontSize="2.5vw" className="sigLabel" color="#FF002E" text="Signed" />
+                        </div>
                     </div> : ''
             }></Label>
         </div>

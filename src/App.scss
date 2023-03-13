@@ -458,6 +458,31 @@ rect {
 }
 
 //message | msg
+.chashContainer, .signatureContainer{
+  position: absolute;
+  @include flex();
+  width: 14.619883041%;
+  height: 51.219512195%;
+  left: 102%;
+  top: 2.5vh;
+  overflow: hidden;
+}
+.signatureContainer{
+  top: -0.65vh;
+  @include flex();
+}
+.chashIndi, .sigIndi{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+.chashLabel{
+  top: 10%;
+  left: 50%;
+}
+.sigLabel{
+  left: 10%;
+}
 .msgsList::-webkit-scrollbar {
   width: 0vh;
   height: 0px;
