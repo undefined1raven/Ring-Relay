@@ -91,6 +91,7 @@ function Chat(props) {
     }
 
     const getMessagesAndUpdateChat = (args) => {
+        console.log(msgCount)
         if (args?.reason == undefined) {
             setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
         } else {
@@ -151,7 +152,7 @@ function Chat(props) {
             msgArrBatch.pop();
             setMsgArray({ ini: true, array: [...msgArray.array, ...msgArrBatch] })
             msgArrBatch = [];
-            setChatLoadingLabel({opacity: 0, label: 'done'})
+            setChatLoadingLabel({ opacity: 0, label: '[Done]' })
         }
     });
 
@@ -166,6 +167,17 @@ function Chat(props) {
                 setFailedMessageActionLabel({ opacity: 0 })
             }, 2000);
         });
+    }
+
+
+    const onChatScroll = (e) => {
+        // if (e.target.scrollTop < 100) {
+        //     setMsgCount(prev => (prev + 50))
+        //     setMsgArray({ array: [], ini: true })
+        //     setTimeout(() => {
+        //         getMessagesAndUpdateChat();
+        //     }, 50);
+        // }
     }
 
 
@@ -260,9 +272,9 @@ function Chat(props) {
                     <InputField autoComplete="off" value={newMessageContents} onChange={(e) => setNewMessageContents(e.target.value)} fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
-                <ul id="msgsList" className='msgsList'>
-                    {chatLoadingLabel.label == 'done' ? msgList : ''}
-                    {chatLoadingLabel.label == 'done' ? realtimeBufferList : ''}
+                <ul onScroll={onChatScroll} id="msgsList" className='msgsList'>
+                    {chatLoadingLabel.label == '[Done]' ? msgList : ''}
+                    {chatLoadingLabel.label == '[Done]' ? realtimeBufferList : ''}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
