@@ -518,6 +518,10 @@ rect {
   }
 }
 
+.msgAni {
+  animation: msgAni linear 0.06s;
+}
+
 .msgContainer {
   position: relative;
   left: 2%;
@@ -529,7 +533,6 @@ rect {
   padding-right: 8.454810496%;
   border-left: solid 1px #7000FF;
   margin-bottom: 5%;
-  animation: msgAni linear 0.06s;
 }
 
 .msgTime,

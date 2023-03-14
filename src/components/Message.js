@@ -65,7 +65,7 @@ function Message(props) {
 
     return (
         <div>
-            <Label onClick={(e) => onMsgClick(e)} className="msgContainer" color={messageContentColorController()} text={props.decrypted ? props.msgObj.content : '[Failed to decrypt]'} fontSize="4.5vw" bkg={props.decrypted ? "#6100DC20" : '#88001830'} style={{ borderLeft: `solid 1px ${props.decrypted ? '#7000FF' : '#E20028'}` }} child={
+            <Label onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={props.decrypted ? props.msgObj.content : '[Failed to decrypt]'} fontSize="4.5vw" bkg={props.decrypted ? "#6100DC20" : '#88001830'} style={{ borderLeft: `solid 1px ${props.decrypted ? '#7000FF' : '#E20028'}` }} child={
                 props.decrypted ?
                     <div>
                         <Label className="msgTime" bkg="#55007340" color="#8300B0" text={`${new Date(parseInt(props.msgObj.tx)).getHours().toString().padStart(2, '0')}:${new Date(parseInt(props.msgObj.tx)).getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>

@@ -61,6 +61,7 @@ function Settings(props) {
     const [revokeIDWindow, setRevokeIDWindow] = useState({ visible: false, stage: 0 })
     const [revokeIDFieldInput, setRevokeIDFieldInput] = useState('');
     let pkPem = localStorage.getItem(localStorage.getItem('PKGetter'))
+    let pskPem = localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`)
 
     function ab2str(buf) {
         return String.fromCharCode.apply(null, new Uint8Array(buf));
@@ -114,15 +115,19 @@ function Settings(props) {
                         let cipherBuf = _base64ToArrayBuffer(cipher);
                         if (exportPassword != '') {
                             symmetricDecrypt(exportPassword, saltBuf, ivBuf, cipherBuf).then(plain => {
-                                pemToKey(plain).then(privateKey => {
-                                    localStorage.setItem('PKGetter', nPKGetter);
-                                    localStorage.setItem(nPKGetter, plain);
-                                    axios.post(`${DomainGetter('prodx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
-                                        reloadPage();
-                                    });
-                                    setTimeout(() => {
-                                        setIsRefreshing(false)
-                                    }, 2000);
+                                let exportPayloadJSON = JSON.parse(plain);
+                                pemToKey(exportPayloadJSON.pkPem).then(privateKey => {
+                                    pemToKey(exportPayloadJSON.pskPem, 'ECDSA').then(privateSigningKey => {
+                                        localStorage.setItem('PKGetter', nPKGetter);
+                                        localStorage.setItem(nPKGetter, exportPayloadJSON.pkPem);
+                                        localStorage.setItem(`SV-${nPKGetter}`, exportPayloadJSON.pskPem);
+                                        axios.post(`${DomainGetter('prodx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                                            reloadPage();
+                                        });
+                                        setTimeout(() => {
+                                            setIsRefreshing(false)
+                                        }, 2000);
+                                    })
                                 }).catch(e => {
                                 })
                             }).catch(e => { })
@@ -139,7 +144,8 @@ function Settings(props) {
     function exportController() {
         if (exportPassword != '') {
             setAuthShareType('scan.export');
-            symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
+            let exportPayloadJSON = { pkPem: pkPem, pskPem: pskPem }
+            symmetricEncrypt(salt, iv, JSON.stringify(exportPayloadJSON), exportPassword).then(cipher => {
                 symmetricDecrypt(exportPassword, salt, iv, cipher.buffer).then(plain => { })
                 let pk0 = ''
                 let pk1 = ''
