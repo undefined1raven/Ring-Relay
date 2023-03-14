@@ -73,7 +73,7 @@ function Home() {
   useEffect(() => {
     window.location.hash = windowHash;
     if (!authorized) {
-      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      axios.post(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           if (res.data.redirect)
             window.location.hash = `#${res.data.redirect}`;
@@ -86,20 +86,26 @@ function Home() {
             localStorage.setItem(res.data.PKGetter, localStorage.getItem('-PK'));
             localStorage.removeItem('-PK');
           }
+          if (localStorage.getItem('-SPK') != undefined) {
+            localStorage.setItem(`SV-${res.data.PKGetter}`, localStorage.getItem('-SPK'));
+            localStorage.removeItem('-SPK');
+          }
           localStorage.setItem('PKGetter', res.data.PKGetter);
-          if (localStorage.getItem(res.data.PKGetter) != undefined) {
+          if (localStorage.getItem(res.data.PKGetter) != undefined && localStorage.getItem(`SV-${res.data.PKGetter}`) != undefined) {
             pemToKey(localStorage.getItem(res.data.PKGetter)).then(pk => {
-              if (pk.algorithm.name == 'RSA-OAEP') {
-                setPrivateKeyStatus({ valid: true, found: true, ini: true });
-              } else {
-                setPrivateKeyStatus({ valid: false, found: true, ini: true });
-              }
+              pemToKey(localStorage.getItem(`SV-${res.data.PKGetter}`), 'ECDSA').then(signPK => {
+                if (pk.algorithm.name == 'RSA-OAEP' && signPK.algorithm.name == 'ECDSA') {
+                  setPrivateKeyStatus({ valid: true, found: true, ini: true });
+                } else {
+                  setPrivateKeyStatus({ valid: false, found: true, ini: true });
+                }
+              })
             });
           } else {
             setPrivateKeyStatus({ valid: false, found: false, ini: true });
           }
           if (!refs.ini) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               setRefs({ ini: true, arr: res.data.refs });
             })
           }
@@ -110,6 +116,13 @@ function Home() {
       });
     }
   }, [windowHash, refs])
+
+  const refreshRefs = () => {
+    axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      setRefs({ ini: true, arr: res.data.refs });
+    })
+  }
+
   const logout = () => {
     localStorage.removeItem('AT');
     localStorage.removeItem('CIP');
@@ -120,7 +133,7 @@ function Home() {
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
-      <NewContact show={windowId == 'newContact'}></NewContact>
+      {windowId == 'newContact' ? <NewContact refreshRefs={refreshRefs} show={windowId == 'newContact'}></NewContact> : ''}
       {windowId == 'settings' ? <Settings privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}
     </div>
   );

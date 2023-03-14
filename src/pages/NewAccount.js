@@ -8,7 +8,7 @@ import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
 import * as EmailValidator from 'email-validator';
 import DomainGetter from '../fn/DomainGetter.js'
-import { getKeyPair, keyToPem, encryptMessage, decryptMessage } from '../fn/crypto.js';
+import { getKeyPair, keyToPem, getSigningKeyPair, pemToKey } from '../fn/crypto.js';
 import axios from 'axios';
 
 function NewAccount() {
@@ -31,6 +31,10 @@ function NewAccount() {
     const fieldOnChange = (e, setFn) => {
         setFn(e.target.value);
         validateInput(true);
+    }
+
+    function ab2str(buf) {
+        return String.fromCharCode.apply(null, new Uint8Array(buf));
     }
 
     useEffect(() => {
@@ -81,33 +85,40 @@ function NewAccount() {
         e.preventDefault();
         if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
             getKeyPair().then(keys => {
-                setHasKeys(true)
-                keyToPem(keys.privateKey).then(privatePem => {
-                    window.crypto.subtle.exportKey("jwk", keys.publicKey).then(publickJWK => {
-                        localStorage.setItem(`-PK`, privatePem);
-                        axios.post(`${DomainGetter('prodx')}api/dbop?newUser`, {
-                            username: username,
-                            email: email,
-                            password: password,
-                            PUBKEY: JSON.stringify(publickJWK),
-                        }).then(res => {
-                            if (res.data.status == 'Success') {
-                                setWindowHash('/login');
-                            } else {
-                                setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
-                                setTimeout(() => {
-                                    setNewAccountStatus({ status: true, label: `` })
-                                }, 2000);
-                            }
-                        }).catch(e => {
-                            setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
-                            setTimeout(() => {
-                                setNewAccountStatus({ status: true, label: `` })
-                            }, 2000);
-                        });
+                getSigningKeyPair().then(signingKeys => {
+                    setHasKeys(true)
+                    keyToPem(keys.privateKey).then(privatePem => {
+                        keyToPem(signingKeys.privateKey).then(privateSigningPem => {
+                            window.crypto.subtle.exportKey("jwk", signingKeys.publicKey).then(publicSigningJWK => {
+                                window.crypto.subtle.exportKey("jwk", keys.publicKey).then(publickJWK => {
+                                    localStorage.setItem(`-PK`, privatePem);
+                                    localStorage.setItem(`-SPK`, privateSigningPem);
+                                    axios.post(`${DomainGetter('devx')}api/dbop?newUser`, {
+                                        username: username,
+                                        email: email,
+                                        password: password,
+                                        PUBKEY: JSON.stringify(publickJWK),
+                                        PUBSIGN: JSON.stringify(publicSigningJWK)
+                                    }).then(res => {
+                                        if (res.data.status == 'Success') {
+                                            setWindowHash('/login');
+                                        } else {
+                                            setNewAccountStatus({ status: false, label: `Failed to create new account [${res.data.error}]` })
+                                            setTimeout(() => {
+                                                setNewAccountStatus({ status: true, label: `` })
+                                            }, 2000);
+                                        }
+                                    }).catch(e => {
+                                        setNewAccountStatus({ status: false, label: `Failed to create new account [L-65]` })
+                                        setTimeout(() => {
+                                            setNewAccountStatus({ status: true, label: `` })
+                                        }, 2000);
+                                    });
+                                })
+                            })
+                        })
                     })
                 })
-
             });
         } else {
             if (!password.match(/[0-9]/)) {

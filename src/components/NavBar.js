@@ -13,7 +13,7 @@ function NavBar(props) {
     const [systemStatus, setSystemStatus] = useState({ text: '[Checking]', color: '#001AFF', last: 0 });
 
     function checkSys() {
-        axios.get(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+        axios.get(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setSystemStatus({ text: 'Systems Nominal', color: '#00FF85', last: Date.now() });
         }).catch(e => {
             setSystemStatus({ text: 'System Error', color: '#FF002E', last: Date.now() });
@@ -36,11 +36,10 @@ function NavBar(props) {
     }
 
 
-
     return (
         <div className="navBarContainer">
             <MinLogo id="navLogo"></MinLogo>
-            <Button onClick={() => props.onNavButtonClick('chats')} id="chatsNavButton" fontSize="2.12vh" className="navButton" color={navButtonBkgController('chats')} width="20.555555556%" height="100%" label="Chats"></Button>
+            <Button onClick={() => props.onNavButtonClick('chats')} id="chatsNavButton" fontSize="2.12vh" className="navButton" color={navButtonBkgController('chats')} width="20.555555556%" height="100%" label="Home"></Button>
             <Button onClick={() => props.onNavButtonClick('newContact')} id="newContactNavButton" fontSize="2.12vh" className="navButton" color={navButtonBkgController('newContact')} width="20.555555556%" height="100%" label="New Contact"></Button>
             <Button onClick={() => props.onNavButtonClick('settings')} id="settingsNavButton" fontSize="2.12vh" className="navButton" color={navButtonBkgController('settings')} width="20.555555556%" height="100%" label="Settings"></Button>
             <Label id="sysStatusLabel" text={systemStatus.text} fontSize="1.6vh" color={systemStatus.color} bkg={`${systemStatus.color}20`} style={{ borderLeft: `solid 1px ${systemStatus.color}` }}></Label>

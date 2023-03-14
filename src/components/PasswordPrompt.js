@@ -11,7 +11,7 @@ function PasswordPrompt(props) {
     const [failedLabel, setFailedLabel] = useState(false);
     const enter = () => {
         if (input.length > 5) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, { rtdbPayload: props.rtdbPayload, password: input, authShareType: props.authShareType, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`${DomainGetter('devx')}api/dbop?verifyPassword`, { rtdbPayload: props.rtdbPayload, password: input, authShareType: props.authShareType, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                 if (res.data.flag) {
                     props.onValid();
                     props.setExportPassword(sha256(input))

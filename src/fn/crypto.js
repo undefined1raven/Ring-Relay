@@ -28,11 +28,11 @@ function str2ab(str) {
 }
 
 
-export const getKeyPair = (len) => {
+export const getKeyPair = () => {
     const keyPairPromise = window.crypto.subtle.generateKey(
         {
             name: "RSA-OAEP",
-            modulusLength: len == undefined ? 4096 : len,
+            modulusLength: 4096,
             publicExponent: new Uint8Array([1, 0, 1]),
             hash: "SHA-256",
         },
@@ -49,8 +49,20 @@ export const keyToPem = async (key) => {
     return `-----BEGIN PRIVATE KEY-----\n${easb64}\n-----END PRIVATE KEY-----`;
 }
 
+export const getSigningKeyPair = async () => {
+    const keyPairPromise = await window.crypto.subtle.generateKey(
+        {
+            name: "ECDSA",
+            namedCurve: "P-521",
+        },
+        true,
+        ["sign", "verify"]
+    );
+    return keyPairPromise;
+}
 
-export const pemToKey = ((pem) => {
+
+export const pemToKey = ((pem, algo) => {
     try {
         // fetch the part of the PEM string between header and footer
         const pemHeader = "-----BEGIN PRIVATE KEY-----";
@@ -64,16 +76,23 @@ export const pemToKey = ((pem) => {
         // convert from a binary string to an ArrayBuffer
         const binaryDer = str2ab(binaryDerString);
 
-        return window.crypto.subtle.importKey(
-            "pkcs8",
-            binaryDer,
-            {
-                name: "RSA-OAEP",
-                hash: "SHA-256",
-            },
-            true,
-            ["decrypt"]
-        );
+        var importKeyArgs = 0;
+        if (algo == undefined || algo == 'RSA') {
+            importKeyArgs = { algo: { name: 'RSA-OAEP', hash: 'SHA-256' }, ops: ['decrypt'] };
+        } else if (algo == 'ECDSA') {
+            importKeyArgs = { algo: { name: 'ECDSA', namedCurve: 'P-521' }, ops: ['sign'] };
+        }
+        if (importKeyArgs != 0) {
+            return window.crypto.subtle.importKey(
+                "pkcs8",
+                binaryDer,
+                importKeyArgs.algo,
+                true,
+                importKeyArgs.ops
+            );
+        } else {
+            return 'Valid algo arg not provided (RSA/ECDSA)'
+        }
     } catch (e) { return e }
 })
 
