@@ -458,6 +458,17 @@ rect {
 }
 
 //message | msg
+.msgDeleteButton, .msgCopyButton{
+  width: 40%;
+  left: 5%;
+  height: 5vh;
+  top: 1vh;
+  border-radius: 5px;
+  font-size: 1.9vh;
+}
+.msgCopyButton{
+  left: 55%;
+}
 .chashContainer,
 .signatureContainer {
   position: absolute;
@@ -471,7 +482,7 @@ rect {
 .signatureContainer {
   position: absolute;
   top: 0vh;
-  height: 30%;
+  height: 2vh;
   @include flex();
 }
 
