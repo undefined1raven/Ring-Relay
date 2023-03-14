@@ -57,6 +57,9 @@ function Message(props) {
         }
     }
 
+
+    const sigLabelHash = {'self': {label: 'OSIG', color: '#00FFD1'}, 'no_self': {label: 'OSIG_F', color: '#f39e00'}, true: {label: 'Signed', color: '#00FFD1'}, false: {label: 'SIG Fail', color: '#FF002E'}};
+
     return (
         <div>
             <Label onClick={(e) => onMsgClick(e)} className="msgContainer" color={messageContentColorController()} text={props.decrypted ? props.msgObj.content : '[Failed to decrypt]'} fontSize="4.5vw" bkg={props.decrypted ? "#6100DC20" : '#88001830'} style={{ borderLeft: `solid 1px ${props.decrypted ? '#7000FF' : '#E20028'}` }} child={
@@ -72,8 +75,8 @@ function Message(props) {
                             <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />
                         </div>
                         <div className='signatureContainer'>
-                            {props.msgObj.signed ? <SignatureVerificatioSuccessDeco className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
-                            <Label fontSize="2.5vw" className="sigLabel" color={props.msgObj.signed ? "#00FFD1" : "#FF002E"} text={props.msgObj.signed ? 'Signed' : 'SIG Fail'} />
+                            {(props.msgObj.signed == true || props.msgObj.signed == 'self') ? <SignatureVerificatioSuccessDeco className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
+                            <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed].color} text={sigLabelHash[props.msgObj.signed].label} />
                         </div>
                     </div> : ''
             }></Label>

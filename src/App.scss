@@ -466,12 +466,12 @@ rect {
   height: 51.219512195%;
   left: 102%;
   top: 2.6vh;
-  overflow: hidden;
 }
 
 .signatureContainer {
   position: absolute;
   top: 0vh;
+  height: 30%;
   @include flex();
 }
 
@@ -490,7 +490,6 @@ rect {
 }
 
 .sigLabel {
-  top: 6%;
   left: 10%;
 }
 

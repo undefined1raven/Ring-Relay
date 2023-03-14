@@ -26,6 +26,11 @@ const firebaseConfig = {
     appId: "1:931166613472:web:a7ab26055d59cc2535c585"
 };
 
+
+function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+}
+
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
@@ -71,29 +76,33 @@ function Chat(props) {
             try {
                 if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                        window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
-                            for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                                let rawMsg = rawMsgArr[ix];
-                                if (rawMsgArr[ix].type == 'tx') {
-                                    decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                        addMsgToMsgArr({ signed: (rawMsg.signature != '' && rawMsg.signature != undefined) ? true : false, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-                                        if (ix == rawMsgArr.length - 1) {
-                                            addMsgToMsgArr({ end: true });
-                                        }
-                                    });
-                                } else {
-                                    verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
-                                        decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                            addMsgToMsgArr({ signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
-                                            if (ix == rawMsgArr.length - 1) {
-                                                addMsgToMsgArr({ end: true });
-                                            }
+                        JSONtoKey(JSON.parse(localStorage.getItem('OWN-PUBSK')), 'ECDSA').then(ownPUBSK => {
+                            window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
+                                for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                                    let rawMsg = rawMsgArr[ix];
+                                    if (rawMsgArr[ix].type == 'tx') {
+                                        verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(ownSigStatus => {
+                                            decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
+                                                addMsgToMsgArr({ signed: (ownSigStatus) ? 'self' : 'no_self', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                                if (ix == rawMsgArr.length - 1) {
+                                                    addMsgToMsgArr({ end: true });
+                                                }
+                                            })
                                         });
-                                    })
+                                    } else {
+                                        verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
+                                            decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
+                                                addMsgToMsgArr({ signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
+                                                if (ix == rawMsgArr.length - 1) {
+                                                    addMsgToMsgArr({ end: true });
+                                                }
+                                            });
+                                        })
+                                    }
                                 }
-                            }
-                        }).catch(e => {
-                            setMsgArray({ ini: true, array: rawMsgArr });
+                            }).catch(e => {
+                                setMsgArray({ ini: true, array: rawMsgArr });
+                            })
                         })
                     })
                 }
@@ -122,7 +131,7 @@ function Chat(props) {
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
         setBufferReset(false)
-        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
+        axios.post(`${DomainGetter('devx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
             if (res.data['error'] == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
@@ -154,7 +163,7 @@ function Chat(props) {
                                     let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
                                     set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
                                     set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
-                                    axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
+                                    axios.post(`${DomainGetter('devx')}api/dbop?messageSent`, {
                                         AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj
                                     }).then(res => { }).catch(e => {
                                         setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
@@ -186,7 +195,7 @@ function Chat(props) {
 
 
     const likeMessageUpdate = (args) => {
-        axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
+        axios.post(`${DomainGetter('devx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
 
         }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1 })
@@ -224,12 +233,13 @@ function Chat(props) {
             remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
             if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
-                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
                     localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);
                     localStorage.setItem(`PUBSK-${props.chatObj.uid}`, res.data.publicSigningKey);
                 });
-                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
                     localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
+                    localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
                 });
             }
         }
@@ -260,7 +270,6 @@ function Chat(props) {
             }
 
             try {
-
                 pemToKey(localStorage.getItem(privateKeyID), 'RSA').then(privateKey => {
                     for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
                         if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
