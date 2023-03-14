@@ -42,6 +42,7 @@ function Login() {
             if (res.data['redirect']) {
                 setItem('AT', res.data['AT'])
                 setItem('CIP', cip)
+                setItem('PKGetter', res.data.PKGetter)
                 setAuthStatusLabelObj({ text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85' });
                 setTimeout(() => {
                     setLocationHash('#');

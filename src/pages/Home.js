@@ -43,7 +43,7 @@ function Home() {
   const [currentUsername, setCurrentUsername] = useState(0);
   const [ownUID, setOwnUID] = useState(0);
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
-
+  const [refreshingRefs, setRefreshingRefs] = useState(false)
 
   const onNavButtonClick = (btnId) => {
     setWindowId(btnId);
@@ -91,9 +91,10 @@ function Home() {
             localStorage.removeItem('-SPK');
           }
           localStorage.setItem('PKGetter', res.data.PKGetter);
-          if (localStorage.getItem(res.data.PKGetter) != undefined && localStorage.getItem(`SV-${res.data.PKGetter}`) != undefined) {
-            pemToKey(localStorage.getItem(res.data.PKGetter)).then(pk => {
-              pemToKey(localStorage.getItem(`SV-${res.data.PKGetter}`), 'ECDSA').then(signPK => {
+          let PKGetter = res.data.PKGetter;
+          if (PKGetter != undefined && localStorage.getItem(PKGetter) != undefined && localStorage.getItem(`SV-${PKGetter}`) != undefined) {
+            pemToKey(localStorage.getItem(PKGetter)).then(pk => {
+              pemToKey(localStorage.getItem(`SV-${PKGetter}`), 'ECDSA').then(signPK => {
                 if (pk.algorithm.name == 'RSA-OAEP' && signPK.algorithm.name == 'ECDSA') {
                   setPrivateKeyStatus({ valid: true, found: true, ini: true });
                 } else {
@@ -113,25 +114,28 @@ function Home() {
         if (authorized) {
           window.location.hash = windowHash;
         }
+
+      }).catch(e => {
+        setTimeout(() => {
+          window.location.reload()
+        }, 5000);
       });
     }
   }, [windowHash, refs])
 
   const refreshRefs = () => {
+    setRefreshingRefs(true);
     axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      setRefreshingRefs(false);
       setRefs({ ini: true, arr: res.data.refs });
     })
   }
 
-  const logout = () => {
-    localStorage.removeItem('AT');
-    localStorage.removeItem('CIP');
-    setWindowHash('#/login');
-  }
+
   return (
     <div>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
-      <Chats switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
+      <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       {windowId == 'newContact' ? <NewContact refreshRefs={refreshRefs} show={windowId == 'newContact'}></NewContact> : ''}
       {windowId == 'settings' ? <Settings privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}

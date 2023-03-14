@@ -8,6 +8,8 @@ import Button from '../components/Button.js'
 
 
 function Chats(props) {
+    const [startPosition, setStartPosition] = useState(0)
+
     let demo = [{ name: 'MCRN 3rd Jupi Fleet', msg: 0, status: 'Offline', since: '45 min ago' },
     { name: 'MCRN Home Fleet', msg: 3, status: 'Online', since: '' }];
 
@@ -19,15 +21,15 @@ function Chats(props) {
         if (props.keyStatus.ini) {
             if (props.keyStatus.found) {
                 if (props.keyStatus.valid) {
-                    return { label: 'Valid Private Key', color: '#00FFD1' };
+                    return { label: 'Valid Private Keys', color: '#00FFD1' };
                 } else {
-                    return { label: 'Invalid Private Key', color: '#FF002E' };
+                    return { label: 'Invalid Private Keys', color: '#FF002E' };
                 }
             } else {
-                return { label: 'Private Key Not Found', color: '#FF002E' };
+                return { label: 'Private Keys Not Found', color: '#FF002E' };
             }
         } else {
-            return { label: '[Checking Private Key]', color: '#0057FF' };
+            return { label: '[Checking Private Keys]', color: '#0057FF' };
         }
     }
 
@@ -41,6 +43,12 @@ function Chats(props) {
         }
     }
 
+    const onRefresh = () => {
+        if (!props.refreshing) {
+            props.onRefresh();
+        }
+    }
+
     useEffect(() => {
         getChatList();
     }, [props.refs.ini])
@@ -50,6 +58,7 @@ function Chats(props) {
             <div>
                 <ul id="chatsContainer">
                     {getChatList()}
+                    {(props.refs.ini && props.refs.arr.length > 0) ? <li style={{ marginLeft: '20%' }}><Button onClick={onRefresh} style={{ borderRadius: '5px', transition: 'all linear 0.1s', transition: 'color ease-in 0.25s', border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="60%" height="6%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button></li> : ''}
                 </ul>
                 <Label className="chatsFetchingLabel" id="chatsFetchingLabel" bkg="#6100DC30" color="#E09FFF" fontSize="2.3vh" show={!props.refs.ini} text="[Fetching Data]"></Label>
                 <Label id="privateKeyStatusLabel" bkg={`${keyStatusLabelController().color}30`} color={keyStatusLabelController().color} show={!props.refs.ini} fontSize="2.1vh" text={keyStatusLabelController().label}></Label>
