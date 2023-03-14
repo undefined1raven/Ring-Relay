@@ -96,19 +96,43 @@ export const pemToKey = ((pem, algo) => {
     } catch (e) { return e }
 })
 
-
-export const JSONtoKey = (jwk => {
-    return window.crypto.subtle.importKey(
-        "jwk",
-        jwk,
+export const sign = async (privateKey, encryptedMessage) => {
+    const signature = await window.crypto.subtle.sign(
         {
-            name: "RSA-OAEP",
-            hash: "SHA-256",
+            name: "ECDSA",
+            hash: { name: "SHA-512" },
         },
-        true,
-        ["encrypt"]
-    );
+        privateKey,
+        new TextEncoder().encode(encryptedMessage)
+    )
+
+    return { base64: window.btoa(ab2str(signature)), buffer: signature };
+
+}
+
+export const JSONtoKey = ((jwk, algo) => {
+    var importKeyArgs = 0;
+    if (algo == undefined || algo == 'RSA') {
+        importKeyArgs = { algo: { name: 'RSA-OAEP', hash: 'SHA-256' }, ops: ['encrypt'] };
+    } else if (algo == 'ECDSA') {
+        importKeyArgs = { algo: { name: 'ECDSA', namedCurve: 'P-521' }, ops: ['verify'] };
+    }
+    if (importKeyArgs != 0) {
+        
+        return window.crypto.subtle.importKey(
+            "jwk",
+            jwk,
+            importKeyArgs.algo,
+            true,
+            importKeyArgs.ops
+        );
+    }
 })
+
+export const verify = async (publicSigningKey, encryptedMessage, signature) => {
+    let sigCheck = await window.crypto.subtle.verify({name: 'ECDSA', hash: 'SHA-512'}, publicSigningKey, btoaTobuf(signature), str2ab(encryptedMessage))
+    return sigCheck;
+}
 
 export const encryptMessage = async (key, plaintext) => {
     let encoded = new TextEncoder().encode(plaintext)
