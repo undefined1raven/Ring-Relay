@@ -63,7 +63,7 @@ function Chat(props) {
     const [failedMessageActionLabel, setFailedMessageActionLabel] = useState({ opacity: 0, label: 'Message Action Failed' })
     const [realtimeBuffer, setRealtimeBuffer] = useState([])
     const [realtimeBufferList, setRealtimeBufferList] = useState([])
-    const [bufferReset, setBufferReset] = useState(false)
+    const [msgListScrollLeft, setMsgListScrollLeft] = useState(0)
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -130,7 +130,6 @@ function Chat(props) {
 
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
-        setBufferReset(false)
         axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
             if (res.data['error'] == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
@@ -195,8 +194,8 @@ function Chat(props) {
 
 
     const deleteMessage = (MID) => {
-        update(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { deleted: true })
-        update(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { deleted: true })
+        remove(ref(db, `messageBuffer/${props.ownUID}/${MID}`))
+        remove(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`))
         setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
         setRealtimeBufferList(realtimeBuffer.filter(elm => elm.MID != MID).map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
         axios.post(`${DomainGetter('prodx')}api/dbop?deleteMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: MID, MSUID: MSUID }).then(resx => { }).catch(e => {
@@ -228,12 +227,20 @@ function Chat(props) {
         //         getMessagesAndUpdateChat();
         //     }, 50);
         // }
+        setMsgListScrollLeft(e.target.scrollLeft)
     }
 
+    const onTouchEnd = (e) => {
+        if (msgListScrollLeft < ((7.692307692 / 100) * document.documentElement.clientWidth)) {
+            document.getElementById('msgsList').scrollLeft = 0
+        } else {
+            document.getElementById('msgsList').scrollLeft = ((15.384615385 / 100) * document.documentElement.clientWidth);
+        }
+    }
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
-            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.MID}><Message deleted={x?.deleted} deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
             setTimeout(() => {
                 try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
             }, 100);
@@ -338,7 +345,7 @@ function Chat(props) {
                     <InputField autoComplete="off" value={newMessageContents} onChange={(e) => setNewMessageContents(e.target.value)} fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
-                <ul onScroll={onChatScroll} id="msgsList" className='msgsList'>
+                <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList'>
                     {chatLoadingLabel.label == '[Done]' ? msgList : ''}
                     {chatLoadingLabel.label == '[Done]' ? realtimeBufferList : ''}
                 </ul>

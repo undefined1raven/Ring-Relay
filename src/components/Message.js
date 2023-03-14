@@ -19,7 +19,7 @@ import SignatureVerificatioSuccessDeco from '../components/SignatureVerification
 
 function Message(props) {
     const [liked, setLiked] = useState(props.msgObj.liked);
-    const [deleted, setDeleted] = useState(props.deleted ? props.deleted : false);
+    const [deleted, setDeleted] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
 
 
@@ -98,7 +98,7 @@ function Message(props) {
                 <>
                     <Button onClick={onDelete} color={props.msgObj.type == 'tx' ? "#FF002E" : '#999'} className="msgDeleteButton" bkg={props.msgObj.type == 'tx' ? "#FF002E" : ''} label="Delete"></Button>
                     <Button onClick={onCopy} color="#7100FF" className="msgCopyButton" bkg="#7100FF" label="Copy"></Button>
-                    <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" />
+                    {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )
         } else {
@@ -117,7 +117,7 @@ function Message(props) {
                         {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
                         <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
                     </div>
-                    <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" />
+                    {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )
         }
