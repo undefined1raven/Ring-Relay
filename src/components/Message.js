@@ -58,7 +58,10 @@ function Message(props) {
     }
 
 
-    const sigLabelHash = {'self': {label: 'OSIG', color: '#00FFD1'}, 'no_self': {label: 'OSIG_F', color: '#f39e00'}, true: {label: 'Signed', color: '#00FFD1'}, false: {label: 'SIG Fail', color: '#FF002E'}};
+    const sigLabelHash = {
+        local: { label: 'Local', color: '#7000FF' }, 'self': { label: 'OSIG', color: '#00FFD1' }, 'no_self': { label: 'OSIG_F', color: '#f39e00' }, true: { label: 'Signed', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
+    };
+    const SignatureSuccessDecoColorHash = { 'self': '#00FFD1', true: '#00FFD1', 'local': '#7000FF' }
 
     return (
         <div>
@@ -75,12 +78,12 @@ function Message(props) {
                             <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />
                         </div>
                         <div className='signatureContainer'>
-                            {(props.msgObj.signed == true || props.msgObj.signed == 'self') ? <SignatureVerificatioSuccessDeco className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
-                            <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed].color} text={sigLabelHash[props.msgObj.signed].label} />
+                            {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
+                            <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
                         </div>
                     </div> : ''
             }></Label>
-        </div>
+        </div >
     )
 }
 

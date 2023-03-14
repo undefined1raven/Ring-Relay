@@ -68,11 +68,11 @@ function Chat(props) {
         setScrollToY(30000);
     }
 
+    let privateKeyID = localStorage.getItem('PKGetter');
+    let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
     const decryptMessages = (rawMsgArr) => {
         if (rawMsgArr.length > 0) {
-            let privateKeyID = localStorage.getItem('PKGetter');
-            let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
             try {
                 if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
@@ -148,10 +148,10 @@ function Chat(props) {
             setMsgListscrollToY(30000);
             setNewMessageContents('');
             let MID = `${v4()}-${v4()}`;
-            let local_nMsgObj = { targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
+            let local_nMsgObj = { signed: 'local', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
             setRealtimeBuffer((prevBuf) => {
-                return [...prevBuf, { MID: local_nMsgObj.MID, liked: local_nMsgObj.liked, type: local_nMsgObj.type, content: local_nMsgObj.content, tx: local_nMsgObj.tx, auth: local_nMsgObj.auth, seen: local_nMsgObj.seen }]
+                return [...prevBuf, { ...local_nMsgObj }]
             })
 
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
@@ -271,20 +271,24 @@ function Chat(props) {
 
             try {
                 pemToKey(localStorage.getItem(privateKeyID), 'RSA').then(privateKey => {
-                    for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
-                        if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
-                            let rawMsg = RTrawMessagesArray[ix];
-                            decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                                setRealtimeBuffer((prevBuf) => {
-                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                    } else {
-                                        return [...prevBuf]
-                                    }
+                    window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
+                        for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
+                            if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
+                                let rawMsg = RTrawMessagesArray[ix];
+                                verify(pubSigningKey, rawMsg.remoteContent).then(sigStatus => {
+                                    decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                                        setRealtimeBuffer((prevBuf) => {
+                                            if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                                return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                            } else {
+                                                return [...prevBuf]
+                                            }
+                                        })
+                                    });
                                 })
-                            });
+                            }
                         }
-                    }
+                    })
                 }).catch(e => {
                     console.log(e)
                 })
