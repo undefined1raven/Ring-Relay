@@ -195,6 +195,10 @@ function Chat(props) {
 
 
     const deleteMessage = (MID) => {
+        update(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { deleted: true })
+        update(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { deleted: true })
+        setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        setRealtimeBufferList(realtimeBuffer.filter(elm => elm.MID != MID).map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
         axios.post(`${DomainGetter('prodx')}api/dbop?deleteMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: MID, MSUID: MSUID }).then(resx => { }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1, label: 'Failed to delete' }); setTimeout(() => {
                 setFailedMessageActionLabel({ opacity: 0, label: 'Message Action Failed' })
@@ -229,7 +233,7 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
-            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.MID}><Message deleted={x?.deleted} deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
             setTimeout(() => {
                 try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
             }, 100);
@@ -261,7 +265,7 @@ function Chat(props) {
         setInterval(() => {
             setIH(window.innerHeight)
         }, 100);
-        setMsgList(msgArray.array.map(x => <li key={x.tx + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        setMsgList(msgArray.array.map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
         setTimeout(() => {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }

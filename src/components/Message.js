@@ -19,7 +19,7 @@ import SignatureVerificatioSuccessDeco from '../components/SignatureVerification
 
 function Message(props) {
     const [liked, setLiked] = useState(props.msgObj.liked);
-    const [deleted, setDeleted] = useState(false);
+    const [deleted, setDeleted] = useState(props.deleted ? props.deleted : false);
     const [showMenu, setShowMenu] = useState(false);
 
 
