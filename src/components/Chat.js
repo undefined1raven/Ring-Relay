@@ -98,7 +98,7 @@ function Chat(props) {
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
         setBufferReset(false)
-        axios.post(`${DomainGetter('devx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount }).then(res => {
             if (res.data['error'] == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
@@ -128,7 +128,7 @@ function Chat(props) {
                             let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false }
                             set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
                             set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
-                            axios.post(`${DomainGetter('devx')}api/dbop?messageSent`, {
+                            axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                                 AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj
                             }).then(res => { }).catch(e => {
                                 setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
@@ -159,7 +159,7 @@ function Chat(props) {
 
 
     const likeMessageUpdate = (args) => {
-        axios.post(`${DomainGetter('devx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
 
         }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1 })
@@ -197,10 +197,10 @@ function Chat(props) {
             remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
             if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
-                axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
+                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
                     localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);
                 });
-                axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
                     localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
                 });
             }
