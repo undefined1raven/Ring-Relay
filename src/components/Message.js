@@ -23,6 +23,14 @@ function Message(props) {
     const [showMenu, setShowMenu] = useState(false);
 
 
+    useEffect(() => {
+        document.addEventListener('click', (e) => {
+            if (e.target.innerText != 'Delete') {
+                setShowMenu(false)
+            }
+        })
+    }, [])
+
     function useSingleAndDoubleClick(actionSimpleClick, actionDoubleClick, delay = 250) {//thx stackoverflow
         const [click, setClick] = useState(0);
 
@@ -35,7 +43,7 @@ function Message(props) {
 
             // the duration between this click and the previous one
             // is less than the value of delay = double-click
-            if (click === 2) actionDoubleClick();
+            if (click === 2 && !showMenu) actionDoubleClick();
 
             return () => clearTimeout(timer);
 
@@ -49,13 +57,16 @@ function Message(props) {
         props.likeMessageUpdate({ state: !liked, MID: props.msgObj.MID });
     }
 
-    const onContextMenu = () => {
-        setShowMenu(true)
+    const onContextMenu = (e) => {
+        e.preventDefault();
+        if (!deleted) {
+            setShowMenu(true)
+        }
     }
 
     const msgContentController = () => {
         if (showMenu) {
-            return '';
+            return '|';
         } else {
             if (deleted) {
                 return '[Deleted]';
@@ -67,14 +78,27 @@ function Message(props) {
         }
     }
 
+    const onCopy = () => {
+        navigator.clipboard.writeText(props.msgObj.content).then(r => { })
+    }
+
+    const onDelete = () => {
+        if (props.msgObj.type == 'tx') {
+            setDeleted(true)
+            setShowMenu(false)
+            props.deleteMessage(props.msgObj.MID);
+        }
+    }
+
     const onMsgClick = useSingleAndDoubleClick(() => { }, onDoubleClick)
 
     const menuController = () => {
         if (showMenu) {
             return (
                 <>
-                    <Button color="#FF002E" className="msgDeleteButton" bkg="#FF002E" label="Delete"></Button>
-                    <Button color="#7100FF" className="msgCopyButton" bkg="#7100FF" label="Copy"></Button>
+                    <Button onClick={onDelete} color={props.msgObj.type == 'tx' ? "#FF002E" : '#999'} className="msgDeleteButton" bkg={props.msgObj.type == 'tx' ? "#FF002E" : ''} label="Delete"></Button>
+                    <Button onClick={onCopy} color="#7100FF" className="msgCopyButton" bkg="#7100FF" label="Copy"></Button>
+                    <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" />
                 </>
             )
         } else {
@@ -84,7 +108,7 @@ function Message(props) {
                     {props.msgObj.auth ? <AuthedMsgDeco /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco /> : <MsgTXDeco />}
                     {props.msgObj.seen ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
-                    {liked ? <MsgLikedDeco /> : ''}
+                    {(liked && !deleted) ? <MsgLikedDeco /> : ''}
                     <div className='chashContainer'>
                         <CommonSigMismatchDeco className="chashIndi"></CommonSigMismatchDeco>
                         <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />

@@ -148,7 +148,7 @@ function Chat(props) {
             setMsgListscrollToY(30000);
             setNewMessageContents('');
             let MID = `${v4()}-${v4()}`;
-            let local_nMsgObj = { signed: 'local', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
+            let local_nMsgObj = { type: 'tx', signed: 'local', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
             setRealtimeBuffer((prevBuf) => {
                 return [...prevBuf, { ...local_nMsgObj }]
@@ -194,6 +194,14 @@ function Chat(props) {
     });
 
 
+    const deleteMessage = (MID) => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?deleteMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: MID, MSUID: MSUID }).then(resx => { }).catch(e => {
+            setFailedMessageActionLabel({ opacity: 1, label: 'Failed to delete' }); setTimeout(() => {
+                setFailedMessageActionLabel({ opacity: 0, label: 'Message Action Failed' })
+            }, 2000);
+        })
+    }
+
     const likeMessageUpdate = (args) => {
         update(ref(db, `messageBuffer/${props.ownUID}/${args.MID}`), { liked: args.state })
         update(ref(db, `messageBuffer/${props.chatObj.uid}/${args.MID}`), { liked: args.state })
@@ -221,7 +229,7 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
-            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+            setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.tx + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
             setTimeout(() => {
                 try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
             }, 100);
@@ -253,7 +261,7 @@ function Chat(props) {
         setInterval(() => {
             setIH(window.innerHeight)
         }, 100);
-        setMsgList(msgArray.array.map(x => <li key={x.tx + Math.random()}><Message likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        setMsgList(msgArray.array.map(x => <li key={x.tx + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
         setTimeout(() => {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
