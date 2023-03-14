@@ -68,52 +68,51 @@ function Chat(props) {
         if (rawMsgArr.length > 0) {
             let privateKeyID = localStorage.getItem('PKGetter');
             let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
-            // try {
-            if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
-                pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
-                    window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
-                        for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                            let rawMsg = rawMsgArr[ix];
-                            if (rawMsgArr[ix].type == 'tx') {
-                                decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                    addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-                                    if (ix == rawMsgArr.length - 1) {
-                                        addMsgToMsgArr({ end: true });
-                                    }
-                                });
-                            } else {
-                                verify(pubSigningKey, rawMsg.remoteCipher, rawMsg.signature).then(validSig => {
-                                    console.log(validSig)
-                                })
-                                decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                    addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
-                                    if (ix == rawMsgArr.length - 1) {
-                                        addMsgToMsgArr({ end: true });
-                                    }
-                                });
+            try {
+                if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
+                    pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
+                        window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
+                            for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                                let rawMsg = rawMsgArr[ix];
+                                if (rawMsgArr[ix].type == 'tx') {
+                                    decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
+                                        addMsgToMsgArr({ signed: (rawMsg.signature != '' && rawMsg.signature != undefined) ? true : false, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                        if (ix == rawMsgArr.length - 1) {
+                                            addMsgToMsgArr({ end: true });
+                                        }
+                                    });
+                                } else {
+                                    verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
+                                        decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
+                                            addMsgToMsgArr({ signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
+                                            if (ix == rawMsgArr.length - 1) {
+                                                addMsgToMsgArr({ end: true });
+                                            }
+                                        });
+                                    })
+                                }
                             }
-                        }
-                    }).catch(e => {
-                        setMsgArray({ ini: true, array: rawMsgArr });
+                        }).catch(e => {
+                            setMsgArray({ ini: true, array: rawMsgArr });
+                        })
                     })
-                })
+                }
+            } catch (e) {
+                for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                    let rawMsg = rawMsgArr[ix];
+                    if (rawMsgArr[ix].type == 'tx') {
+                        addMsgToMsgArr({ signed: 'UNK', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                        if (ix == rawMsgArr.length - 1) {
+                            addMsgToMsgArr({ end: true });
+                        }
+                    } else {
+                        addMsgToMsgArr({ signed: 'UNK', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
+                        if (ix == rawMsgArr.length - 1) {
+                            addMsgToMsgArr({ end: true });
+                        }
+                    }
+                }
             }
-            // } catch (e) {
-            //     for (let ix = 0; ix < rawMsgArr.length; ix++) {
-            //         let rawMsg = rawMsgArr[ix];
-            //         if (rawMsgArr[ix].type == 'tx') {
-            //             addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
-            //             if (ix == rawMsgArr.length - 1) {
-            //                 addMsgToMsgArr({ end: true });
-            //             }
-            //         } else {
-            //             addMsgToMsgArr({ MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen });
-            //             if (ix == rawMsgArr.length - 1) {
-            //                 addMsgToMsgArr({ end: true });
-            //             }
-            //         }
-            //     }
-            // }
 
         } else {
             setChatLoadingLabel({ opacity: 1, label: '[No Messages]' })

@@ -13,6 +13,7 @@ import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import MsgLikedDeco from '../components/MsgLikedDeco.js'
 import CommonSigMismatchDeco from '../components/CommonSigMismatchDeco.js'
 import SignatureVerificationFailedDeco from '../components/SignatureVerificationFailedDeco.js'
+import SignatureVerificatioSuccessDeco from '../components/SignatureVerificationSuccessDeco.js'
 
 
 
@@ -71,8 +72,8 @@ function Message(props) {
                             <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />
                         </div>
                         <div className='signatureContainer'>
-                            <SignatureVerificationFailedDeco className="sigIndi"></SignatureVerificationFailedDeco>
-                            <Label fontSize="2.5vw" className="sigLabel" color="#FF002E" text="Signed" />
+                            {props.msgObj.signed ? <SignatureVerificatioSuccessDeco className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
+                            <Label fontSize="2.5vw" className="sigLabel" color={props.msgObj.signed ? "#00FFD1" : "#FF002E"} text={props.msgObj.signed ? 'Signed' : 'SIG Fail'} />
                         </div>
                     </div> : ''
             }></Label>
