@@ -149,9 +149,9 @@ function Chat(props) {
             let MID = `${v4()}-${v4()}`;
             let local_nMsgObj = { type: 'tx', signed: 'local', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
-            setRealtimeBuffer((prevBuf) => {
-                return [...prevBuf, { ...local_nMsgObj }]
-            })
+            // setRealtimeBuffer((prevBuf) => {
+            //     return [...prevBuf, { ...local_nMsgObj }]
+            // })
 
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
@@ -278,7 +278,13 @@ function Chat(props) {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
         }, 50);
 
+
+    }, [props, scrollToY, msgArray, msgListscrollToY])
+
+
+    useEffect(() => {
         onValue(ref(db, `messageBuffer/${props.ownUID}`), (snap) => {
+            console.log(snap.val())
             let RXrealtimeBuffer = snap.val();
             let RTrawMessagesArray = []
             for (let MID in RXrealtimeBuffer) {
@@ -289,13 +295,15 @@ function Chat(props) {
             if (RTrawMessagesArray.length > 3) {
                 remove(ref(db, `messageBuffer/${props.ownUID}`));//resetting the firebase buffer wont delete messages in chat since we dont reset state 
             }
-
+            if (RTrawMessagesArray.length > 0) {
+                setChatLoadingLabel({ opacity: '0', label: '[Done]' });
+            }
             try {
                 pemToKey(localStorage.getItem(privateKeyID), 'RSA').then(privateKey => {
                     window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
                         for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
-                            if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
-                                let rawMsg = RTrawMessagesArray[ix];
+                            let rawMsg = RTrawMessagesArray[ix];
+                            if (rawMsg.targetUID == props.ownUID) {
                                 verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
                                     decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
                                         setRealtimeBuffer((prevBuf) => {
@@ -307,6 +315,20 @@ function Chat(props) {
                                         })
                                     });
                                 })
+                            } else {
+                                if (rawMsg.remoteContent != undefined && rawMsg.ownContent != undefined) {
+                                    verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
+                                        decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
+                                            setRealtimeBuffer((prevBuf) => {
+                                                if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                                    return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                                } else {
+                                                    return [...prevBuf]
+                                                }
+                                            })
+                                        });
+                                    })
+                                }
                             }
                         }
                     })
@@ -328,8 +350,7 @@ function Chat(props) {
                 }
             }
         })
-    }, [props, scrollToY, msgArray, msgListscrollToY])
-
+    }, [])
 
     if (props.show) {
         return (
@@ -346,8 +367,8 @@ function Chat(props) {
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
                 <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList'>
-                    {chatLoadingLabel.label == '[Done]' ? msgList : ''}
-                    {chatLoadingLabel.label == '[Done]' ? realtimeBufferList : ''}
+                    {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
+                    {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>

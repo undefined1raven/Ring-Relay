@@ -31,6 +31,12 @@ function Message(props) {
         })
     }, [])
 
+
+    useEffect(() => {
+        console.log(`${props.msgObj.liked} | ${props.msgObj.content}`)
+        setLiked(props.msgObj.liked)
+    }, [props.msgObj])
+
     function useSingleAndDoubleClick(actionSimpleClick, actionDoubleClick, delay = 250) {//thx stackoverflow
         const [click, setClick] = useState(0);
 

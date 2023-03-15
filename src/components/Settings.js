@@ -212,7 +212,8 @@ function Settings(props) {
     }
     const onFileImportOrExport = () => {
         if (scanMode == 'export') {
-            symmetricEncrypt(salt, iv, pkPem, exportPassword).then(cipher => {
+            const exportPayloadJSON = {pkPem: pkPem, pskPem: pskPem};
+            symmetricEncrypt(salt, iv, JSON.stringify(exportPayloadJSON), exportPassword).then(cipher => {
                 let encryptedKey = JSON.stringify({ cipher: cipher.base64, iv: window.btoa(ab2str(iv)), salt: window.btoa(ab2str(salt)), PKGetter: localStorage.getItem('PKGetter') });
                 let encoded = window.btoa(encryptedKey)
                 download(`${v4().split('-')[1]}-${v4().split('-')[2]}.key.txt`, encoded);
@@ -229,13 +230,16 @@ function Settings(props) {
             let liv = _base64ToArrayBuffer(encryptedKeyObj.iv);
             let lPKGetter = encryptedKeyObj.PKGetter;
             let cipher = _base64ToArrayBuffer(encryptedKeyObj.cipher);
-            symmetricDecrypt(exportPassword, lsalt, liv, cipher).then(lpkpem => {
-                pemToKey(lpkpem).then(pk => {
-                    if (pk.type == 'private') {
-                        localStorage.setItem('PKGetter', lPKGetter);
-                        localStorage.setItem(lPKGetter, lpkpem);
-                        window.location.reload()
-                    }
+            symmetricDecrypt(exportPassword, lsalt, liv, cipher).then(exportPayload => {
+                pemToKey(exportPayload.pkPem).then(pk => {
+                    pemToKey(exportPayload.pskPem, 'ECDSA').then(psk => {
+                        if (pk.type == 'private' && psk.type == 'private') {
+                            localStorage.setItem('PKGetter', lPKGetter);
+                            localStorage.setItem(lPKGetter, exportPayload.pkPem);
+                            localStorage.setItem(`SV-${lPKGetter}`, exportPayload.pskPem);
+                            window.location.reload()
+                        }
+                    })
                 })
             });
         }
@@ -286,7 +290,7 @@ function Settings(props) {
                         {props.privateKeyStatus ? <AuthDeviceExportDeco className="mainButtonDeco"></AuthDeviceExportDeco> : ''}
                     </div>
                     <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
-                    <Label className='settingsLabel' fontSize="2.1vh" id="authDeviceInfo0Label" text="This process allows you to authenticate your identity across multiple devices or to create a backup of your private key" color="#7000FF" bkg="#7000FF30"></Label>
+                    <Label className='settingsLabel' fontSize="2.1vh" id="authDeviceInfo0Label" text="This process allows you to authenticate your identity across multiple devices or to create a backup of your private keys" color="#7000FF" bkg="#7000FF30"></Label>
                     <Button onClick={() => setActiveWindowId('home')} id="authDevicebackButton" className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
                 </div>
                 : ''}
@@ -302,7 +306,7 @@ function Settings(props) {
                         <Label className="mainButtonLabel" text={scanMode == 'export' ? 'Make a backup' : 'Load a backup'} color="#D9D9D9"></Label>
                         {scanMode == 'export' ? <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco className="mainButtonDeco"></AuthDeviceLoadDeco>}
                     </div>
-                    <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Make a copy of your private key" : 'Load a copy of your private key'}></Label>
+                    <Label fontSize="2vh" id="downloadBackupOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Make a copy of your private keys" : 'Load a copy of your private keys'}></Label>
                     <Label className='settingsLabel' fontSize="2.2vh" id="authDeviceWarningLabel" style={{ top: '80%' }} text="Do not use this for any devices you do not trust" color="#FF002E" bkg="#FF002E30"></Label>
                     <Button onClick={() => setActiveWindowId('authDevice0')} id="authDevicebackButton" style={{ top: '90%' }} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Back"></Button>
                 </div>
@@ -326,7 +330,7 @@ function Settings(props) {
             {activeWindowId == 'fileExportID' ?
                 <>
                     <Label className="settingsMenuLabel" id="accountLabel" text={scanMode == 'export' ? "Export Identity" : 'Import Identity'} fontSize="2.4vh" color="#FFF"></Label>
-                    <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text={scanMode == 'export' ? 'Download a copy of your private key' : 'Load a copy of your private key'}></Label>
+                    <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text={scanMode == 'export' ? 'Download a copy of your private keys' : 'Load a copy of your private keys'}></Label>
                     <Label fontSize="2vh" id="scanExpordIDLabel" style={{ top: '47.375%' }} bkg="#FF002E30" color="#FF002E" text="Never share this file with anyone"></Label>
                     {scanMode == 'export' ? <AuthDeviceDownloadDeco top="25.46875%" className="mainButtonDeco fileExportDeco" width="30vh" height="20vh"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco top="30.46875%" width="30vh" height="20vh" className="mainButtonDeco fileExportDeco"></AuthDeviceLoadDeco>}
                     <Button onClick={() => setActiveWindowId('exportID')} id="authDevicebackButton" style={{ top: '65.15625%' }} className="settingsMenuButton" fontSize="2.3vh" color="#929292" label="Cancel"></Button>
@@ -343,13 +347,13 @@ function Settings(props) {
                     {revokeIDWindow.stage == 0 ?
                         <>
                             <Label className="settingsMenuLabel" id="accountLabel" style={{ top: '43.90625%' }} text="Type 'I understand' to continue" fontSize="2.4vh" color="#9948FF"></Label>
-                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '26.5625%', height: '12.65625%' }} text="This will remove the private key from this device. Please make sure you have a backup on another device. Remember to delete all backups from this device if there are any." color="#FF002E" bkg="#FF002E30"></Label>
+                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '26.5625%', height: '12.65625%' }} text="This will remove the private keys from this device. Please make sure you have a backup on another device. Remember to delete all backups from this device if there are any." color="#FF002E" bkg="#FF002E30"></Label>
                             <Button onClick={() => setRevokeIDWindow({ visible: false, stage: 0 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Back"></Button>
-                            {revokeIDFieldInput == 'I understand' ? <Button onClick={() => setRevokeIDWindow({ visible: true, stage: 1 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%' }} fontSize="2.3vh" color="#6300E0" bkg="#6300E0" label="Continue"></Button> : ''}
+                            <Button onClick={() => { if(revokeIDFieldInput == 'I understand'){setRevokeIDWindow({ visible: true, stage: 1 })} }} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%' }} fontSize="2.3vh" color={revokeIDFieldInput == 'I understand' ? '#6300E0' : '#929292'} bkg={revokeIDFieldInput == 'I understand' ? '#6300E0' : ''} label="Continue"></Button>
                             <InputField type="text" id="passInput" color="#6300E0" style={{ top: '48.28125%' }} onChange={(e) => setRevokeIDFieldInput(e.target.value)} value={revokeIDFieldInput}></InputField>
                         </> :
                         <>
-                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '33.4375%', height: '12.65625%' }} text="If this device has the only private key for your account, all conversations will become unreadable and your contacts will know you refreshed your key pair " color="#FF002E" bkg="#FF002E30"></Label>
+                            <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '33.4375%', height: '12.65625%' }} text="If this device has the only private keys for your account, all conversations will become unreadable and your contacts will know you refreshed your key pair " color="#FF002E" bkg="#FF002E30"></Label>
                             <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '48.75%', height: '6%' }} text="This action is nonreversible" color="#FF002E" bkg="#FF002E30"></Label>
                             <Button onClick={() => setRevokeIDWindow({ visible: false, stage: 0 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Cancel"></Button>
                             <Button onClick={onRevokeID} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '60.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Confirm"></Button>

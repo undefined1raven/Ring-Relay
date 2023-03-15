@@ -46,7 +46,12 @@ function Home() {
   const [refreshingRefs, setRefreshingRefs] = useState(false)
 
   const onNavButtonClick = (btnId) => {
-    setWindowId(btnId);
+    if (windowId == 'chat') {
+      onBackButton()
+      setWindowId(btnId);
+    } else {
+      setWindowId(btnId);
+    }
   };
   const onChatSelected = (uid) => {
     for (let ix = 0; ix < refs.arr.length; ix++) {
