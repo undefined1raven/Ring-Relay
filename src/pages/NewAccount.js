@@ -157,7 +157,7 @@ function NewAccount() {
             <Label id="NoPlainLabel" className="newAccountLabel x2" text="Plaintext never hits the servers" color="#9745FF" bkg="#6100DC40" fontSize="1.9vh"></Label>
             <HorizontalLine id="newAccountLn" color="#6100DC" left="10.277777778%" top="55%" width="79.444444444%"></HorizontalLine>
             <LinkDeco id="linkDeco"></LinkDeco>
-            <Label fontSize="1.9vh" id="privateKeyBackup" show={hasKeys} style={{ width: '79.444444444%', height: '7.46875%' }} color="#001AFF" bkg="#001AFF30" text="[Redirecting]"></Label>
+            <Label fontSize="2vh" id="privateKeyBackup" show={hasKeys} style={{ width: '79.444444444%', height: '7.46875%' }} color="#001AFF" bkg="#001AFF30" text="[Redirecting]"></Label>
             <Label id="generatingKeyPairLabel" fontSize="2.1vh" show={!hasKeys} bkg={`${accountInfoLabel.color}30`} color={accountInfoLabel.color} text={accountInfoLabel.label}></Label>
             <Label id="newAccountFailedLabel" fontSize="2vh" show={!newAccountStatus.status} bkg="#FF002E30" color="#FF002E" text={newAccountStatus.label}></Label>
             <Link to={"/login"}><Button show={newAccountStatus.status} id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>

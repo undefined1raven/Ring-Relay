@@ -159,7 +159,7 @@ function Chat(props) {
                         encryptMessage(ownPubkey, newMessageContents).then(ownCipher => {
                             pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
                                 sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
-                                    let nMsgObj = { targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
+                                    let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
                                     set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
                                     set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
                                     axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
@@ -292,7 +292,7 @@ function Chat(props) {
                     window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
                         for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
                             let rawMsg = RTrawMessagesArray[ix];
-                            if (rawMsg.targetUID == props.ownUID && rawMsg.targetUID == props.chatObj.uid) {
+                            if (rawMsg.targetUID == props.ownUID && rawMsg?.originUID == props.chatObj.uid) {
                                 verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
                                     decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
                                         setRealtimeBuffer((prevBuf) => {
