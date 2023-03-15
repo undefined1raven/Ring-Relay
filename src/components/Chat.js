@@ -69,31 +69,7 @@ function Chat(props) {
     }
 
     let privateKeyID = localStorage.getItem('PKGetter');
-    let publicSigningKeyJWK = 0;
-
-
-    useEffect(() => {
-        if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
-                if (!res.data.error) {
-                    localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);
-                    localStorage.setItem(`PUBSK-${props.chatObj.uid}`, res.data.publicSigningKey);
-                    publicSigningKeyJWK = JSON.parse(res.data.publicSigningKey);
-                    if (publicSigningKeyJWK == 0 || publicSigningKeyJWK == undefined) {
-                        props.onBackButton()
-                    }
-                }
-            });
-            axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
-                if (!res.data.error) {
-                    localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
-                    localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
-                }
-            });
-        }
-    }, [])
-
-
+    let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
     const decryptMessages = (rawMsgArr) => {
         if (rawMsgArr.length > 0) {

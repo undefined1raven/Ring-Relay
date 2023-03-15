@@ -113,6 +113,7 @@ function Home() {
           if (!refs.ini) {
             axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               setRefs({ ini: true, arr: res.data.refs });
+
             })
           }
         }
@@ -127,6 +128,25 @@ function Home() {
       });
     }
   }, [windowHash, refs])
+
+  useEffect(() => {
+    if (refs.ini && refs.arr.length > 0) {
+      for (let ix = 0; ix < refs.arr.length; ix++) {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: refs.arr[ix].uid }).then(res => {
+          if (!res.data.error) {
+            localStorage.setItem(`PUBK-${refs.arr[ix].uid}`, res.data.publicKey);
+            localStorage.setItem(`PUBSK-${refs.arr[ix].uid}`, res.data.publicSigningKey);
+          }
+        });
+      }
+      axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+        if (!res.data.error) {
+          localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
+          localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
+        }
+      });
+    }
+  }, [refs])
 
   const refreshRefs = () => {
     setRefreshingRefs(true);
