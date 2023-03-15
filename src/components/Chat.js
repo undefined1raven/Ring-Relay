@@ -254,6 +254,9 @@ function Chat(props) {
             remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
         }
+    }, [])
+
+    useEffect(() => {
         if (props.chatObj.status === 'Online') {
             setStatusProps({ color: '#00FF85' })
         } else {

@@ -240,7 +240,8 @@ function Settings(props) {
             let liv = _base64ToArrayBuffer(encryptedKeyObj.iv);
             let lPKGetter = encryptedKeyObj.PKGetter;
             let cipher = _base64ToArrayBuffer(encryptedKeyObj.cipher);
-            symmetricDecrypt(exportPassword, lsalt, liv, cipher).then(exportPayload => {
+            symmetricDecrypt(exportPassword, lsalt, liv, cipher).then(exportPayloadString => {
+                let exportPayload = JSON.parse(exportPayloadString);
                 pemToKey(exportPayload.pkPem).then(pk => {
                     pemToKey(exportPayload.pskPem, 'ECDSA').then(psk => {
                         if (pk.type == 'private' && psk.type == 'private') {
