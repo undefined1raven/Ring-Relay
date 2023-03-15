@@ -69,6 +69,10 @@ function Chat(props) {
     }
 
     let privateKeyID = localStorage.getItem('PKGetter');
+    if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) == undefined) {
+        props.onBackButton()
+    }
+
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
     const decryptMessages = (rawMsgArr) => {
