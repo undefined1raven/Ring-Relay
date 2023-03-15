@@ -147,11 +147,11 @@ function Chat(props) {
             setMsgListscrollToY(30000);
             setNewMessageContents('');
             let MID = `${v4()}-${v4()}`;
-            let local_nMsgObj = { type: 'tx', signed: 'local', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
+            let local_nMsgObj = { type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
-            // setRealtimeBuffer((prevBuf) => {
-            //     return [...prevBuf, { ...local_nMsgObj }]
-            // })
+            setRealtimeBuffer((prevBuf) => {
+                return [...prevBuf, { ...local_nMsgObj }]
+            })
 
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
@@ -303,7 +303,7 @@ function Chat(props) {
                     window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
                         for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
                             let rawMsg = RTrawMessagesArray[ix];
-                            if (rawMsg.targetUID == props.ownUID) {
+                            if (rawMsg.targetUID == props.ownUID && rawMsg.targetUID == props.chatObj.uid) {
                                 verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
                                     decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
                                         setRealtimeBuffer((prevBuf) => {
@@ -315,20 +315,6 @@ function Chat(props) {
                                         })
                                     });
                                 })
-                            } else {
-                                if (rawMsg.remoteContent != undefined && rawMsg.ownContent != undefined) {
-                                    verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
-                                        decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
-                                            setRealtimeBuffer((prevBuf) => {
-                                                if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                                    return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                                } else {
-                                                    return [...prevBuf]
-                                                }
-                                            })
-                                        });
-                                    })
-                                }
                             }
                         }
                     })

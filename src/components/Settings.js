@@ -210,9 +210,19 @@ function Settings(props) {
             return '#00FFD1'
         }
     }
+    const deleteAccount = () => {
+        if (revokeIDFieldInput == 'Delete my account') {
+            localStorage.removeItem(localStorage.getItem('PKGetter'));
+            localStorage.removeItem(`SV-${localStorage.getItem('PKGetter')}`);
+            localStorage.removeItem('PKGetter');
+            axios.post(`${DomainGetter('prodx')}api/dbop?deleteAccount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(rsx => {
+                setWindowHash('/login');
+            });
+        }
+    }
     const onFileImportOrExport = () => {
         if (scanMode == 'export') {
-            const exportPayloadJSON = {pkPem: pkPem, pskPem: pskPem};
+            const exportPayloadJSON = { pkPem: pkPem, pskPem: pskPem };
             symmetricEncrypt(salt, iv, JSON.stringify(exportPayloadJSON), exportPassword).then(cipher => {
                 let encryptedKey = JSON.stringify({ cipher: cipher.base64, iv: window.btoa(ab2str(iv)), salt: window.btoa(ab2str(salt)), PKGetter: localStorage.getItem('PKGetter') });
                 let encoded = window.btoa(encryptedKey)
@@ -268,7 +278,7 @@ function Settings(props) {
                     <Button onClick={logout} id="logoutBtn" width="90%" fontSize="2.3vh" height="6.46875%" color="#878787" bkg="#410093" label="Log Out"></Button>
                     <Button id="changeUsernameButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Username"></Button>
                     <Button id="changePasswordButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Password"></Button>
-                    <Button id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
+                    <Button onClick={() => setActiveWindowId('deleteAccount')} id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
                     <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
                     <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="1.9vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
@@ -341,6 +351,15 @@ function Settings(props) {
                     }
                 </>
                 : ''}
+            {activeWindowId == 'deleteAccount' ? <>
+                <Label className="settingsMenuLabel" id="accountLabel" style={{ top: '43.90625%' }} text="Type your 'Delete my account' to continue" fontSize="2.2vh" color="#9948FF"></Label>
+                <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '24.375%', height: '8.65625%' }} text="This will delete all your account data [including all conversations]" color="#FF002E" bkg="#FF002E30"></Label>
+                <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '35.3125%', height: '6.65625%' }} text="This action is nonreversible" color="#FF002E" bkg="#FF002E30"></Label>
+                <Button onClick={() => { setActiveWindowId('home'); setRevokeIDFieldInput('') }} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Back"></Button>
+                <Button onClick={deleteAccount} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%', backgroundColor: `${revokeIDFieldInput == 'Delete my account' ? '#FF002E30' : '#00000000'}` }} fontSize="2.3vh" color={revokeIDFieldInput == 'Delete my account' ? '#FF002E' : '#929292'} bkg={revokeIDFieldInput == 'Delete my account' ? '#FF002E' : ''} label="Delete Account"></Button>
+                <InputField type="text" id="passInput" color="#6300E0" style={{ top: '48.28125%' }} onChange={(e) => setRevokeIDFieldInput(e.target.value)} value={revokeIDFieldInput}></InputField>
+
+            </> : ''}
             <Label show={isRefreshing} className="settingsMenuLabel" id="waitingForRefreshLabel" text="[Validating]" fontSize="2.4vh" color="#001AFF"></Label>
             {revokeIDWindow.visible ?
                 <div id='revokeIDContainer'>
@@ -349,7 +368,7 @@ function Settings(props) {
                             <Label className="settingsMenuLabel" id="accountLabel" style={{ top: '43.90625%' }} text="Type 'I understand' to continue" fontSize="2.4vh" color="#9948FF"></Label>
                             <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '26.5625%', height: '12.65625%' }} text="This will remove the private keys from this device. Please make sure you have a backup on another device. Remember to delete all backups from this device if there are any." color="#FF002E" bkg="#FF002E30"></Label>
                             <Button onClick={() => setRevokeIDWindow({ visible: false, stage: 0 })} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Back"></Button>
-                            <Button onClick={() => { if(revokeIDFieldInput == 'I understand'){setRevokeIDWindow({ visible: true, stage: 1 })} }} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%' }} fontSize="2.3vh" color={revokeIDFieldInput == 'I understand' ? '#6300E0' : '#929292'} bkg={revokeIDFieldInput == 'I understand' ? '#6300E0' : ''} label="Continue"></Button>
+                            <Button onClick={() => { if (revokeIDFieldInput == 'I understand') { setRevokeIDWindow({ visible: true, stage: 1 }) } }} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%' }} fontSize="2.3vh" color={revokeIDFieldInput == 'I understand' ? '#6300E0' : '#929292'} bkg={revokeIDFieldInput == 'I understand' ? '#6300E0' : ''} label="Continue"></Button>
                             <InputField type="text" id="passInput" color="#6300E0" style={{ top: '48.28125%' }} onChange={(e) => setRevokeIDFieldInput(e.target.value)} value={revokeIDFieldInput}></InputField>
                         </> :
                         <>
