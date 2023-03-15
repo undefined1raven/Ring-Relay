@@ -354,7 +354,7 @@ function Settings(props) {
                 : ''}
             {activeWindowId == 'deleteAccount' ? <>
                 <Label className="settingsMenuLabel" id="accountLabel" style={{ top: '43.90625%' }} text="Type your 'Delete my account' to continue" fontSize="2.2vh" color="#9948FF"></Label>
-                <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '24.375%', height: '8.65625%' }} text="This will delete all your account data [including all conversations]" color="#FF002E" bkg="#FF002E30"></Label>
+                <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '24.375%', height: '8.65625%' }} text="This will delete all your account data including all conversations" color="#FF002E" bkg="#FF002E30"></Label>
                 <Label className='settingsLabel' fontSize="2vh" id="authDeviceWarningLabel" style={{ top: '35.3125%', height: '6.65625%' }} text="This action is nonreversible" color="#FF002E" bkg="#FF002E30"></Label>
                 <Button onClick={() => { setActiveWindowId('home'); setRevokeIDFieldInput('') }} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '68.75%' }} fontSize="2.3vh" color="#929292" label="Back"></Button>
                 <Button onClick={deleteAccount} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '59.6875%', backgroundColor: `${revokeIDFieldInput == 'Delete my account' ? '#FF002E30' : '#00000000'}` }} fontSize="2.3vh" color={revokeIDFieldInput == 'Delete my account' ? '#FF002E' : '#929292'} bkg={revokeIDFieldInput == 'Delete my account' ? '#FF002E' : ''} label="Delete Account"></Button>

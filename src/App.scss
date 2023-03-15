@@ -291,6 +291,23 @@ html {
 }
 
 //chats
+#chatsRefreshButton {
+  border-radius: 5px;
+  transition: all linear 0.1s;
+  transition: color ease-in 0.25s;
+  top: 42%;
+  @include VAlign();
+}
+
+#contactsRefreshButton {
+  border-radius: 5px;
+  transition: all linear 0.1s;
+  transition: color ease-in 0.25s;
+  top: 76%;
+  @include VAlign();
+  z-index: 500;
+}
+
 #noConvosLabel,
 #noConvosButton {
   top: 20.78125%;
@@ -303,7 +320,7 @@ html {
 
 #noConvosButton {
   top: 33%;
-  border-radius: 0px;
+  border-radius: 5px;
 }
 
 #chatsContainer {
@@ -458,7 +475,8 @@ rect {
 }
 
 //message | msg
-.msgDeleteButton, .msgCopyButton{
+.msgDeleteButton,
+.msgCopyButton {
   width: 40%;
   left: 5%;
   height: 5vh;
@@ -466,9 +484,11 @@ rect {
   border-radius: 5px;
   font-size: 1.9vh;
 }
-.msgCopyButton{
+
+.msgCopyButton {
   left: 55%;
 }
+
 .chashContainer,
 .signatureContainer {
   position: absolute;

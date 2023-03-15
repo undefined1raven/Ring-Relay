@@ -23,12 +23,15 @@ function NewContact(props) {
     const [noMatchesLabel, setNoMatchesLabel] = useState({ opacity: 1, label: '[Awaiting Search Params]', color: '#6100DC' });
     const [selectedRequest, setSelectedRequest] = useState({ uid: '', username: '', qid: '', opacity: 0, type: '', listLabel: 'Active Requests' });
     const [updatingRequestsLabelOpacity, setUpdatingRequestsLabelOpacity] = useState(0);
+    const [refreshing, setRefreshing] = useState(false);
 
     const getActiveRequests = () => {
+        setRefreshing(true)
         axios.post(`${DomainGetter('prodx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setActiveRequests({ ini: true, array: res.data.activeRequests });
             setReqSentLabel({ opacity: 0, label: 'Request Sent', color: '#00FFD1' });
             setUpdatingRequestsLabelOpacity(0)
+            setRefreshing(false)
         }).catch(e => {
             setReqSentLabel({ opacity: 0, label: 'Request Already Sent', color: '#FF002E' });
             setActiveRequests({ ini: true, array: [] })
@@ -124,7 +127,7 @@ function NewContact(props) {
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
                 <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text={selectedRequest.listLabel}></Label>
                 <Label show={activeRequests.array?.length > 0 ? false : true} id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
-                <Label show={updatingRequestsLabelOpacity} id="updatingRequestsLabel" bkg="rgba(0, 0, 0, 0.85)" fontSize="2vh" color="#001AFF" text="[Updating Requests]" style={{backdropFilter: 'blur(3px)'}}></Label>
+                <Label show={updatingRequestsLabelOpacity} id="updatingRequestsLabel" bkg="rgba(0, 0, 50, 0.85)" fontSize="2vh" color="#001AFF" text="[Updating Requests]" style={{ backdropFilter: 'blur(3px)' }}></Label>
                 <InputField value={searchParam} onChange={searchInputOnChange} color="#6300E0" id="newContactSearchInput"></InputField>
                 <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco} />
                 <ul id='newContactMatchesList'>
@@ -132,11 +135,13 @@ function NewContact(props) {
                 </ul>
                 <ul id='activeRequests'>
                     {activeRequestsListOpacity == 1 ? activeRequestsList : ''}
+                    {selectedRequest.opacity == 0 ? <li className='matchTileContainer'><Button onClick={() => getActiveRequests()} show={activeRequests.array?.length > 0 ? true : false} id="contactsRefreshButton" style={{ top: '0%', border: `${refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={refreshing ? '#001AFF' : "#5600C1"} width="80%" height="87%" label={refreshing ? '[Refreshing]' : "Refresh"} color={refreshing ? '#001AFF' : "#5600C1"}></Button></li> : ''}
                 </ul>
                 <div id='selectedReqTitle' style={{ opacity: `${selectedRequest.opacity}` }}>
                     <Label fontSize="2.5vh" id="selectedReqUsername" color="#FFF" text={selectedRequest.username} ></Label>
                     <Label fontSize="1.9vh" id="selectedReqQID" color="#6300E0" text={selectedRequest.qid}></Label>
                 </div>
+                <Button onClick={() => getActiveRequests()} show={activeRequests.array?.length > 0 ? false : true} id="contactsRefreshButton" style={{ border: `${refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={refreshing ? '#001AFF' : "#5600C1"} width="66.944444444%" height="6%" label={refreshing ? '[Refreshing]' : "Refresh"} color={refreshing ? '#001AFF' : "#5600C1"}></Button>
                 {selectedRequest.type == 'Pending.RX' ? <Button onClick={() => RXReqOnUpdate(true)} show={selectedRequest.opacity == 1} id="selectedReqRXAcceptButton" color="#00FFD1" label="Accept"></Button> : ''}
                 {selectedRequest.type == 'Pending.RX' ? <Button onClick={() => RXReqOnUpdate(false)} show={selectedRequest.opacity == 1} id="selectedReqRXDenyButton" color="#FF002E" label="Deny"></Button> : ''}
                 {selectedRequest.type == 'Pending.TX' ? <Button onClick={TXReqOnCancel} show={selectedRequest.opacity == 1} id="selectedReqRXDenyButton" color="#FF002E" label="Cancel"></Button> : ''}
