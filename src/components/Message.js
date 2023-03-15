@@ -33,7 +33,6 @@ function Message(props) {
 
 
     useEffect(() => {
-        console.log(`${props.msgObj.liked} | ${props.msgObj.content}`)
         setLiked(props.msgObj.liked)
     }, [props.msgObj])
 
