@@ -69,11 +69,27 @@ function Chat(props) {
     }
 
     let privateKeyID = localStorage.getItem('PKGetter');
-    if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) == undefined) {
-        props.onBackButton()
+    let publicSigningKeyJWK = 0;
+
+    if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
+            localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);
+            localStorage.setItem(`PUBSK-${props.chatObj.uid}`, res.data.publicSigningKey);
+            publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
+            if (publicSigningKeyJWK == 0 || publicSigningKeyJWK == undefined) {
+                props.onBackButton()
+            }
+        });
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+            localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
+            localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
+            publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
+            if (publicSigningKeyJWK == 0 || publicSigningKeyJWK == undefined) {
+                props.onBackButton()
+            }
+        });
     }
 
-    let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
     const decryptMessages = (rawMsgArr) => {
         if (rawMsgArr.length > 0) {
@@ -257,16 +273,6 @@ function Chat(props) {
             msgArrBatch = [];
             remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
-            if (remotePublicKeyJSON == 0 && props.chatObj.uid != undefined) {
-                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: props.chatObj.uid }).then(res => {
-                    localStorage.setItem(`PUBK-${props.chatObj.uid}`, res.data.publicKey);
-                    localStorage.setItem(`PUBSK-${props.chatObj.uid}`, res.data.publicSigningKey);
-                });
-                axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
-                    localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
-                    localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
-                });
-            }
         }
         if (props.chatObj.status === 'Online') {
             setStatusProps({ color: '#00FF85' })
