@@ -64,6 +64,7 @@ function Chat(props) {
     const [realtimeBuffer, setRealtimeBuffer] = useState([])
     const [realtimeBufferList, setRealtimeBufferList] = useState([])
     const [msgListScrollLeft, setMsgListScrollLeft] = useState(0)
+    const [deletedMsgs, setDeletedMsgs] = useState([]);
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -87,6 +88,7 @@ function Chat(props) {
                                                 if (ix == rawMsgArr.length - 1) {
                                                     addMsgToMsgArr({ end: true });
                                                 }
+                                                filterDeletedMessages('91');
                                             })
                                         });
                                     } else {
@@ -96,6 +98,7 @@ function Chat(props) {
                                                 if (ix == rawMsgArr.length - 1) {
                                                     addMsgToMsgArr({ end: true });
                                                 }
+                                                filterDeletedMessages('101');
                                             });
                                         })
                                     }
@@ -152,7 +155,9 @@ function Chat(props) {
             setRealtimeBuffer((prevBuf) => {
                 return [...prevBuf, { ...local_nMsgObj }]
             })
-
+            setTimeout(() => {
+                filterDeletedMessages('159');
+            }, 50);
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
                 window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
                     encryptMessage(remotePubkey, newMessageContents).then(remoteCipher => {
@@ -160,8 +165,8 @@ function Chat(props) {
                             pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
                                 sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
                                     let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
-                                    set(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`), { ...nMsgObj });
-                                    set(ref(db, `messageBuffer/${props.ownUID}/${MID}`), { ...nMsgObj });
+                                    set(ref(db, `messageBuffer/${props.chatObj.uid}/messages/${MID}`), { ...nMsgObj });
+                                    set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj });
                                     axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                                         AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj
                                     }).then(res => { }).catch(e => {
@@ -190,13 +195,16 @@ function Chat(props) {
             msgArrBatch = [];
             setChatLoadingLabel({ opacity: 0, label: '[Done]' })
         }
+        filterDeletedMessages('198');
     });
 
 
     const deleteMessage = (MID) => {
-        remove(ref(db, `messageBuffer/${props.ownUID}/${MID}`))
-        remove(ref(db, `messageBuffer/${props.chatObj.uid}/${MID}`))
+        set(ref(db, `messageBuffer/${props.ownUID}/deleted/${MID}`), { tx: Date.now() });
+        set(ref(db, `messageBuffer/${props.chatObj.uid}/deleted/${MID}`), { tx: Date.now() });
+
         setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+
         setRealtimeBufferList(realtimeBuffer.filter(elm => elm.MID != MID).map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
         axios.post(`${DomainGetter('prodx')}api/dbop?deleteMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: MID, MSUID: MSUID }).then(resx => { }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1, label: 'Failed to delete' }); setTimeout(() => {
@@ -266,7 +274,6 @@ function Chat(props) {
             setIH(window.innerHeight)
         }, 100);
         setMsgList(msgArray.array.map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
-
         setTimeout(() => {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
         }, 50);
@@ -274,57 +281,95 @@ function Chat(props) {
 
     }, [props, scrollToY, msgArray, msgListscrollToY])
 
+    const filterDeletedMessages = (id) => {
+        setTimeout(() => {
+            let originalMsgArrLen = msgArray.array.length;
+            let originalBufferMsgArrLen = realtimeBuffer.length;
+            if(deletedMsgs.length > 0){
+                for(let ix = 0; ix < deletedMsgs.length; ix++){
+                    // console.log(msgArray.array.filter(elm => elm.MID != deletedMsgs[ix].MID))
+                    // console.log(id)
+                    let filteredArray = msgArray.array.filter(elm => elm.MID != deletedMsgs[ix].MID)
+                    let filteredBufferArray = realtimeBuffer.filter(elm => elm.MID != deletedMsgs[ix].MID)
+                    // console.log(`O ${originalMsgArrLen} | U ${filteredArray.length}`)
+                    if(filteredArray.length < originalMsgArrLen){
+                        setMsgArray({ ini: true, array: filteredArray});
+                    }
+                    if(filteredBufferArray.length < originalBufferMsgArrLen){
+                        setRealtimeBuffer(filteredBufferArray);
+                    }
+                }
+            }
+        }, 100);
+    }
+
+    useEffect(() => {
+        filterDeletedMessages('297');
+    }, [deletedMsgs])
 
     useEffect(() => {
         onValue(ref(db, `messageBuffer/${props.ownUID}`), (snap) => {
             let RXrealtimeBuffer = snap.val();
-            let RTrawMessagesArray = []
-            for (let MID in RXrealtimeBuffer) {
-                RTrawMessagesArray.push({ ...RXrealtimeBuffer[MID] });
-            }
-            RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
-            let privateKeyID = localStorage.getItem('PKGetter');
-            if (RTrawMessagesArray.length > 3) {
-                remove(ref(db, `messageBuffer/${props.ownUID}`));//resetting the firebase buffer wont delete messages in chat since we dont reset state 
-            }
-            if (RTrawMessagesArray.length > 0) {
-                setChatLoadingLabel({ opacity: '0', label: '[Done]' });
-            }
-            try {
-                pemToKey(localStorage.getItem(privateKeyID), 'RSA').then(privateKey => {
-                    window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
-                        for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
-                            let rawMsg = RTrawMessagesArray[ix];
-                            if (rawMsg.targetUID == props.ownUID && rawMsg?.originUID == props.chatObj.uid) {
-                                verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
-                                    decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                                        setRealtimeBuffer((prevBuf) => {
-                                            if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                                return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                                            } else {
-                                                return [...prevBuf]
-                                            }
+            if (RXrealtimeBuffer != null) {
+                if (RXrealtimeBuffer.messages != null) {
+                    let RTrawMessagesArray = []
+                    for (let MID in RXrealtimeBuffer.messages) {
+                        RTrawMessagesArray.push({ ...RXrealtimeBuffer.messages[MID] });
+                    }
+                    RTrawMessagesArray.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
+                    let privateKeyID = localStorage.getItem('PKGetter');
+                    if (RTrawMessagesArray.length > 3) {
+                        remove(ref(db, `messageBuffer/${props.ownUID}`));//resetting the firebase buffer wont delete messages in chat since we dont reset state 
+                    }
+                    if (RTrawMessagesArray.length > 0) {
+                        setChatLoadingLabel({ opacity: '0', label: '[Done]' });
+                    }
+                    try {
+                        pemToKey(localStorage.getItem(privateKeyID), 'RSA').then(privateKey => {
+                            window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
+                                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
+                                    let rawMsg = RTrawMessagesArray[ix];
+                                    if (rawMsg.targetUID == props.ownUID && rawMsg?.originUID == props.chatObj.uid) {
+                                        verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
+                                            decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                                                setRealtimeBuffer((prevBuf) => {
+                                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                                        return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                                    } else {
+                                                        return [...prevBuf]
+                                                    }
+                                                })
+                                                filterDeletedMessages('332');
+                                            });
                                         })
-                                    });
+                                    }
+                                }
+                            })
+                        }).catch(e => {
+                            console.log(e)
+                        })
+                    } catch (e) {
+                        for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
+                            if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
+                                let rawMsg = RTrawMessagesArray[ix];
+                                setRealtimeBuffer((prevBuf) => {
+                                    if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
+                                        return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                    } else {
+                                        return [...prevBuf]
+                                    }
                                 })
+                                filterDeletedMessages('352');
                             }
                         }
-                    })
-                }).catch(e => {
-                    console.log(e)
-                })
-            } catch (e) {
-                for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
-                    if (RTrawMessagesArray[ix].targetUID == props.ownUID) {
-                        let rawMsg = RTrawMessagesArray[ix];
-                        setRealtimeBuffer((prevBuf) => {
-                            if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                return [...prevBuf, { MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
-                            } else {
-                                return [...prevBuf]
-                            }
-                        })
                     }
+                }
+                if (RXrealtimeBuffer.deleted != null) {
+                    let ldelMsgs = [];
+                    for (let MID in RXrealtimeBuffer.deleted) {
+                        ldelMsgs.push({ MID: MID });
+                    }
+                    setDeletedMsgs(ldelMsgs);
                 }
             }
         })
