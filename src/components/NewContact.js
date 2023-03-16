@@ -99,6 +99,7 @@ function NewContact(props) {
             }
         });
         requestControlsToActiveRequests();
+        props.refreshRefs();
     }
     const RXReqOnUpdate = (status) => {
         setRefreshing(true)

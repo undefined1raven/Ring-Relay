@@ -231,7 +231,7 @@ function Chat(props) {
     }
 
     const onTouchEnd = (e) => {
-        if (msgListScrollLeft < ((7.692307692 / 100) * document.documentElement.clientWidth)) {
+        if (msgListScrollLeft <= ((7.692307692 / 100) * document.documentElement.clientWidth)) {
             document.getElementById('msgsList').scrollLeft = 0
         } else {
             document.getElementById('msgsList').scrollLeft = ((15.384615385 / 100) * document.documentElement.clientWidth);
