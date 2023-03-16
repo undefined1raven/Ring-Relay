@@ -84,6 +84,7 @@ function NewAccount() {
         validateInput(false);
         e.preventDefault();
         if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
+            setAccountInfoLabel({label: '[Generating Key Pairs]', color: '#001AFF'})
             getKeyPair().then(keys => {
                 getSigningKeyPair().then(signingKeys => {
                     setHasKeys(true)

@@ -92,7 +92,7 @@ function NewContact(props) {
     }
 
     const TXReqOnCancel = () => {
-        setUpdatingRequestsLabelOpacity(1);
+        setRefreshing(true)
         axios.post(`${DomainGetter('prodx')}api/dbop?cancelRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
@@ -101,7 +101,7 @@ function NewContact(props) {
         requestControlsToActiveRequests();
     }
     const RXReqOnUpdate = (status) => {
-        setUpdatingRequestsLabelOpacity(1);
+        setRefreshing(true)
         axios.post(`${DomainGetter('prodx')}api/dbop?updateRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid, approved: status }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
@@ -127,7 +127,6 @@ function NewContact(props) {
                 <Label id="newContactLabel" fontSize="2.2vh" color="#9948FF" text="Search By Username"></Label>
                 <Label id="requestsLabel" fontSize="2.2vh" color="#9948FF" text={selectedRequest.listLabel}></Label>
                 <Label show={activeRequests.array?.length > 0 ? false : true} id="noRequestsLabel" bkg="#001AFF30" fontSize="2vh" color="#001AFF" text="[Incoming/Outgoing requests will appear here]"></Label>
-                <Label show={updatingRequestsLabelOpacity} id="updatingRequestsLabel" bkg="rgba(0, 0, 50, 0.85)" fontSize="2vh" color="#001AFF" text="[Updating Requests]" style={{ backdropFilter: 'blur(3px)' }}></Label>
                 <InputField value={searchParam} onChange={searchInputOnChange} color="#6300E0" id="newContactSearchInput"></InputField>
                 <NewContactLoadingDeco id="newContactSearchDeco" show={showSearchDeco} />
                 <ul id='newContactMatchesList'>

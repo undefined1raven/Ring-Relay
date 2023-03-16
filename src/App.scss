@@ -475,6 +475,12 @@ rect {
 }
 
 //message | msg
+.msgDate{
+  top: 0vh;
+  width: 6.3vh;
+  left: 102%;
+  @include flex();
+}
 .msgDeleteButton,
 .msgCopyButton {
   width: 40%;
@@ -496,12 +502,12 @@ rect {
   width: 14.619883041%;
   height: 51.219512195%;
   left: 102%;
-  top: 2.6vh;
+  top: 1.8vh;
 }
 
 .signatureContainer {
   position: absolute;
-  top: 0vh;
+  top: 4.8vh;
   height: 2vh;
   @include flex();
 }

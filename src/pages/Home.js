@@ -45,6 +45,8 @@ function Home() {
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
   const [refreshingRefs, setRefreshingRefs] = useState(false)
 
+  const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
+
   const onNavButtonClick = (btnId) => {
     if (windowId == 'chat') {
       onBackButton()
@@ -80,9 +82,9 @@ function Home() {
     if (!authorized) {
       axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
-          if (res.data.redirect)
-            window.location.hash = `#${res.data.redirect}`;
+          window.location.hash = `#${res.data.redirect}`;
           setAuthorized(false)
+          localStorage.removeItem('refs')
         } else {
           setAuthorized(true)
           setOwnUID(res.data.ownUID);
@@ -110,18 +112,26 @@ function Home() {
           } else {
             setPrivateKeyStatus({ valid: false, found: false, ini: true });
           }
-          if (!refs.ini) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
-              setRefs({ ini: true, arr: res.data.refs });
-
-            })
-          }
         }
         if (authorized) {
           window.location.hash = windowHash;
         }
+        if (!refs.ini) {
+          if (refsCache == null) {
+            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+              if (res.data.refs) {
+                setRefs({ ini: true, arr: res.data.refs });
+                localStorage.setItem(`refs-${res.data.ownUID}`, JSON.stringify({ array: res.data.refs }));
+              }
+            })
+          } else {
+            setRefs({ ini: true, arr: JSON.parse(localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`)).array });
+          }
+
+        }
 
       }).catch(e => {
+        console.log(e)
         setTimeout(() => {
           window.location.reload()
         }, 5000);
@@ -148,11 +158,13 @@ function Home() {
     }
   }, [refs])
 
+
   const refreshRefs = () => {
     setRefreshingRefs(true);
     axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
       setRefreshingRefs(false);
       setRefs({ ini: true, arr: res.data.refs });
+      localStorage.setItem(`refs-${localStorage.getItem('ownUID')}`, JSON.stringify({ array: res.data.refs }))
     })
   }
 

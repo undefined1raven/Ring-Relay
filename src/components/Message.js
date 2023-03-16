@@ -96,7 +96,7 @@ function Message(props) {
     }
 
     const onMsgClick = useSingleAndDoubleClick(() => { }, onDoubleClick)
-
+    const msgDate = new Date(parseInt(props.msgObj.tx));
     const menuController = () => {
         if (showMenu) {
             return (
@@ -109,7 +109,7 @@ function Message(props) {
         } else {
             return (
                 <>
-                    <Label className="msgTime" bkg="#55007340" color="#8300B0" text={`${new Date(parseInt(props.msgObj.tx)).getHours().toString().padStart(2, '0')}:${new Date(parseInt(props.msgObj.tx)).getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
+                    <Label className="msgTime" bkg="#55007340" color="#8300B0" text={`${msgDate.getHours().toString().padStart(2, '0')}:${msgDate.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco /> : <MsgTXDeco />}
                     {props.msgObj.seen ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
@@ -122,6 +122,7 @@ function Message(props) {
                         {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
                         <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
                     </div>
+                    <Label className="msgDate" bkg="#55007350" color="#8300B0" text={`${msgDate.getDate().toString().padStart(2, '0')}.${msgDate.getMonth().toString().padStart(2, '0')} [${msgDate.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )

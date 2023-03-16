@@ -40,9 +40,10 @@ function Login() {
             ip: cip
         }).then(res => {
             if (res.data['redirect']) {
-                setItem('AT', res.data['AT'])
-                setItem('CIP', cip)
-                setItem('PKGetter', res.data.PKGetter)
+                setItem('AT', res.data['AT']);
+                setItem('CIP', cip);
+                setItem('PKGetter', res.data.PKGetter);
+                setItem('ownUID', res.data.ownUID);
                 setAuthStatusLabelObj({ text: 'Auth Complete', color: '#00FF85', bkg: '#00FF85' });
                 setTimeout(() => {
                     setLocationHash('#');
