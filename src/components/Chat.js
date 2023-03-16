@@ -141,6 +141,15 @@ function Chat(props) {
                 rawMsgArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
                 setMSUID(res.data.MSUID);
                 decryptMessages(rawMsgArr);
+                let lastRXMID = ''
+                for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                    if (rawMsgArr[ix].type == 'rx') {
+                        lastRXMID = rawMsgArr[ix].MID;
+                    }
+                }
+                if (lastRXMID != '') {
+                    axios.post(`${DomainGetter('prodx')}api/dbop?setLastSeenMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: lastRXMID, MSUID: res.data.MSUID });
+                }
             }
 
         });

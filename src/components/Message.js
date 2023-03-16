@@ -113,7 +113,7 @@ function Message(props) {
                     <Label className="msgTime" bkg="#55007340" color="#8300B0" text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco /> : <MsgTXDeco />}
-                    {props.msgObj.seen ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
+                    {(props.msgObj.seen && props.msgObj.type == 'tx') ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
                     {(liked && !deleted) ? <MsgLikedDeco /> : ''}
                     <div className='chashContainer'>
                         <CommonSigMismatchDeco className="chashIndi"></CommonSigMismatchDeco>
