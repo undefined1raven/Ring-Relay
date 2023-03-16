@@ -35,6 +35,8 @@ const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app)
 
+let oneSig = window.OneSignal;
+
 function Home() {
   const [authorized, setAuthorized] = useState(false);
   const [windowId, setWindowId] = useState('chats');
@@ -88,8 +90,8 @@ function Home() {
           localStorage.removeItem('refs')
         } else {
           setAuthorized(true)
-          OneSignal.push(() => {
-            OneSignal.setExternalUserId(res.data.ownUID);
+          oneSig.push(() => {
+            oneSig.setExternalUserId(res.data.ownUID);
             console.log('set sigid')
           })
           setOwnUID(res.data.ownUID);
