@@ -15,10 +15,12 @@ import DomainGetter from '../fn/DomainGetter.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
+import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 
 import { initializeApp } from "firebase/app";
 import { getDatabase, get, remove, set, ref, onValue } from "firebase/database";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
+const vapidKey = 'BFSoRotMDxZgPJtMb8J_GeyNb-rbx_vtDjotbA2W7PRYw10Z13UR6uACNbF-CELRZhtzY1z0_Z-CmncHKvNvIG8'
 
 const firebaseConfig = {
   apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -31,6 +33,19 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+const messaging = getMessaging(app)
+
+getToken(messaging, { vapidKey: vapidKey }).then(currentToken => {
+  if (currentToken) {
+    console.log(currentToken)
+  } else {
+
+  }
+})
+
+onMessage(messaging, (payload) => {
+  console.log('payload')
+})
 
 const db = getDatabase(app)
 
@@ -80,7 +95,7 @@ function Home() {
   useEffect(() => {
     window.location.hash = windowHash;
     if (!authorized) {
-      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      axios.post(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           window.location.hash = `#${res.data.redirect}`;
           setAuthorized(false)
@@ -118,7 +133,7 @@ function Home() {
         }
         if (!refs.ini) {
           if (refsCache == null) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+            axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
               if (res.data.refs) {
                 setRefs({ ini: true, arr: res.data.refs });
                 localStorage.setItem(`refs-${res.data.ownUID}`, JSON.stringify({ array: res.data.refs }));
@@ -142,14 +157,14 @@ function Home() {
   useEffect(() => {
     if (refs.ini && refs.arr.length > 0) {
       for (let ix = 0; ix < refs.arr.length; ix++) {
-        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: refs.arr[ix].uid }).then(res => {
+        axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: refs.arr[ix].uid }).then(res => {
           if (!res.data.error) {
             localStorage.setItem(`PUBK-${refs.arr[ix].uid}`, res.data.publicKey);
             localStorage.setItem(`PUBSK-${refs.arr[ix].uid}`, res.data.publicSigningKey);
           }
         });
       }
-      axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+      axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
         if (!res.data.error) {
           localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
           localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
@@ -161,7 +176,7 @@ function Home() {
 
   const refreshRefs = () => {
     setRefreshingRefs(true);
-    axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+    axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
       setRefreshingRefs(false);
       setRefs({ ini: true, arr: res.data.refs });
       localStorage.setItem(`refs-${localStorage.getItem('ownUID')}`, JSON.stringify({ array: res.data.refs }))

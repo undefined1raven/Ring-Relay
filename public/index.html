@@ -11,7 +11,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet">
   <meta name="description" content="Web site created using create-react-app" />
   <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-
+  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
+  <script>
+    window.OneSignal = window.OneSignal || [];
+    OneSignal.push(function() {
+      OneSignal.init({
+        appId: "8eb8c723-e8e9-4088-8bb7-093e30af004f",
+        safari_web_id: "web.onesignal.auto.145f18a4-510a-4781-b676-50fa3f7fa700",
+        notifyButton: {
+          enable: true,
+        },
+      });
+    });
+  </script>
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
   <title>Ring Relay</title>
