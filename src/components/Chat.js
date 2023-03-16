@@ -258,6 +258,15 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
+            let lastRXMID = '';
+            for (let ix = 0; ix < realtimeBuffer.length; ix++) {
+                if (realtimeBuffer[ix].type == 'rx') {
+                    lastRXMID = realtimeBuffer[ix].MID
+                }
+            }
+            if (lastRXMID != '') {
+                set(ref(db, `messageBuffer/${props.chatObj.uid}/seen/${props.ownUID}`), { MID: lastRXMID, status: false });
+            }
             setRealtimeBufferList(realtimeBuffer.map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
             setTimeout(() => {
                 try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
@@ -408,6 +417,9 @@ function Chat(props) {
                         llikedMsgs[MID] = { state: RXrealtimeBuffer.liked[MID].state };
                     }
                     setLikedMsgs(llikedMsgs);
+                }
+                if (RXrealtimeBuffer.seen != null) {
+                    console.log(RXrealtimeBuffer.seen)
                 }
             }
         })
