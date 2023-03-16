@@ -76,6 +76,12 @@ function Chat(props) {
 
     const decryptMessages = (rawMsgArr) => {
         if (rawMsgArr.length > 0) {
+            let lastTXMID = ''
+            for (let ix = 0; ix < rawMsgArr.length; ix++) {
+                if (rawMsgArr[ix].type == 'tx') {
+                    lastTXMID = rawMsgArr[ix].MID;
+                }
+            }
             try {
                 if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
@@ -86,7 +92,7 @@ function Chat(props) {
                                     if (rawMsgArr[ix].type == 'tx') {
                                         verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(ownSigStatus => {
                                             decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                                addMsgToMsgArr({ signed: (ownSigStatus) ? 'self' : 'no_self', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen })
+                                                addMsgToMsgArr({ signed: (ownSigStatus) ? 'self' : 'no_self', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: (rawMsg.seen && rawMsg.MID == lastTXMID) })
                                                 if (ix == rawMsgArr.length - 1) {
                                                     addMsgToMsgArr({ end: true });
                                                 }
