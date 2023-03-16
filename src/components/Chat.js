@@ -65,6 +65,7 @@ function Chat(props) {
     const [realtimeBufferList, setRealtimeBufferList] = useState([])
     const [msgListScrollLeft, setMsgListScrollLeft] = useState(0)
     const [deletedMsgs, setDeletedMsgs] = useState([]);
+    const [likedMsgs, setLikedMsgs] = useState({});
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -214,8 +215,8 @@ function Chat(props) {
     }
 
     const likeMessageUpdate = (args) => {
-        update(ref(db, `messageBuffer/${props.ownUID}/${args.MID}`), { liked: args.state })
-        update(ref(db, `messageBuffer/${props.chatObj.uid}/${args.MID}`), { liked: args.state })
+        update(ref(db, `messageBuffer/${props.ownUID}/liked/${args.MID}`), { state: args.state })
+        update(ref(db, `messageBuffer/${props.chatObj.uid}/liked/${args.MID}`), { state: args.state })
         axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
 
         }).catch(e => {
@@ -273,6 +274,7 @@ function Chat(props) {
         setInterval(() => {
             setIH(window.innerHeight)
         }, 100);
+
         setMsgList(msgArray.array.map(x => <li key={x.MID}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
         setTimeout(() => {
             try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
@@ -285,23 +287,43 @@ function Chat(props) {
         setTimeout(() => {
             let originalMsgArrLen = msgArray.array.length;
             let originalBufferMsgArrLen = realtimeBuffer.length;
-            if(deletedMsgs.length > 0){
-                for(let ix = 0; ix < deletedMsgs.length; ix++){
-                    // console.log(msgArray.array.filter(elm => elm.MID != deletedMsgs[ix].MID))
-                    // console.log(id)
+            if (deletedMsgs.length > 0) {
+                for (let ix = 0; ix < deletedMsgs.length; ix++) {
                     let filteredArray = msgArray.array.filter(elm => elm.MID != deletedMsgs[ix].MID)
                     let filteredBufferArray = realtimeBuffer.filter(elm => elm.MID != deletedMsgs[ix].MID)
-                    // console.log(`O ${originalMsgArrLen} | U ${filteredArray.length}`)
-                    if(filteredArray.length < originalMsgArrLen){
-                        setMsgArray({ ini: true, array: filteredArray});
+                    if (filteredArray.length < originalMsgArrLen) {
+                        setMsgArray({ ini: true, array: filteredArray });
                     }
-                    if(filteredBufferArray.length < originalBufferMsgArrLen){
+                    if (filteredBufferArray.length < originalBufferMsgArrLen) {
                         setRealtimeBuffer(filteredBufferArray);
                     }
                 }
             }
         }, 100);
     }
+
+
+    useEffect(() => {
+        let lmsgArr = [];
+        for (let ix = 0; ix < msgArray.array.length; ix++) {
+            if (likedMsgs[msgArray.array[ix].MID] != undefined) {
+                lmsgArr.push({ ...msgArray.array[ix], liked: likedMsgs[msgArray.array[ix].MID].state });
+            } else {
+                lmsgArr.push({ ...msgArray.array[ix] });
+            }
+        }
+        setMsgArray({ ini: true, array: lmsgArr });//msgArray
+
+        let lBufferMsgArr = [];
+        for (let ix = 0; ix < realtimeBuffer.length; ix++) {
+            if (likedMsgs[realtimeBuffer[ix].MID] != undefined) {
+                lBufferMsgArr.push({ ...realtimeBuffer[ix], liked: likedMsgs[realtimeBuffer[ix].MID].state });
+            } else {
+                lBufferMsgArr.push({ ...realtimeBuffer[ix] });
+            }
+        }
+        setRealtimeBuffer(lBufferMsgArr);//realtimeBuffermsgArray
+    }, [likedMsgs]);
 
     useEffect(() => {
         filterDeletedMessages('297');
@@ -370,6 +392,13 @@ function Chat(props) {
                         ldelMsgs.push({ MID: MID });
                     }
                     setDeletedMsgs(ldelMsgs);
+                }
+                if (RXrealtimeBuffer.liked != null) {
+                    let llikedMsgs = {};
+                    for (let MID in RXrealtimeBuffer.liked) {
+                        llikedMsgs[MID] = { state: RXrealtimeBuffer.liked[MID].state };
+                    }
+                    setLikedMsgs(llikedMsgs);
                 }
             }
         })

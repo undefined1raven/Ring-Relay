@@ -58,7 +58,7 @@ function Message(props) {
     }
 
     const onDoubleClick = () => {
-        setLiked(!liked)
+        // setLiked(!liked)
         props.likeMessageUpdate({ state: !liked, MID: props.msgObj.MID });
     }
 
