@@ -27,7 +27,7 @@ function NewContact(props) {
 
     const getActiveRequests = () => {
         setRefreshing(true)
-        axios.post(`${DomainGetter('devx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getRequests`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setActiveRequests({ ini: true, array: res.data.activeRequests });
             setReqSentLabel({ opacity: 0, label: 'Request Sent', color: '#00FFD1' });
             setUpdatingRequestsLabelOpacity(0)
@@ -43,7 +43,7 @@ function NewContact(props) {
         if (searchParam.length > 0) {
             setNoMatchesLabel({ opacity: 0, label: '[No Matches]', color: '#FF002E' });
             setShowSearchDeco(true);
-            axios.post(`${DomainGetter('devx')}api/dbop?searchUser`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), value: searchParam }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?searchUser`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), value: searchParam }).then(res => {
                 if (e.target.value.length > 0) {
                     setMatches(res.data.matches);
                 }
@@ -70,7 +70,7 @@ function NewContact(props) {
         setReqSentLabel({ opacity: 1, label: 'Request Sent', color: '#00FFD1' });
         setSearchParam('');
         setMatches([]);
-        axios.post(`${DomainGetter('devx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
             } else {
@@ -93,7 +93,7 @@ function NewContact(props) {
 
     const TXReqOnCancel = () => {
         setRefreshing(true)
-        axios.post(`${DomainGetter('devx')}api/dbop?cancelRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?cancelRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
             }
@@ -103,7 +103,7 @@ function NewContact(props) {
     }
     const RXReqOnUpdate = (status) => {
         setRefreshing(true)
-        axios.post(`${DomainGetter('devx')}api/dbop?updateRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid, approved: status }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?updateRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid, approved: status }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
             }
