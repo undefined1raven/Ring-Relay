@@ -5,7 +5,9 @@ html {
   width: 100%;
   overflow: hidden;
 }
-
+#onesignal-bell-container{
+  display: none;
+}
 :root {
   --FS_M_BigMedium: 2.69vh;
   --FS_M_Normal: 2.34vh;
