@@ -88,6 +88,10 @@ function Home() {
           localStorage.removeItem('refs')
         } else {
           setAuthorized(true)
+          OneSignal.push(() => {
+            OneSignal.setExternalUserId(res.data.ownUID);
+            console.log('set sigid')
+          })
           setOwnUID(res.data.ownUID);
           setCurrentUsername(res.data.username);
           if (localStorage.getItem('-PK') != undefined) {
