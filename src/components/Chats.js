@@ -68,7 +68,7 @@ function Chats(props) {
                 <Label id="privateKeyStatusLabel" bkg={`${keyStatusLabelController().color}30`} color={keyStatusLabelController().color} show={showKeysStatus} fontSize="2.1vh" text={keyStatusLabelController().label}></Label>
                 <Label fontSize="2.5vh" show={props.refs.arr.length == 0 && props.refs.ini} id="noConvosLabel" bkg="#001AFF30" color="#001AFF" text="[No Conversations]"></Label>
                 <Button onClick={props.switchToNewContactSection} fontSize="2.2vh" show={props.refs.arr.length == 0 && props.refs.ini} id="noConvosButton" bkg="#001AFF" color="#001AFF" label="Add New Contact"></Button>
-                <Button show={props.refs.arr.length == 0 && props.refs.ini} onClick={onRefresh} id="chatsRefreshButton" style={{ border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="66.944444444%" height="6%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button>
+                <Button show={props.refs.arr.length == 0 && props.refs.ini} onClick={onRefresh} id="chatsRefreshButton" style={{ border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="66.944444444%" height="6.71875%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button>
                 {keyStatusDecoController()}
                 <GenericLoadingDeco id="chatsFetchingDeco" show={!props.refs.ini} pathCN="chatsFetchingDecoElm"></GenericLoadingDeco>
             </div>
