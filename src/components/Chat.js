@@ -66,6 +66,7 @@ function Chat(props) {
     const [msgListScrollLeft, setMsgListScrollLeft] = useState(0)
     const [deletedMsgs, setDeletedMsgs] = useState([]);
     const [likedMsgs, setLikedMsgs] = useState({});
+    const [seenMsgs, setSeenMsgs] = useState({});
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -322,6 +323,24 @@ function Chat(props) {
 
 
     useEffect(() => {
+        if (realtimeBuffer.length > 0) {
+            let lastRTBufMID = realtimeBuffer[realtimeBuffer.length - 1].MID
+            if (lastRTBufMID == seenMsgs) {
+                let updatedRTBuf = [];
+                for (let ix = 0; ix < realtimeBuffer.length; ix++) {
+                    if (realtimeBuffer[ix].MID == lastRTBufMID) {
+                        updatedRTBuf.push({ ...realtimeBuffer[ix], seen: true });
+                    } else {
+                        updatedRTBuf.push({ ...realtimeBuffer[ix] });
+                    }
+                }
+                setRealtimeBuffer(updatedRTBuf)
+                filterDeletedMessages();
+            }
+        }
+    }, [seenMsgs])
+
+    useEffect(() => {
         let lmsgArr = [];
         for (let ix = 0; ix < msgArray.array.length; ix++) {
             if (likedMsgs[msgArray.array[ix].MID] != undefined) {
@@ -419,7 +438,9 @@ function Chat(props) {
                     setLikedMsgs(llikedMsgs);
                 }
                 if (RXrealtimeBuffer.seen != null) {
-                    console.log(RXrealtimeBuffer.seen)
+                    if (RXrealtimeBuffer.seen[props.chatObj.uid] != undefined) {
+                        setSeenMsgs(RXrealtimeBuffer.seen[props.chatObj.uid].MID)
+                    }
                 }
             }
         })
