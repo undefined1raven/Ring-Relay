@@ -330,6 +330,7 @@ function Chat(props) {
                 for (let ix = 0; ix < realtimeBuffer.length; ix++) {
                     if (realtimeBuffer[ix].MID == lastRTBufMID) {
                         updatedRTBuf.push({ ...realtimeBuffer[ix], seen: true });
+                        axios.post(`${DomainGetter('prodx')}api/dbop?setLastSeenMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: lastRTBufMID, MSUID: MSUID });
                     } else {
                         updatedRTBuf.push({ ...realtimeBuffer[ix] });
                     }
