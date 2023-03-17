@@ -186,8 +186,8 @@ function Chat(props) {
                                     set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj });
                                     axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                                         AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj
-                                    }).then(res => { 
-                                        axios.post(`${DomainGetter('prodx')}api/notify?newMessage`, {AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid});
+                                    }).then(res => {
+                                        axios.post(`${DomainGetter('prodx')}api/notify?newMessageN`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid }).then(resx => { }).catch(e => { });
                                     }).catch(e => {
                                         setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
                                         setTimeout(() => {
