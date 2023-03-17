@@ -6,6 +6,7 @@ import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import NotAuthedMsgDeco from '../components/NotAuthedMsgDeco.js'
 import Button from '../components/Button.js'
 
+let oneSig = window.OneSignal;
 
 function Chats(props) {
     const [showKeysStatus, setShowKeysStatus] = useState(true)
@@ -50,6 +51,15 @@ function Chats(props) {
     const onRefresh = () => {
         if (!props.refreshing) {
             props.onRefresh();
+            if (Notification.permission == 'granted') {
+                oneSig.registerForPushNotifications();
+            } else if (Notification.permission == 'default' || Notification.permission == 'denied') {
+                Notification.requestPermission(resx => {
+                    if (resx == 'granted') {
+                        oneSig.registerForPushNotifications();
+                    }
+                })
+            }
         }
     }
 

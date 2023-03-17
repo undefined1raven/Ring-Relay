@@ -83,6 +83,10 @@ function Home() {
   });
 
   useEffect(() => {
+   
+  }, [])
+
+  useEffect(() => {
     window.location.hash = windowHash;
     if (!authorized) {
       axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
