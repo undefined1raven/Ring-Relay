@@ -67,6 +67,10 @@ function Chat(props) {
     const [deletedMsgs, setDeletedMsgs] = useState([]);
     const [likedMsgs, setLikedMsgs] = useState({});
     const [seenMsgs, setSeenMsgs] = useState({});
+    const [inputDynamicStyle, setInputDynamicStyle] = useState({ top: '92.1875%', height: '6.5625%' });
+    const [msgsListHeight, setMsgsListHeight] = useState('74.21875%');
+    const [msgInputTextareaHeight, setMsgInputTextareaHeight] = useState('47%');
+
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -164,6 +168,9 @@ function Chat(props) {
 
     const onSend = () => {
         if (newMessageContents.length > 0) {
+            setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
+            setMsgsListHeight('74.21875%')
+            setMsgInputTextareaHeight('47%');
             setMsgListscrollToY(30000);
             setNewMessageContents('');
             let MID = `${v4()}-${v4()}`;
@@ -375,6 +382,25 @@ function Chat(props) {
         filterDeletedMessages('297');
     }, [deletedMsgs])
 
+
+    const onNewMessageContent = (e) => {
+        setNewMessageContents(e.target.value);
+        let inputActual = document.getElementById('msgInputActual');
+        let overflowDelta = inputActual.scrollHeight - inputActual.clientHeight;
+        if (overflowDelta / inputActual.clientHeight > 0.75) {
+            setInputDynamicStyle({ top: '88.1875%', height: '10.5625%' })
+            setMsgsListHeight('70.21875%')
+            setMsgInputTextareaHeight('66%');
+        } else if (overflowDelta / inputActual.clientHeight < 0.1) {
+            setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
+            setMsgsListHeight('74.21875%')
+            setMsgInputTextareaHeight('47%');
+        }
+    }
+
+    useEffect(() => {
+    }, [inputDynamicStyle])
+
     useEffect(() => {
         onValue(ref(db, `messageBuffer/${props.ownUID}`), (snap) => {
             let RXrealtimeBuffer = snap.val();
@@ -465,11 +491,14 @@ function Chat(props) {
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={props.chatObj.status} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
-                <div className='chatInput'>
-                    <InputField autoComplete="off" value={newMessageContents} onChange={(e) => setNewMessageContents(e.target.value)} fieldID="msgInputActual" onFocus={onInputFocus} type="text" id="msgInput" color="#7000FF"></InputField>
+                <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
+                    <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
+                        <VerticalLine color="#7000FF" top="0%" left="0%" height="100%"></VerticalLine>
+                        <textarea style={{ height: `${msgInputTextareaHeight}` }} maxLength="445" spellCheck="false" className='inputField' value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea>
+                    </div>
                     <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
                 </div>
-                <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList'>
+                <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight }}>
                     {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
                     {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                 </ul>

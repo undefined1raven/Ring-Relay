@@ -11,9 +11,6 @@ let oneSig = window.OneSignal;
 function Chats(props) {
     const [showKeysStatus, setShowKeysStatus] = useState(true)
 
-    let demo = [{ name: 'MCRN 3rd Jupi Fleet', msg: 0, status: 'Offline', since: '45 min ago' },
-    { name: 'MCRN Home Fleet', msg: 3, status: 'Online', since: '' }];
-
     const getChatList = () => {
         return props.refs.arr.map(x => <li onClick={() => { props.onChatSelected(x.uid) }} key={x.name + Math.random()} className='chatCardListContainer'><ChatCard obj={{ ...x }}></ChatCard></li>)
     }

@@ -340,6 +340,7 @@ html {
   top: 66.09375%;
   width: 60%;
   height: 5%;
+  backdrop-filter: blur(15px);
   @include VAlign();
   @include flex();
   border-radius: 5px;
@@ -347,6 +348,7 @@ html {
 
 #privateKeyStatusAuthedDeco {
   top: 72.175%;
+  backdrop-filter: blur(15px);
   width: 3.6vh !important;
   height: 3.6vh !important;
   @include VAlign();
@@ -1109,6 +1111,20 @@ stop {
   width: 90%;
 }
 
+#msgInputActual{
+  padding-top: 5%;
+  padding-bottom: 5%;
+  height: 47%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Electrolize', sans-serif;
+  resize: none;
+}
+#msgInputActual::-webkit-scrollbar {
+  width: 0vh;
+  height: 0px;
+}
 .passwordPromptFailedLabel {
   top: 64%;
   width: 90%;
