@@ -73,6 +73,7 @@ function NewContact(props) {
         axios.post(`${DomainGetter('prodx')}api/dbop?addNewContact`, { AT: localStorage.getItem("AT"), CIP: localStorage.getItem('CIP'), remoteUID: uid }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
+                props.refreshRefs();
             } else {
                 setReqSentLabel({ opacity: 1, label: 'Request Already Sent', color: '#FF002E' });
                 setTimeout(() => {

@@ -52,11 +52,12 @@ function Home() {
 
   const onNavButtonClick = (btnId) => {
     if (windowId == 'chat') {
-      onBackButton()
+      onBackButton();
       setWindowId(btnId);
     } else {
       setWindowId(btnId);
     }
+    refreshRefs();
   };
   const onChatSelected = (uid) => {
     for (let ix = 0; ix < refs.arr.length; ix++) {
@@ -71,6 +72,7 @@ function Home() {
   const onBackButton = () => {
     remove(ref(db, `messageBuffer/${ownUID}`));
     setChatObj({ uid: '', name: '', status: '', since: '' })
+    refreshRefs();
     setWindowId('chats');
   }
 
