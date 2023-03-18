@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import ChatCard from '../components/ChatCard.js'
 import Label from '../components/Label.js'
+import Button from '../components/Button.js'
 import GenericLoadingDeco from '../components/GenericLoadingDeco.js'
 import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import NotAuthedMsgDeco from '../components/NotAuthedMsgDeco.js'
-import Button from '../components/Button.js'
 
 let oneSig = window.OneSignal;
 
@@ -38,9 +38,9 @@ function Chats(props) {
     const keyStatusDecoController = () => {
         if (keyStatusLabelController().color != '#0057FF' && showKeysStatus) {
             if (keyStatusLabelController().color == '#00FFD1') {
-                return <AuthedMsgDeco bkgOpacity="0" id="privateKeyStatusAuthedDeco"></AuthedMsgDeco>
+                return <AuthedMsgDeco bkgOpacity="0.2" id="privateKeyStatusAuthedDeco"></AuthedMsgDeco>
             } else {
-                return <NotAuthedMsgDeco bkgOpacity="0" id="privateKeyStatusAuthedDeco"></NotAuthedMsgDeco>
+                return <NotAuthedMsgDeco bkgOpacity="0.2" id="privateKeyStatusAuthedDeco"></NotAuthedMsgDeco>
             }
         }
     }
@@ -48,15 +48,6 @@ function Chats(props) {
     const onRefresh = () => {
         if (!props.refreshing) {
             props.onRefresh();
-            if (Notification.permission == 'granted') {
-                oneSig.registerForPushNotifications();
-            } else if (Notification.permission == 'default' || Notification.permission == 'denied') {
-                Notification.requestPermission(resx => {
-                    if (resx == 'granted') {
-                        oneSig.registerForPushNotifications();
-                    }
-                })
-            }
         }
     }
 

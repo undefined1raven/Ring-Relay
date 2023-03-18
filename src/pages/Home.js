@@ -10,6 +10,7 @@ import NavBar from '../components/NavBar.js'
 import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
 import Settings from '../components/Settings.js'
+import NotificationsDialog from '../components/NotificationsDialog.js'
 import NewContact from '../components/NewContact.js'
 import DomainGetter from '../fn/DomainGetter.js'
 import { useEffect, useState } from 'react'
@@ -47,6 +48,7 @@ function Home() {
   const [ownUID, setOwnUID] = useState(0);
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
   const [refreshingRefs, setRefreshingRefs] = useState(false)
+  const [notificationsDialogShow, setNotificationsDialogShow] = useState(false)
 
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
 
@@ -83,7 +85,11 @@ function Home() {
   });
 
   useEffect(() => {
-   
+    if (Notification.permission == 'granted') {
+      oneSig.registerForPushNotifications();
+    } else if (Notification.permission == 'default' || Notification.permission == 'denied') {
+      setNotificationsDialogShow(true);
+    }
   }, [])
 
   useEffect(() => {
@@ -98,7 +104,6 @@ function Home() {
           setAuthorized(true)
           oneSig.push(() => {
             oneSig.setExternalUserId(res.data.ownUID);
-            console.log('set sigid')
           })
           setOwnUID(res.data.ownUID);
           setCurrentUsername(res.data.username);
@@ -181,9 +186,13 @@ function Home() {
     })
   }
 
+  const onHideNotificationsDialog = () => {
+    setNotificationsDialogShow(false)
+  }
 
   return (
     <div>
+      <NotificationsDialog onHide={onHideNotificationsDialog} show={notificationsDialogShow}></NotificationsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
