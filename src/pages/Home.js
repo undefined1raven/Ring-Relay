@@ -54,7 +54,9 @@ function Home() {
   const [heartbeatEnabled, setheartbeatEnabled] = useState(false)
   const [hasPubKeys, setHasPubKeys] = useState({ ini: false, last: 0 });
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
-  const [messageCountHash, setmessageCountHash] = useState({ ini: false, hash: {} });
+  const [messageCountHash, setmessageCountHash] = useState({ ini: false, hash: {}, last: 0 });
+  const [contactStatusIntervalEnabled, setContactStatusIntervalEnabled] = useState(false);
+  const [newMessageCountsIntervalEnabled, setNewMessageCountsIntervalEnabled] = useState(false);
   const onNavButtonClick = (btnId) => {
     if (windowId == 'chat') {
       onBackButton();
@@ -74,7 +76,7 @@ function Home() {
   const switchToNewContacts = () => {
     setWindowId('newContact')
   }
-  const onBackButton = () => {
+  const onBackButton = (listner) => {
     remove(ref(db, `messageBuffer/${ownUID}`));
     setChatObj({ uid: '', name: '', status: '', since: '' })
     refreshRefs();
@@ -144,7 +146,7 @@ function Home() {
           if (!resx.data.error) {
             messageCountHash[res.data.refs[ix].uid] = { msg: resx.data.count };
             if (ix == res.data.refs.length - 1) {
-              setmessageCountHash({ ini: true, hash: messageCountHash });
+              setmessageCountHash({ ini: true, hash: messageCountHash, last: Date.now() });
               setRefreshingRefs(false);
               setTimeout(() => {
                 checkContactsStatus(messageCountHash)
@@ -157,14 +159,22 @@ function Home() {
   }
 
   useEffect(() => {
-    setInterval(() => {
-      if (messageCountHash.ini) {
-        checkContactsStatus(messageCountHash.hash);
-      }
-    }, 5000)
-    setInterval(() => {
-      getNewMessageCounts({ data: { refs: refs.arr } });
-    }, 20000)
+    if (!contactStatusIntervalEnabled) {
+      setInterval(() => {
+        if (messageCountHash.ini) {
+          checkContactsStatus(messageCountHash.hash);
+        }
+        setContactStatusIntervalEnabled(true)
+      }, 5000)
+    }
+    if (!newMessageCountsIntervalEnabled) {
+      setNewMessageCountsIntervalEnabled(true);
+      setInterval(() => {
+        if (Date.now() - messageCountHash.last > 20000) {
+          getNewMessageCounts({ data: { refs: refs.arr } });
+        }
+      }, 20000)
+    }
   }, [messageCountHash])
 
   useEffect(() => {
@@ -275,6 +285,7 @@ function Home() {
         setRefs({ ini: true, arr: res.data.refs });
         localStorage.setItem(`refs-${res.data.ownUID}`, JSON.stringify({ array: res.data.refs }));
         getNewMessageCounts(res);
+        checkContactsStatus(messageCountHash.hash);
       }
       localStorage.setItem(`refs-${localStorage.getItem('ownUID')}`, JSON.stringify({ array: res.data.refs }))
     })
