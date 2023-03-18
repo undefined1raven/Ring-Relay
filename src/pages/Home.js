@@ -112,10 +112,11 @@ function Home() {
             get(ref(db, `activeUIDs/${refs.arr[ix].uid}`)).then(snap => {
               const lastTx = snap.val()
               if (lastTx) {
-                if (Date.now() - lastTx[refs.arr[ix].uid].tx < 15000) {
+                if (Date.now() - lastTx.tx < 7000) {
                   updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Online' });
                 } else {
                   updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Offline' });
+                  remove(ref(db, `activeUIDs/${refs.arr[ix].uid}`));
                 }
               } else {
                 updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Offline' });
