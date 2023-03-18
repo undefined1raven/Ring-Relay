@@ -23,8 +23,8 @@ function NotificationsDialog(props) {
 
     const allow = () => {
         if (atLeastOneSelected()) {
-            if (Notification.permission == 'default' || Notification.permission == 'denied') {
-                Notification.requestPermission(resx => {
+            if (window.Notification.permission == 'default' || window.Notification.permission == 'denied') {
+                window.Notification.requestPermission(resx => {
                     if (resx == 'granted') {
                         oneSig.registerForPushNotifications();
                     }

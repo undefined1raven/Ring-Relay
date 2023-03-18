@@ -51,7 +51,7 @@ function Home() {
   const [notificationsDialogShow, setNotificationsDialogShow] = useState(false)
   const [showErr, setShowErr] = useState(false)
   const [netErr, setNetErr] = useState({ status: false, error: '' });
-
+  const [heartbeatEnabled, setheartbeatEnabled] = useState(false)
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
 
   const onNavButtonClick = (btnId) => {
@@ -88,15 +88,50 @@ function Home() {
 
   useEffect(() => {
     try {
-      if (Notification.permission == 'granted') {
-        oneSig.registerForPushNotifications();
-      } else if (Notification.permission == 'default' || Notification.permission == 'denied') {
-        setNotificationsDialogShow(true);
+      if (window.Notification) {
+        if (window.Notification.permission == 'granted') {
+          oneSig.registerForPushNotifications();
+        } else if (window.Notification.permission == 'default' || window.Notification.permission == 'denied') {
+          setNotificationsDialogShow(true);
+        }
       }
+
     } catch (e) {
       setShowErr(true)
     }
   }, [])
+
+
+  useEffect(() => {
+    if (authorized && ownUID != 0 && !heartbeatEnabled) {
+      setheartbeatEnabled(true)
+      setInterval(() => {
+        if (refs.arr.length > 0) {
+          let updatedRefsWithStatus = [];
+          for (let ix = 0; ix < refs.arr.length; ix++) {
+            get(ref(db, `activeUIDs/${refs.arr[ix].uid}`)).then(snap => {
+              const lastTx = snap.val()
+              if (lastTx) {
+                if (Date.now() - lastTx[refs.arr[ix].uid].tx < 15000) {
+                  updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Online' });
+                } else {
+                  updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Offline' });
+                }
+              } else {
+                updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Offline' });
+              }
+            })
+          }
+          setTimeout(() => {
+            if (refs.arr.length == updatedRefsWithStatus.length) {
+              setRefs({ ini: true, arr: updatedRefsWithStatus })
+            }
+          }, 50);
+        }
+        set(ref(db, `activeUIDs/${ownUID}`), { tx: Date.now() });
+      }, 5000);
+    }
+  }, [ownUID])
 
   useEffect(() => {
     window.location.hash = windowHash;
