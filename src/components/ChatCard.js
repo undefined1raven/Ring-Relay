@@ -16,8 +16,10 @@ function ChatCard(props) {
         }
         if (props.obj.status === 'Online') {
             setStatusProps({ color: '#00FF85' })
-        } else {
+        } else if(props.obj.status == 'Offline') {
             setStatusProps({ color: '#FF002E' })
+        }else if(props.obj.status == '▣'){
+            setStatusProps({ color: '#001AFF' })
         }
     }
 

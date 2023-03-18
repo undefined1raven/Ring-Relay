@@ -52,6 +52,7 @@ function Home() {
   const [showErr, setShowErr] = useState(false)
   const [netErr, setNetErr] = useState({ status: false, error: '' });
   const [heartbeatEnabled, setheartbeatEnabled] = useState(false)
+  const [hasPubKeys, setHasPubKeys] = useState({ ini: false, last: 0 });
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
 
   const onNavButtonClick = (btnId) => {
@@ -202,26 +203,36 @@ function Home() {
 
   useEffect(() => {
     if (refs.ini && refs.arr.length > 0) {
-      for (let ix = 0; ix < refs.arr.length; ix++) {
-        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: refs.arr[ix].uid }).then(res => {
+      if (!hasPubKeys.ini || (hasPubKeys.ini && Date.now() - hasPubKeys.last > 600000 && hasPubKeys.last != 0)) {
+        setHasPubKeys({ ini: true, last: Date.now() });
+        for (let ix = 0; ix < refs.arr.length; ix++) {
+          axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: refs.arr[ix].uid }).then(res => {
+            if (!res.data.error) {
+              localStorage.setItem(`PUBK-${refs.arr[ix].uid}`, res.data.publicKey);
+              localStorage.setItem(`PUBSK-${refs.arr[ix].uid}`, res.data.publicSigningKey);
+            }
+          });
+        }
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
           if (!res.data.error) {
-            localStorage.setItem(`PUBK-${refs.arr[ix].uid}`, res.data.publicKey);
-            localStorage.setItem(`PUBSK-${refs.arr[ix].uid}`, res.data.publicSigningKey);
+            localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
+            localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
           }
         });
       }
-      axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
-        if (!res.data.error) {
-          localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
-          localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
-        }
-      });
     }
   }, [refs])
 
 
   const refreshRefs = () => {
     setRefreshingRefs(true);
+    let updateUIRefs = [];
+    for (let ix = 0; ix < refs.arr.length; ix++) {
+      updateUIRefs.push({ ...refs.arr[ix], status: '▣' });
+    }
+    if (updateUIRefs.length == refs.arr.length) {
+      setRefs({ arr: updateUIRefs, ini: true });
+    }
     axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
       setRefreshingRefs(false);
       setRefs({ ini: true, arr: res.data.refs });
