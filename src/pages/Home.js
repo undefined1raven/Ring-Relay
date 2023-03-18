@@ -127,7 +127,7 @@ function Home() {
             if (refs.arr.length == updatedRefsWithStatus.length) {
               setRefs({ ini: true, arr: updatedRefsWithStatus })
             }
-          }, 50);
+          }, 200);
         }
         set(ref(db, `activeUIDs/${ownUID}`), { tx: Date.now() });
       }, 5000);
