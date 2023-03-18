@@ -49,6 +49,8 @@ function Home() {
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
   const [refreshingRefs, setRefreshingRefs] = useState(false)
   const [notificationsDialogShow, setNotificationsDialogShow] = useState(false)
+  const [showErr, setShowErr] = useState(false)
+  const [netErr, setNetErr] = useState({ status: false, error: '' });
 
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
 
@@ -85,10 +87,14 @@ function Home() {
   });
 
   useEffect(() => {
-    if (Notification.permission == 'granted') {
-      oneSig.registerForPushNotifications();
-    } else if (Notification.permission == 'default' || Notification.permission == 'denied') {
-      setNotificationsDialogShow(true);
+    try {
+      if (Notification.permission == 'granted') {
+        oneSig.registerForPushNotifications();
+      } else if (Notification.permission == 'default' || Notification.permission == 'denied') {
+        setNotificationsDialogShow(true);
+      }
+    } catch (e) {
+      setShowErr(true)
     }
   }, [])
 
@@ -150,6 +156,7 @@ function Home() {
 
       }).catch(e => {
         console.log(e)
+        setNetErr({ status: true, error: e })
         setTimeout(() => {
           window.location.reload()
         }, 5000);
@@ -192,6 +199,8 @@ function Home() {
 
   return (
     <div>
+      <Label fontSize="2vh" color="#FF002E" bkg="#FF002E30" id="noter" show={showErr} text="Failed to get notification object"></Label>
+      <Label fontSize="2vh" color="#FF002E" bkg="#FF002E30" id="noter2" show={netErr.status} text={`Network Erorr [${netErr.error}]`}></Label>
       <NotificationsDialog onHide={onHideNotificationsDialog} show={notificationsDialogShow}></NotificationsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>

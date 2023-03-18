@@ -1223,20 +1223,29 @@ input[type="file"]::file-selector-button {
 
 .notificationsDialogButton {
   border-radius: 5px;
-  padding-right: 35%;
+  padding-left: 5%;
   padding-top: 1%;
+  justify-content: start;
   height: 5.55% !important; 
-  width: 55% !important;
+  width: 85% !important;
 }
 .notificationsDialogButtonSelectedLabel{
   @include flex();
   text-align: center;
   width: 11.388888889%;
 }
-.notificationsDialogButtonSelectedLabel{
-  padding-top: 1.2%;
-  height: 5.43% !important;
-}
 .notificationsDialogFinalButton{
   border-radius: 5px;
+}
+#noter, #noter2{
+  top: 50%;
+  width: 80%;
+  height: 6%;
+  border-radius: 5px;
+  @include VAlign();
+  @include flex();
+}
+#noter2{
+  top: 58%;
+  text-align: center;
 }
