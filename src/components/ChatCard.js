@@ -9,16 +9,20 @@ function ChatCard(props) {
     const [statusProps, setStatusProps] = useState({ color: '#FF002E' });
 
     const setUIState = () => {
-        if (props.obj.msg > 0) {
-            setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg} new messages`, color: '#A966FF' })
+        if (props.obj.msg != -1) {
+            if (props.obj.msg > 0) {
+                setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg} new messages`, color: '#A966FF' })
+            } else {
+                setMsgCountLabelProps({ top: 'auto', text: 'No New Messages', color: '#6600E8' });
+            }
         } else {
-            setMsgCountLabelProps({ top: 'auto', text: 'No New Messages', color: '#6600E8' });
+            setMsgCountLabelProps({ top: 'auto', text: `Checking ▣`, color: '#001AFF' })
         }
         if (props.obj.status === 'Online') {
             setStatusProps({ color: '#00FF85' })
-        } else if(props.obj.status == 'Offline') {
+        } else if (props.obj.status == 'Offline') {
             setStatusProps({ color: '#FF002E' })
-        }else if(props.obj.status == '▣'){
+        } else if (props.obj.status == '▣') {
             setStatusProps({ color: '#001AFF' })
         }
     }
@@ -39,8 +43,8 @@ function ChatCard(props) {
 
     return (
         <div className="chatCard">
-            <VerticalLine top="0%" left="0%" height="100%" color="#7000FF"></VerticalLine>
-            <div style={{ position: 'absolute', left: '2.285714286%', borderLeft: 'solid 1px #7000FF', width: '83.428571429%', height: "100%", backgroundColor: '#6100DC40' }}></div>
+            <VerticalLine top="0%" left="0%" height="100%" color={props.obj.msg == -1 ? '#001AFF' : '#7000FF'}></VerticalLine>
+            <div style={{ position: 'absolute', left: '2.285714286%', borderLeft: `solid 1px ${props.obj.msg == -1 ? '#001AFF' : '#7000FF'}`, width: '83.428571429%', height: "100%", backgroundColor: `${props.obj.msg == -1 ? '#001AFF20' : '#6100DC40'}` }}></div>
             <Label color="#FFF" fontSize="2.1vh" className="chatCardName" text={props.obj.name}></Label>
             <Label style={{ top: msgCountLabelProps.top }} className="chatCardMsgCount" color={msgCountLabelProps.color} fontSize="1.6vh" text={msgCountLabelProps.text}></Label>
             <NewMsgsDeco show={props.obj.msg > 0} color={msgCountDecoColor}></NewMsgsDeco>

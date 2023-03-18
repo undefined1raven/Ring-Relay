@@ -54,7 +54,7 @@ function Home() {
   const [heartbeatEnabled, setheartbeatEnabled] = useState(false)
   const [hasPubKeys, setHasPubKeys] = useState({ ini: false, last: 0 });
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
-
+  const [messageCountHash, setmessageCountHash] = useState({ ini: false, hash: {} });
   const onNavButtonClick = (btnId) => {
     if (windowId == 'chat') {
       onBackButton();
@@ -103,37 +103,78 @@ function Home() {
   }, [])
 
 
+  const checkContactsStatus = (msgCountHash) => {
+    if (refs.arr.length > 0) {
+      let updatedRefsWithStatus = [];
+      for (let ix = 0; ix < refs.arr.length; ix++) {
+        get(ref(db, `activeUIDs/${refs.arr[ix].uid}`)).then(snap => {
+          const lastTx = snap.val()
+          var lstat = ''
+          if (lastTx) {
+            if (Date.now() - lastTx.tx < 7000) {
+              lstat = 'Online';
+            } else {
+              lstat = 'Offline';
+              remove(ref(db, `activeUIDs/${refs.arr[ix].uid}`));
+            }
+          } else {
+            lstat = 'Offline';
+          }
+          if (msgCountHash) {
+            updatedRefsWithStatus.push({ ...refs.arr[ix], status: lstat, msg: msgCountHash[refs.arr[ix].uid].msg });
+          } else {
+            updatedRefsWithStatus.push({ ...refs.arr[ix], status: lstat });
+          }
+        })
+      }
+      setTimeout(() => {
+        if (refs.arr.length == updatedRefsWithStatus.length) {
+          setRefs({ ini: true, arr: updatedRefsWithStatus })
+        }
+      }, 200);
+    }
+  }
+
+
+  const getNewMessageCounts = (res) => {
+    let messageCountHash = {};
+    if (res.data.refs.length > 0) {
+      for (let ix = 0; ix < res.data.refs.length; ix++) {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getNewMessagesCount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: res.data.refs[ix].uid }).then(resx => {
+          if (!resx.data.error) {
+            messageCountHash[res.data.refs[ix].uid] = { msg: resx.data.count };
+            if (ix == res.data.refs.length - 1) {
+              setmessageCountHash({ ini: true, hash: messageCountHash });
+              setRefreshingRefs(false);
+              setTimeout(() => {
+                checkContactsStatus(messageCountHash)
+              }, 200);
+            }
+          }
+        }).catch(e => { })
+      }
+    }
+  }
+
+  useEffect(() => {
+    setInterval(() => {
+      if (messageCountHash.ini) {
+        checkContactsStatus(messageCountHash.hash);
+      }
+    }, 5000)
+    setInterval(() => {
+      getNewMessageCounts({ data: { refs: refs.arr } });
+    }, 20000)
+  }, [messageCountHash])
+
   useEffect(() => {
     if (authorized && ownUID != 0 && !heartbeatEnabled) {
       setheartbeatEnabled(true)
       setInterval(() => {
-        if (refs.arr.length > 0) {
-          let updatedRefsWithStatus = [];
-          for (let ix = 0; ix < refs.arr.length; ix++) {
-            get(ref(db, `activeUIDs/${refs.arr[ix].uid}`)).then(snap => {
-              const lastTx = snap.val()
-              if (lastTx) {
-                if (Date.now() - lastTx.tx < 7000) {
-                  updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Online' });
-                } else {
-                  updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Offline' });
-                  remove(ref(db, `activeUIDs/${refs.arr[ix].uid}`));
-                }
-              } else {
-                updatedRefsWithStatus.push({ ...refs.arr[ix], status: 'Offline' });
-              }
-            })
-          }
-          setTimeout(() => {
-            if (refs.arr.length == updatedRefsWithStatus.length) {
-              setRefs({ ini: true, arr: updatedRefsWithStatus })
-            }
-          }, 200);
-        }
         set(ref(db, `activeUIDs/${ownUID}`), { tx: Date.now() });
       }, 5000);
     }
-  }, [ownUID])
+  }, [ownUID, messageCountHash])
 
   useEffect(() => {
     window.location.hash = windowHash;
@@ -144,7 +185,7 @@ function Home() {
           setAuthorized(false)
           localStorage.removeItem('refs')
         } else {
-          setAuthorized(true)
+          setAuthorized(true);
           oneSig.push(() => {
             oneSig.setExternalUserId(res.data.ownUID);
           })
@@ -179,14 +220,10 @@ function Home() {
         }
         if (!refs.ini) {
           if (refsCache == null) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
-              if (res.data.refs) {
-                setRefs({ ini: true, arr: res.data.refs });
-                localStorage.setItem(`refs-${res.data.ownUID}`, JSON.stringify({ array: res.data.refs }));
-              }
-            })
+            refreshRefs();
           } else {
             setRefs({ ini: true, arr: JSON.parse(localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`)).array });
+            refreshRefs();
           }
 
         }
@@ -234,8 +271,11 @@ function Home() {
       setRefs({ arr: updateUIRefs, ini: true });
     }
     axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
-      setRefreshingRefs(false);
-      setRefs({ ini: true, arr: res.data.refs });
+      if (res.data.refs) {
+        setRefs({ ini: true, arr: res.data.refs });
+        localStorage.setItem(`refs-${res.data.ownUID}`, JSON.stringify({ array: res.data.refs }));
+        getNewMessageCounts(res);
+      }
       localStorage.setItem(`refs-${localStorage.getItem('ownUID')}`, JSON.stringify({ array: res.data.refs }))
     })
   }
