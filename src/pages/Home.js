@@ -68,6 +68,7 @@ function Home() {
   const onChatSelected = (uid) => {
     for (let ix = 0; ix < refs.arr.length; ix++) {
       if (refs.arr[ix].uid == uid) {
+        remove(ref(db, `messageBuffer/${ownUID}`));
         setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since })
       }
     }

@@ -71,7 +71,7 @@ function Chat(props) {
     const [statusOverride, setStatusOverride] = useState(false);
     const [showIsTyping, setShowIsTyping] = useState(false)
     const [isTypingLastUnix, setIsTypingLastUnix] = useState(0);
-    const [isTypingTimer, setIsTypingTimer] = useState(false)
+    const [bufferInitialReset, setBufferInitialReset] = useState(false)
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -299,10 +299,11 @@ function Chat(props) {
 
 
     useEffect(() => {
+        console.log('xx')
+        remove(ref(db, `messageBuffer/${props.ownUID}`));
         var interval = false
         if (!msgArray.ini && props.visible) {
             msgArrBatch = [];
-            remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
             interval = setInterval(() => {
                 get(ref(db, `activeUIDs/${props.chatObj.uid}`)).then(snap => {
@@ -321,7 +322,7 @@ function Chat(props) {
                         setStatusProps({ color: '#FF002E' })
                     }
                 })
-            }, 3000)
+            }, 1500)
         }
         return () => interval ? clearInterval(interval) : 0
     }, [])
@@ -446,6 +447,7 @@ function Chat(props) {
 
     useEffect(() => {
         if (props.visible && props.ownMessageBuffer != 0) {
+
             let RXrealtimeBuffer = props.ownMessageBuffer.val();
             if (RXrealtimeBuffer != null) {
                 if (RXrealtimeBuffer.messages != null) {
@@ -525,6 +527,7 @@ function Chat(props) {
                         setIsTypingLastUnix(RXrealtimeBuffer.typing.tx)
                     }
                 }
+              
             }
         }
     }, [props.ownMessageBuffer])
