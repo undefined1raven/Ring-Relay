@@ -440,7 +440,7 @@ function Chat(props) {
             setIsTypingTimer(true)
             setInterval(() => {
                 if (isTyping.status && isTyping.tx != 0) {
-                    if (Date.now() - isTyping.tx > 300) {
+                    if (Date.now() - isTyping.tx > 500) {
                         isTyping = { ...isTyping, status: false };
                         setShowIsTyping(false)
                         remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));

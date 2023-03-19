@@ -14,7 +14,7 @@ function PasswordValidator(props) {
             setHasLength(props.password.length > 7)
             setHasNumber(props.password.match(/[0-9]/));
             setHasUppercaseLetter(props.password.match(/[A-Z]/));
-            setHasSymbol(!props.password.match(/^(.{0,7}|[^0-9]*|[^A-Z]*|[^a-z]*|[a-zA-Z0-9]*)$/));//&&final check
+            setHasSymbol(!props.password.match(/^(|[a-zA-Z0-9]*)$/));
         } else {
             setHasNumber(false)
             setHasUppercaseLetter(false)
@@ -28,7 +28,7 @@ function PasswordValidator(props) {
             <Label style={{ top: props.top, left: '5.277777778%' }} fontSize="1.7vh" className="passwordValidatorLabel" color={hasNumber ? '#00FFD1' : '#616161'} child={<HorizontalLine style={{ position: 'absolute', top: '105%' }} width="100%" color={hasNumber ? '#00FFD1' : '#616161'}></HorizontalLine>} text="Number"></Label>
             <Label style={{ top: props.top, left: '29.166666667%' }} fontSize="1.7vh" className="passwordValidatorLabel" color={hasSymbol ? '#00FFD1' : '#616161'} child={<HorizontalLine style={{ top: '105%' }} width="100%" color={hasSymbol ? '#00FFD1' : '#616161'}></HorizontalLine>} text="Symbol"></Label>
             <Label style={{ top: props.top, left: '53.055555556%' }} fontSize="1.7vh" className="passwordValidatorLabel" color={hasUppercaseLetter ? '#00FFD1' : '#616161'} child={<HorizontalLine style={{ top: '105%' }} width="100%" color={hasUppercaseLetter ? '#00FFD1' : '#616161'}></HorizontalLine>} text="Uppercase"></Label>
-            <Label style={{ top: props.top, left: '76.944444444%' }} fontSize="1.7vh" className="passwordValidatorLabel" color={hasLength ? '#00FFD1' : '#616161'} child={<HorizontalLine style={{ top: '105%' }} width="100%" color={hasLength ? '#00FFD1' : '#616161'}></HorizontalLine>} text="7 chars"></Label>
+            <Label style={{ top: props.top, left: '76.944444444%' }} fontSize="1.7vh" className="passwordValidatorLabel" color={hasLength ? '#00FFD1' : '#616161'} child={<HorizontalLine style={{ top: '105%' }} width="100%" color={hasLength ? '#00FFD1' : '#616161'}></HorizontalLine>} text="8 chars"></Label>
         </div>
     )
 }
