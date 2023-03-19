@@ -83,7 +83,7 @@ function NewAccount() {
     const submit = (e) => {
         validateInput(false);
         e.preventDefault();
-        if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 6 && password.match(/[0-9]/) && password.match(/[A-Z]/)) {
+        if (username.length > 2 && username.indexOf('@') == -1 && email.length > 2 && EmailValidator.validate(email) && password.length > 7 && !password.match(/^(.{0,7}|[^0-9]*|[^A-Z]*|[^a-z]*|[a-zA-Z0-9]*)$/)) {
             setAccountInfoLabel({label: '[Generating Key Pairs]', color: '#001AFF'})
             getKeyPair().then(keys => {
                 getSigningKeyPair().then(signingKeys => {

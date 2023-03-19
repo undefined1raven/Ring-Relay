@@ -69,7 +69,7 @@ function Chat(props) {
     const [inputDynamicStyle, setInputDynamicStyle] = useState({ top: '92.1875%', height: '6.5625%' });
     const [msgsListHeight, setMsgsListHeight] = useState('74.21875%');
     const [msgInputTextareaHeight, setMsgInputTextareaHeight] = useState('47%');
-
+    const [statusOverride, setStatusOverride] = useState(false);
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -303,14 +303,34 @@ function Chat(props) {
             msgArrBatch = [];
             remove(ref(db, `messageBuffer/${props.ownUID}`));
             getMessagesAndUpdateChat();
+            setInterval(() => {
+                get(ref(db, `activeUIDs/${props.chatObj.uid}`)).then(snap => {
+                    const lastTx = snap.val()
+                    if (lastTx != null) {
+                        if (Date.now() - lastTx.tx < 5000) {
+                            setStatusOverride('Online')
+                            setStatusProps({ color: '#00FF85' })
+                        } else {
+                            setStatusOverride('Offline')
+                            remove(ref(db, `activeUIDs/${props.chatObj.uid}`));
+                            setStatusProps({ color: '#FF002E' })
+                        }
+                    } else {
+                        setStatusOverride('Offline')
+                        setStatusProps({ color: '#FF002E' })
+                    }
+                })
+            }, 3000)
         }
     }, [])
 
     useEffect(() => {
-        if (props.chatObj.status === 'Online') {
-            setStatusProps({ color: '#00FF85' })
-        } else {
-            setStatusProps({ color: '#FF002E' })
+        if (!statusOverride) {
+            if (props.chatObj.status === 'Online') {
+                setStatusProps({ color: '#00FF85' })
+            } else {
+                setStatusProps({ color: '#FF002E' })
+            }
         }
         setInterval(() => {
             setIH(window.innerHeight)
@@ -500,22 +520,23 @@ function Chat(props) {
                     <div className='chatHeaderBkg'></div>
                     <Button onClick={props.onBackButton} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
                     <Label className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
-                    <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={props.chatObj.status} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
+                    <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
                 <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
                     <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
-                        <VerticalLine color="#7000FF" top="0%" left="0%" height="100%"></VerticalLine>
-                        <textarea style={{ height: `${msgInputTextareaHeight}` }} maxLength="445" spellCheck="false" className='inputField' value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea>
+                        <VerticalLine color={props.privateKeyStatus ? "#7000FF" : '#FF002E'} top="0%" left="0%" height="100%"></VerticalLine>
+                        {props.privateKeyStatus ? <textarea style={{ height: `${msgInputTextareaHeight}` }} maxLength="445" spellCheck="false" className='inputField' value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea> : ''}
                     </div>
-                    <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button>
+                    {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button> : ''}
                 </div>
-                <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight }}>
+                <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${props.privateKeyStatus ? '#7000FF' : '#FF002E'}` }}>
                     {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
                     {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
+                <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
             </div>
         )
     } else {

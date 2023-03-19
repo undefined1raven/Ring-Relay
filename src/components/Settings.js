@@ -11,6 +11,7 @@ import AuthDeviceScanDeco from '../components/authDeviceScanDeco.js'
 import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
 import AuthDeviceLoadDeco from '../components/AuthDeviceLoadDeco.js'
 import PasswordPrompt from '../components/PasswordPrompt.js'
+import PasswordReset from '../components/SettingsNewPassword.js'
 import { pemToKey, symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
@@ -278,7 +279,7 @@ function Settings(props) {
                     <Label className="settingsMenuLabel" id="accountLabel" text="Account" fontSize="2.4vh" color="#FFF"></Label>
                     <Button onClick={logout} id="logoutBtn" width="90%" fontSize="2.3vh" height="6.46875%" color="#878787" bkg="#410093" label="Log Out"></Button>
                     <Button id="changeUsernameButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Username"></Button>
-                    <Button id="changePasswordButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Password"></Button>
+                    <Button onClick={() => setActiveWindowId('changePassword')} id="changePasswordButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Password"></Button>
                     <Button onClick={() => setActiveWindowId('deleteAccount')} id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
                     <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
@@ -379,6 +380,7 @@ function Settings(props) {
                             <Button onClick={onRevokeID} id="authDevicebackButton" className="settingsMenuButton" style={{ top: '60.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Confirm"></Button>
                         </>}
                 </div> : ''}
+            <PasswordReset onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changePassword'}></PasswordReset>
         </div>
     )
 }

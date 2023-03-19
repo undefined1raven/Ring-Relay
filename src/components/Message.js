@@ -132,7 +132,7 @@ function Message(props) {
 
     const messageContentColorController = () => {
         if (props.decrypted) {
-            return props.msgObj.type == 'rx' ? '#FFF' : '#9B5EFF';
+            return props.msgObj.type == 'rx' ? '#FFF' : '#C09AFF';
         } else {
             return '#CA0024';
         }

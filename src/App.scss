@@ -406,7 +406,22 @@ rect {
   top: 50%;
   left: 61%;
 }
-
+.privateKeyMissingLabel{
+  top: 92.1875%;
+  left: 3.333333333%;
+  width: 94.722222222%;
+  height: 6.5625%;
+  @include flex();
+  text-align: center;
+  border-left: solid 1px #FF002E;
+}
+.changePasswordFieldLabel{
+  left: 5%;
+}
+.changePasswordInputField{
+  left: 5%;
+  width: 89.5%;
+}
 .chatCardStatus,
 .chatHeaderStatus {
   width: 15.05714286%;
@@ -1044,7 +1059,13 @@ rect {
 stop {
   transition: all linear 0.5s;
 }
-
+.passwordValidatorLabel{
+  width: 17.611111111%;
+  @include flex();
+  text-align: center;
+  height: 2.65625%;
+  transition: all linear 0.1s;
+}
 #scanExpordIDLabel {
   top: 23.125%;
   width: 90%;
