@@ -28,9 +28,10 @@ function ChatCard(props) {
     }
 
     useEffect(() => {
+        var interval = false;
         setUIState()
         if (props.obj.msg > 0) {
-            setInterval(() => {
+            interval = setInterval(() => {
                 setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg} new messages`, color: '#A966FF' })
                 setMsgCountDecoColor('#8D33FF');
                 setTimeout(() => {
@@ -39,6 +40,7 @@ function ChatCard(props) {
                 }, 750);
             }, 1500);
         }
+        return () => interval ? clearInterval(interval) : 0;
     }, [props.obj.msg])
 
     return (

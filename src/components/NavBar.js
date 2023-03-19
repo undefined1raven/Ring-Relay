@@ -23,9 +23,10 @@ function NavBar(props) {
 
     useEffect(() => {
         checkSys()
-        setInterval(() => {
+        let interval = setInterval(() => {
             checkSys()
         }, 300000);
+        return () => clearInterval(interval)
     }, []);
 
     function navButtonBkgController(btnId) {

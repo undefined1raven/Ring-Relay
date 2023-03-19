@@ -136,16 +136,19 @@ html {
 
 #usernameField {
   top: calc(21.25% - 5%);
+  width: 90%;
   @include VAlign();
 }
 
 #emailField {
   top: calc(32.8125% - 5%);
+  width: 90%;
   @include VAlign();
 }
 
 #passwordField {
   top: calc(44.375% - 5%);
+  width: 90%;
   @include VAlign();
 }
 
@@ -330,14 +333,18 @@ html {
 #chatsContainer {
   position: absolute;
   top: 10.3125%;
-  left: 1.388888889%;
+  @include VAlign();
   width: 97.222222222%;
   height: 80.9375%;
   list-style-type: none;
   padding: 0;
   margin: 0;
+  overflow-y: scroll;
 }
-
+#chatsContainer::-webkit-scrollbar {
+  width: 0vh;
+  height: 0px;
+}
 #privateKeyStatusLabel {
   top: 66.09375%;
   width: 60%;
@@ -366,7 +373,7 @@ html {
   position: relative;
   padding: 0;
   margin: 0;
-  width: 100%;
+  width: 98%;
   height: 100.722007722%;
   @include flex();
 }

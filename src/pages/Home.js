@@ -57,6 +57,7 @@ function Home() {
   const [messageCountHash, setmessageCountHash] = useState({ ini: false, hash: {}, last: 0 });
   const [contactStatusIntervalEnabled, setContactStatusIntervalEnabled] = useState(false);
   const [newMessageCountsIntervalEnabled, setNewMessageCountsIntervalEnabled] = useState(false);
+  const [ownMessageBuffer, setOwnMessageBuffer] = useState(0);
   const onNavButtonClick = (btnId) => {
     if (windowId == 'chat') {
       onBackButton();
@@ -103,6 +104,17 @@ function Home() {
       setShowErr(true)
     }
   }, [])
+
+  let rtdbListnerIni = false;
+
+  useEffect(() => {
+    if (!rtdbListnerIni && authorized && ownUID != 0) {
+      rtdbListnerIni = true;
+      onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
+        setOwnMessageBuffer(snap)
+      });
+    }
+  }, [authorized])
 
 
   const checkContactsStatus = (msgCountHash) => {
@@ -160,31 +172,32 @@ function Home() {
   }
 
   useEffect(() => {
-    if (!contactStatusIntervalEnabled) {
-      setInterval(() => {
-        if (messageCountHash.ini) {
-          checkContactsStatus(messageCountHash.hash);
-        }
-        setContactStatusIntervalEnabled(true)
-      }, 5000)
-    }
-    if (!newMessageCountsIntervalEnabled) {
-      setNewMessageCountsIntervalEnabled(true);
-      setInterval(() => {
-        if (Date.now() - messageCountHash.last > 20000) {
-          getNewMessageCounts({ data: { refs: refs.arr } });
-        }
-      }, 20000)
-    }
+    var contactStatusInterval = false;
+    var newMessageCountsInterval = false;
+    contactStatusInterval = setInterval(() => {
+      if (messageCountHash.ini) {
+        checkContactsStatus(messageCountHash.hash);
+      }
+      setContactStatusIntervalEnabled(true)
+    }, 5000)
+    setNewMessageCountsIntervalEnabled(true);
+    newMessageCountsInterval = setInterval(() => {
+      if (Date.now() - messageCountHash.last > 20000) {
+        getNewMessageCounts({ data: { refs: refs.arr } });
+      }
+    }, 20000)
+    return () => { clearInterval(contactStatusInterval); clearInterval(newMessageCountsInterval); }
   }, [messageCountHash])
 
   useEffect(() => {
+    var heartbeatInterval = false
     if (authorized && ownUID != 0 && !heartbeatEnabled) {
       setheartbeatEnabled(true)
-      setInterval(() => {
+      heartbeatInterval = setInterval(() => {
         set(ref(db, `activeUIDs/${ownUID}`), { tx: Date.now() });
       }, 5000);
     }
+    return () => clearInterval(heartbeatInterval)
   }, [ownUID, messageCountHash])
 
   useEffect(() => {
@@ -296,6 +309,7 @@ function Home() {
     setNotificationsDialogShow(false)
   }
 
+
   return (
     <div>
       <Label fontSize="2vh" color="#FF002E" bkg="#FF002E30" id="noter" show={showErr} text="Failed to get notification object"></Label>
@@ -303,7 +317,7 @@ function Home() {
       <NotificationsDialog onHide={onHideNotificationsDialog} show={notificationsDialogShow}></NotificationsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
-      {windowId == 'chat' ? <Chat privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
+      {windowId == 'chat' ? <Chat ownMessageBuffer={ownMessageBuffer} privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       {windowId == 'newContact' ? <NewContact refreshRefs={refreshRefs} show={windowId == 'newContact'}></NewContact> : ''}
       {windowId == 'settings' ? <Settings privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}
     </div>

@@ -10,6 +10,7 @@ import * as EmailValidator from 'email-validator';
 import DomainGetter from '../fn/DomainGetter.js'
 import { getKeyPair, keyToPem, getSigningKeyPair, pemToKey } from '../fn/crypto.js';
 import axios from 'axios';
+import PasswordValidator from '../components/PasswordValidator.js'
 
 function NewAccount() {
     const [usernameFieldColor, setUsernameFieldColor] = useState("#6100DC");
@@ -80,6 +81,7 @@ function NewAccount() {
         }
     }
 
+
     const submit = (e) => {
         validateInput(false);
         e.preventDefault();
@@ -128,8 +130,11 @@ function NewAccount() {
             if (!password.match(/[A-Z]/)) {
                 setAccountInfoLabel({ color: '#FF001F', label: 'Password must contain at least an upper case letter' });
             }
-            if (password.length <= 6) {
-                setAccountInfoLabel({ color: '#FF001F', label: 'Password has to have at least 7 chars' });
+            if (password.length <= 7) {
+                setAccountInfoLabel({ color: '#FF001F', label: 'Password has to have at least 8 chars' });
+            }
+            if(password.match(/^(|[a-zA-Z0-9]*)$/)){
+                setAccountInfoLabel({ color: '#FF001F', label: 'Password has to have at least a symbol' });
             }
             if (!EmailValidator.validate(email)) {
                 setAccountInfoLabel({ color: '#FF001F', label: 'Invalid Email' });
@@ -155,13 +160,13 @@ function NewAccount() {
             </form>
             <Label id="E2ELabel" className="newAccountLabel x0" text="End-to-end Encrypted" color="#9745FF" bkg="#6100DC40" fontSize="1.9vh"></Label>
             <Label id="MsgAuthLabel" className="newAccountLabel x1" text="Message Origin Authentication" color="#9745FF" bkg="#6100DC40" fontSize="1.9vh"></Label>
-            <Label id="NoPlainLabel" className="newAccountLabel x2" text="Plaintext never hits the servers" color="#9745FF" bkg="#6100DC40" fontSize="1.9vh"></Label>
-            <HorizontalLine id="newAccountLn" color="#6100DC" left="10.277777778%" top="55%" width="79.444444444%"></HorizontalLine>
+            <HorizontalLine id="newAccountLn" color="#6100DC" left="5%" top="55%" width="90%"></HorizontalLine>
             <LinkDeco id="linkDeco"></LinkDeco>
-            <Label fontSize="2vh" id="privateKeyBackup" show={hasKeys} style={{ width: '79.444444444%', height: '7.46875%' }} color="#001AFF" bkg="#001AFF30" text="[Redirecting]"></Label>
-            <Label id="generatingKeyPairLabel" fontSize="2.1vh" show={!hasKeys} bkg={`${accountInfoLabel.color}30`} color={accountInfoLabel.color} text={accountInfoLabel.label}></Label>
+            <Label fontSize="2vh" id="privateKeyBackup" show={hasKeys} style={{ width: '79.444444444%', height: '5.46875%' }} color="#001AFF" bkg="#001AFF30" text="[Redirecting]"></Label>
+            <Label id="generatingKeyPairLabel" fontSize="2.1vh" show={!hasKeys} bkg={`${accountInfoLabel.color}30`} style={{top: '85.5%', height: '5.46875%'}} color={accountInfoLabel.color} text={accountInfoLabel.label}></Label>
             <Label id="newAccountFailedLabel" fontSize="2vh" show={!newAccountStatus.status} bkg="#FF002E30" color="#FF002E" text={newAccountStatus.label}></Label>
-            <Link to={"/login"}><Button show={newAccountStatus.status} id="goToLoginButton" width="79.444444444%" height="3.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
+            <PasswordValidator top="49%" password={password}></PasswordValidator>
+            <Link to={"/login"}><Button show={newAccountStatus.status} style={{top: '77.3%'}} id="goToLoginButton" width="79.444444444%" height="5.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
         </div>
     );
 }

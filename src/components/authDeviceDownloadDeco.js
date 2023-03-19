@@ -4,11 +4,14 @@ function AuthDeviceDownloadDeco(props) {
 
     const [random, setRandom] = useState(Math.random());
 
-    setInterval(() => {
-        setRandom(Math.random());
-    }, 500);
 
-    useEffect(() => {}, [random])
+    useEffect(() => {
+        let interval = setInterval(() => {
+            setRandom(Math.random());
+        }, 500);
+        return () => clearInterval(interval)
+    }, [])
+
 
     const getColor = () => {
         if (Math.random() > .5) {

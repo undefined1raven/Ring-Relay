@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 
 function NewContactLoadingDeco(props) {
@@ -6,19 +6,14 @@ function NewContactLoadingDeco(props) {
     const [twoOpacity, setTwoOpacity] = useState(0.2);
     const [threeOpacity, setThreeOpacity] = useState(0.2);
 
-    setInterval(() => {
-        setOneOpacity(0.5);
-        setTimeout(() => {
-            setOneOpacity(0.2);
-            setTwoOpacity(0.5);
-            setThreeOpacity(0.2);
-        }, 800);
-        setTimeout(() => {
-            setOneOpacity(0.2);
-            setTwoOpacity(0.2);
-            setThreeOpacity(0.5);
-        }, 1600);
-    }, 2000)
+    useEffect(() => {
+        let interval = setInterval(() => {
+            setOneOpacity(Math.random());
+            setTwoOpacity(Math.random());
+            setThreeOpacity(Math.random());
+        }, 50)
+        return () => clearInterval(interval)
+    }, [])
 
     if (props.show || props.show == undefined) {
         return (
