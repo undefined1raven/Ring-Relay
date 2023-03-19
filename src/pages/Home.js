@@ -18,9 +18,8 @@ import axios from 'axios';
 import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, get, remove, set, ref, onValue } from "firebase/database";
+import { getDatabase, get, remove, set, ref, onValue, off } from "firebase/database";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
-const vapidKey = 'BFSoRotMDxZgPJtMb8J_GeyNb-rbx_vtDjotbA2W7PRYw10Z13UR6uACNbF-CELRZhtzY1z0_Z-CmncHKvNvIG8'
 
 const firebaseConfig = {
   apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -51,7 +50,6 @@ function Home() {
   const [notificationsDialogShow, setNotificationsDialogShow] = useState(false)
   const [showErr, setShowErr] = useState(false)
   const [netErr, setNetErr] = useState({ status: false, error: '' });
-  const [heartbeatEnabled, setheartbeatEnabled] = useState(false)
   const [hasPubKeys, setHasPubKeys] = useState({ ini: false, last: 0 });
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
   const [messageCountHash, setmessageCountHash] = useState({ ini: false, hash: {}, last: 0 });
@@ -108,12 +106,14 @@ function Home() {
   let rtdbListnerIni = false;
 
   useEffect(() => {
+    var rtdbl = false;
     if (!rtdbListnerIni && authorized && ownUID != 0) {
       rtdbListnerIni = true;
-      onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
+      rtdbl = onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
         setOwnMessageBuffer(snap)
       });
     }
+    return () => rtdbl ? off(`messageBuffer/${ownUID}`, rtdbl) : 0;
   }, [authorized])
 
 
@@ -191,8 +191,7 @@ function Home() {
 
   useEffect(() => {
     var heartbeatInterval = false
-    if (authorized && ownUID != 0 && !heartbeatEnabled) {
-      setheartbeatEnabled(true)
+    if (authorized && ownUID != 0) {
       heartbeatInterval = setInterval(() => {
         set(ref(db, `activeUIDs/${ownUID}`), { tx: Date.now() });
       }, 5000);
