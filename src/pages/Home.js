@@ -108,7 +108,9 @@ function Home() {
 
   useEffect(() => {
     var rtdbl = false;
-    if (!rtdbListnerIni && authorized && ownUID != 0) {
+    if (!rtdbListnerIni && authorized && ownUID != 0 && window.realtimeBufferIni == false) {
+      console.log(window.realtimeBufferIni)
+      window['realtimeBufferIni'] = true;
       rtdbListnerIni = true;
       rtdbl = onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
         setOwnMessageBuffer(snap)
