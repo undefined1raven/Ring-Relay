@@ -70,6 +70,9 @@ function Chat(props) {
     const [msgsListHeight, setMsgsListHeight] = useState('74.21875%');
     const [msgInputTextareaHeight, setMsgInputTextareaHeight] = useState('47%');
     const [statusOverride, setStatusOverride] = useState(false);
+    const [showIsTyping, setShowIsTyping] = useState(false)
+    let isTyping = { status: false, tx: 0 };
+    const [isTypingTimer, setIsTypingTimer] = useState(false)
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -414,6 +417,7 @@ function Chat(props) {
 
 
     const onNewMessageContent = (e) => {
+        set(ref(db, `messageBuffer/${props.chatObj.uid}/typing`), { status: true, targetUID: props.chatObj.uid, tx: Date.now() });
         setNewMessageContents(e.target.value);
         let inputActual = document.getElementById('msgInputActual');
         let overflowDelta = inputActual.scrollHeight - inputActual.clientHeight;
@@ -430,6 +434,25 @@ function Chat(props) {
 
     useEffect(() => {
     }, [inputDynamicStyle])
+
+    useEffect(() => {
+        if (!isTypingTimer) {
+            setIsTypingTimer(true)
+            setInterval(() => {
+                if (isTyping.status && isTyping.tx != 0) {
+                    if (Date.now() - isTyping.tx > 300) {
+                        isTyping = { ...isTyping, status: false };
+                        setShowIsTyping(false)
+                        remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));
+                    } else {
+                        isTyping = { ...isTyping, status: true };
+                        setShowIsTyping(true)
+                        scrollToBottom();
+                    }
+                }
+            }, 10)
+        }
+    }, [isTyping])
 
     useEffect(() => {
         if (props.visible) {
@@ -508,6 +531,11 @@ function Chat(props) {
                             setSeenMsgs(RXrealtimeBuffer.seen[props.chatObj.uid].MID)
                         }
                     }
+                    if (RXrealtimeBuffer.typing != null) {
+                        isTyping = ({ status: true, tx: RXrealtimeBuffer.typing.tx })
+                    } else {
+                        isTyping = ({ status: false, tx: Date.now() })
+                    }
                 }
             })
         }
@@ -533,6 +561,7 @@ function Chat(props) {
                 <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${props.privateKeyStatus ? '#7000FF' : '#FF002E'}` }}>
                     {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
                     {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
+                    {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" bkg="#6100DC30" text="Typing..." color="#A9A9A9"></Label> : ''}
                 </ul>
                 <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                 <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
