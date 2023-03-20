@@ -12,11 +12,13 @@ import AuthDeviceDownloadDeco from '../components/authDeviceDownloadDeco.js'
 import AuthDeviceLoadDeco from '../components/AuthDeviceLoadDeco.js'
 import PasswordPrompt from '../components/PasswordPrompt.js'
 import PasswordReset from '../components/SettingsNewPassword.js'
+import ChangeUsername from '../components/SettingsNewUsername.js'
 import { pemToKey, symmetricDecrypt, symmetricEncrypt } from '../fn/crypto.js';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
 import { download } from '../fn/download';
 import { v4 } from 'uuid';
+import NotificationsDialog from '../components/NotificationsDialog.js'
 
 const salt = window.crypto.getRandomValues(new Uint8Array(16))
 const iv = window.crypto.getRandomValues(new Uint8Array(12))
@@ -273,20 +275,22 @@ function Settings(props) {
         <div>
             <Label show={props.user.username != 0} color="#9644FF" fontSize="2.1vh" bkg="#7000FF20" id="loggedInAsLabel" text={`${props.user.username}`}></Label>
             <Label show={props.user.ownUID != 0} color="#9644FF" fontSize="1.8vh" bkg="#7000FF00" id="loggedInAsQidLabel" text={`<${props.user.ownUID.toString().split('-')[4]}>`}></Label>
+            <Label show={props.user.ownUID == 0 || props.user.username == 0} color="#001AFF" fontSize="1.8vh" bkg="#001AFF30" id="loggedInAsLabelLoading" text="[Loading]"></Label>
             <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="16.5625%"></HorizontalLine>
             {activeWindowId == 'home' ?
                 <div id='mainMenuContainer'>
                     <Label className="settingsMenuLabel" id="accountLabel" text="Account" fontSize="2.4vh" color="#FFF"></Label>
                     <Button onClick={logout} id="logoutBtn" width="90%" fontSize="2.3vh" height="6.46875%" color="#878787" bkg="#410093" label="Log Out"></Button>
-                    <Button id="changeUsernameButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Username"></Button>
+                    <Button onClick={() => setActiveWindowId('changeUsername')} id="changeUsernameButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Username"></Button>
                     <Button onClick={() => setActiveWindowId('changePassword')} id="changePasswordButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Change Password"></Button>
                     <Button onClick={() => setActiveWindowId('deleteAccount')} id="deleteAccountButton" className="settingsMenuButton" fontSize="2.3vh" color="#FF002E" bkg="#FF002E" label="Delete Account"></Button>
+                    <Button onClick={() => setActiveWindowId('notificationSettings')} id="notificationSettingsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Notifications"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="51.25%"></HorizontalLine>
                     <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
                     <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="1.9vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
                     <Button onClick={onDeviceRemoveAuth} id="removeAuthFromDeviceButton" className="settingsMenuButton" fontSize="2vh" color="#FF002E" bkg="#FF002E" label="Distrust This Device"></Button>
-                    <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pair" : '[Not Available]'}></Button>
-                    <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
+                    <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pair [Coming Soon]" : '[Not Available]'}></Button>
+                    <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs [Coming Soon]"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
                 </div>
                 : ''}
@@ -381,6 +385,8 @@ function Settings(props) {
                         </>}
                 </div> : ''}
             <PasswordReset onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changePassword'}></PasswordReset>
+            <NotificationsDialog onHide={() => setActiveWindowId('home')} show={activeWindowId == 'notificationSettings'}></NotificationsDialog>
+            <ChangeUsername onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changeUsername'}></ChangeUsername>
         </div>
     )
 }

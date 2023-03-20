@@ -888,7 +888,14 @@ rect {
   justify-content: start;
   @include VAlign();
 }
-
+#loggedInAsLabelLoading{
+  top: 10.15625%;
+  width: 86%;
+  height: 4.21875%;
+  border-radius: 5px;
+  @include flex();
+  @include VAlign();
+}
 #loggedInAsQidLabel {
   top: 10.15625%;
   height: 4.21875%;
@@ -967,10 +974,13 @@ rect {
   top: 32.1875%;
 }
 
-#deleteAccountButton {
+#deleteAccountButton, #notificationSettingsButton {
   top: 41.71875%;
+  width: 43.888888889% !important;
 }
-
+#deleteAccountButton{
+  left: 51.111111111% !important;
+}
 #securityLabel {
   top: 53.59375%;
 }
