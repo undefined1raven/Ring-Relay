@@ -69,7 +69,7 @@ function Home() {
     for (let ix = 0; ix < refs.arr.length; ix++) {
       if (refs.arr[ix].uid == uid) {
         remove(ref(db, `messageBuffer/${ownUID}`));
-        setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since })
+        setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since, tx: refs.arr[ix].tx })
       }
     }
   }
@@ -78,7 +78,7 @@ function Home() {
   }
   const onBackButton = (listner) => {
     remove(ref(db, `messageBuffer/${ownUID}`));
-    setChatObj({ uid: '', name: '', status: '', since: '' })
+    setChatObj({ uid: '', name: '', status: '', since: '', tx: '' })
     refreshRefs();
     setWindowId('chats');
   }

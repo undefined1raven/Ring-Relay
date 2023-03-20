@@ -72,12 +72,23 @@ function Chat(props) {
     const [showIsTyping, setShowIsTyping] = useState(false)
     const [isTypingLastUnix, setIsTypingLastUnix] = useState(0);
     const [showChatDetails, setShowChatDetails] = useState(false)
+    const [remoteSigningKeySig, setRemoteSigningKeySig] = useState({ ini: false, sig: '' });
+    const [remoteEncryptionKeySig, setRemoteEncryptionKeySig] = useState({ ini: false, sig: '' });
     const onInputFocus = () => {
         setScrollToY(30000);
     }
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
+
+    useEffect(() => {
+        let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.uid}`);
+        if (rawRemoteEncryptionPukKey != undefined) {
+            let remotePublicEncryptionKeyJWK = JSON.parse(rawRemoteEncryptionPukKey);
+            setRemoteEncryptionKeySig({ ini: true, sig: `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
+        }
+        setRemoteSigningKeySig({ ini: true, sig: `${publicSigningKeyJWK.x.toString().substring(0, 4)}+${publicSigningKeyJWK.y.toString().substring(0, 4)}` })
+    }, [])
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -536,8 +547,8 @@ function Chat(props) {
             <div className="chatContainer">
                 <div className='chatHeader'>
                     <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className='chatHeaderBkg'></div>
-                    <Button onClick={!showChatDetails ? props.onBackButton : () => setShowChatDetails(false)} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
-                    <Label className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
+                    <Button onClick={!showChatDetails ? props.onBackButton : () => {setShowChatDetails(false); scrollToBottom();}} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
+                    <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
@@ -559,7 +570,7 @@ function Chat(props) {
                     <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
                 </>
                     :
-                    <ChatDetails></ChatDetails>}
+                    <ChatDetails tx={props.chatObj.tx} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
             </div>
         )
     } else {

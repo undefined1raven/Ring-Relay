@@ -341,10 +341,12 @@ html {
   margin: 0;
   overflow-y: scroll;
 }
+
 #chatsContainer::-webkit-scrollbar {
   width: 0vh;
   height: 0px;
 }
+
 #privateKeyStatusLabel {
   top: 66.09375%;
   width: 60%;
@@ -413,7 +415,8 @@ rect {
   top: 50%;
   left: 61%;
 }
-.privateKeyMissingLabel{
+
+.privateKeyMissingLabel {
   top: 92.1875%;
   left: 3.333333333%;
   width: 94.722222222%;
@@ -422,13 +425,16 @@ rect {
   text-align: center;
   border-left: solid 1px #FF002E;
 }
-.changePasswordFieldLabel{
+
+.changePasswordFieldLabel {
   left: 5%;
 }
-.changePasswordInputField{
+
+.changePasswordInputField {
   left: 5%;
   width: 89.5%;
 }
+
 .chatCardStatus,
 .chatHeaderStatus {
   width: 15.05714286%;
@@ -600,12 +606,22 @@ rect {
   border-left: solid 1px #7000FF;
   margin-bottom: 5%;
 }
-@keyframes typingAni{
-  0%{transform: scaleY(0.2) translateX(-200%);}
-  50%{transform: scaleY(0.4) translateX(-20%);}
-  100%{transform: scaleY(1) translateX(0%);}
+
+@keyframes typingAni {
+  0% {
+    transform: scaleY(0.2) translateX(-200%);
+  }
+
+  50% {
+    transform: scaleY(0.4) translateX(-20%);
+  }
+
+  100% {
+    transform: scaleY(1) translateX(0%);
+  }
 }
-#typingLabel{
+
+#typingLabel {
   position: relative;
   left: 2%;
   width: 20.545189504%;
@@ -617,6 +633,7 @@ rect {
   animation: typingAni ease-in 0.1s;
   transition: all linear 0.1s;
 }
+
 .msgTime,
 .msgSeen {
   position: absolute;
@@ -877,15 +894,32 @@ rect {
   top: 10.3125%;
   left: 86.666666667%;
 }
-.signature{
+.convoDetailsLn{
+  @include VAlign();
+}
+.convoDetailsLabel{
+  width: 90%;
+  text-align: center;
+  @include flex();
+  border-radius: 5px;
+  @include VAlign();
+}
+.convoDetailsButton{
+  width: 90%;
+  @include VAlign();
+  height: 6.71875%;
+  border-radius: 5px;
+}
+.signature {
   position: absolute;
   width: 97.5%;
   height: 7.96875%;
-  background-color: #6100DC15;
+  background-color: #6100DC20;
   border-radius: 5px;
   @include VAlign();
   @include flex();
 }
+
 #loggedInAsLabel {
   top: 10.15625%;
   width: 86%;
@@ -896,15 +930,29 @@ rect {
   justify-content: start;
   @include VAlign();
 }
-.sigcode{
+
+.sigcode {
   position: absolute;
   left: 56.695156695%;
+  width: 41%;
+  overflow: hidden;
 }
-.sigIDLabel{
+
+.sigActualLabel {
+  top: 56.862745098%;
+  left: 28%;
+  width: 24%;
+  height: 28%;
+  @include flex();
+  border-radius: 5px;
+}
+
+.sigIDLabel {
   top: 11.764705882%;
   left: 2%;
 }
-.sigStatusLabel{
+
+.sigStatusLabel {
   top: 56.862745098%;
   left: 2%;
   width: 24%;
@@ -912,7 +960,8 @@ rect {
   @include flex();
   border-radius: 5px;
 }
-#loggedInAsLabelLoading{
+
+#loggedInAsLabelLoading {
   top: 10.15625%;
   width: 86%;
   height: 4.21875%;
@@ -920,6 +969,7 @@ rect {
   @include flex();
   @include VAlign();
 }
+
 #loggedInAsQidLabel {
   top: 10.15625%;
   height: 4.21875%;
@@ -998,13 +1048,16 @@ rect {
   top: 32.1875%;
 }
 
-#deleteAccountButton, #notificationSettingsButton {
+#deleteAccountButton,
+#notificationSettingsButton {
   top: 41.71875%;
   width: 43.888888889% !important;
 }
-#deleteAccountButton{
+
+#deleteAccountButton {
   left: 51.111111111% !important;
 }
+
 #securityLabel {
   top: 53.59375%;
 }
@@ -1117,13 +1170,15 @@ rect {
 stop {
   transition: all linear 0.5s;
 }
-.passwordValidatorLabel{
+
+.passwordValidatorLabel {
   width: 17.611111111%;
   @include flex();
   text-align: center;
   height: 2.65625%;
   transition: all linear 0.1s;
 }
+
 #scanExpordIDLabel {
   top: 23.125%;
   width: 90%;
@@ -1305,18 +1360,22 @@ input[type="file"]::file-selector-button {
   padding-left: 5%;
   padding-top: 1%;
   justify-content: start;
-  height: 5.55% !important; 
+  height: 5.55% !important;
   width: 85% !important;
 }
-.notificationsDialogButtonSelectedLabel{
+
+.notificationsDialogButtonSelectedLabel {
   @include flex();
   text-align: center;
   width: 11.388888889%;
 }
-.notificationsDialogFinalButton{
+
+.notificationsDialogFinalButton {
   border-radius: 5px;
 }
-#noter, #noter2{
+
+#noter,
+#noter2 {
   top: 50%;
   width: 80%;
   height: 6%;
@@ -1325,7 +1384,8 @@ input[type="file"]::file-selector-button {
   @include flex();
   background-color: rgba(15, 0, 4, 0.95) !important;
 }
-#noter2{
+
+#noter2 {
   top: 58%;
   text-align: center;
 }
