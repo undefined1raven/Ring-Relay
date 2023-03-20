@@ -11,7 +11,7 @@ function ChatCard(props) {
     const setUIState = () => {
         if (props.obj.msg != -1) {
             if (props.obj.msg > 0) {
-                setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg} new messages`, color: '#A966FF' })
+                setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg}${props.obj.msg >= 10 ? '+' : ''} new messages`, color: '#A966FF' })
             } else {
                 setMsgCountLabelProps({ top: 'auto', text: 'No New Messages', color: '#6600E8' });
             }
@@ -32,10 +32,10 @@ function ChatCard(props) {
         setUIState()
         if (props.obj.msg > 0) {
             interval = setInterval(() => {
-                setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg} new messages`, color: '#A966FF' })
+                setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg}${props.obj.msg >= 10 ? '+' : ''} new messages`, color: '#A966FF' })
                 setMsgCountDecoColor('#8D33FF');
                 setTimeout(() => {
-                    setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg} new messages`, color: '#D4B2FF' })
+                    setMsgCountLabelProps({ top: '10%', text: `${props.obj.msg}${props.obj.msg >= 10 ? '+' : ''} new messages`, color: '#D4B2FF' })
                     setMsgCountDecoColor('#D4B2FF');
                 }, 750);
             }, 1500);

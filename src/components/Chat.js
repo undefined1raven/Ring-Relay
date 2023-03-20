@@ -299,7 +299,6 @@ function Chat(props) {
 
 
     useEffect(() => {
-        console.log('xx')
         remove(ref(db, `messageBuffer/${props.ownUID}`));
         var interval = false
         if (!msgArray.ini && props.visible) {
@@ -527,7 +526,7 @@ function Chat(props) {
                         setIsTypingLastUnix(RXrealtimeBuffer.typing.tx)
                     }
                 }
-              
+
             }
         }
     }, [props.ownMessageBuffer])
