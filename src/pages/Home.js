@@ -187,7 +187,7 @@ function Home() {
       if (Date.now() - messageCountHash.last > 20000) {
         getNewMessageCounts({ data: { refs: refs.arr } });
       }
-    }, 20000)
+    }, 7000)
     return () => { clearInterval(contactStatusInterval); clearInterval(newMessageCountsInterval); }
   }, [messageCountHash])
 
@@ -313,8 +313,8 @@ function Home() {
 
   return (
     <div>
-      <Label fontSize="2vh" color="#FF002E" bkg="#FF002E30" id="noter" show={showErr} text="Failed to get notification object"></Label>
-      <Label fontSize="2vh" color="#FF002E" bkg="#FF002E30" id="noter2" show={netErr.status} text={`Network Erorr [${netErr.error}]`}></Label>
+      <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter" show={showErr} text="Failed to get notification object"></Label>
+      <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter2" show={netErr.status} text={`Network Erorr [${netErr.error}]`}></Label>
       <NotificationsDialog onHide={onHideNotificationsDialog} show={notificationsDialogShow}></NotificationsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
