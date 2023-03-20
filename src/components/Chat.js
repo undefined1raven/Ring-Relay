@@ -11,7 +11,7 @@ import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter.js'
 import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey, sign, verify } from '../fn/crypto.js'
 import { v4 } from 'uuid'
-
+import ChatDetails from '../components/ChatDetails.js'
 import { initializeApp } from "firebase/app";
 import { getDatabase, remove, get, set, ref, onValue, update } from "firebase/database";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
@@ -71,7 +71,7 @@ function Chat(props) {
     const [statusOverride, setStatusOverride] = useState(false);
     const [showIsTyping, setShowIsTyping] = useState(false)
     const [isTypingLastUnix, setIsTypingLastUnix] = useState(0);
-    const [bufferInitialReset, setBufferInitialReset] = useState(false)
+    const [showChatDetails, setShowChatDetails] = useState(false)
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -535,27 +535,31 @@ function Chat(props) {
         return (
             <div className="chatContainer">
                 <div className='chatHeader'>
-                    <div className='chatHeaderBkg'></div>
-                    <Button onClick={props.onBackButton} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
+                    <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className='chatHeaderBkg'></div>
+                    <Button onClick={!showChatDetails ? props.onBackButton : () => setShowChatDetails(false)} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
                     <Label className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
-                <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
-                    <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
-                        <VerticalLine color={props.privateKeyStatus ? "#7000FF" : '#FF002E'} top="0%" left="0%" height="100%"></VerticalLine>
-                        {props.privateKeyStatus ? <textarea style={{ height: `${msgInputTextareaHeight}` }} maxLength="445" spellCheck="false" className='inputField' value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea> : ''}
+                {!showChatDetails ? <>
+                    <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
+                        <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
+                            <VerticalLine color={props.privateKeyStatus ? "#7000FF" : '#FF002E'} top="0%" left="0%" height="100%"></VerticalLine>
+                            {props.privateKeyStatus ? <textarea style={{ height: `${msgInputTextareaHeight}` }} maxLength="445" spellCheck="false" className='inputField' value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea> : ''}
+                        </div>
+                        {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button> : ''}
                     </div>
-                    {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button> : ''}
-                </div>
-                <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${props.privateKeyStatus ? '#7000FF' : '#FF002E'}` }}>
-                    {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
-                    {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
-                    {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" bkg="#6100DC30" text="Typing..." color="#A9A9A9"></Label> : ''}
-                </ul>
-                <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
-                <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
-                <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
+                    <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${props.privateKeyStatus ? '#7000FF' : '#FF002E'}` }}>
+                        {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
+                        {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
+                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" bkg="#6100DC30" text="Typing..." color="#A9A9A9"></Label> : ''}
+                    </ul>
+                    <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
+                    <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
+                    <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
+                </>
+                    :
+                    <ChatDetails></ChatDetails>}
             </div>
         )
     } else {

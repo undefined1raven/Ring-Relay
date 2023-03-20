@@ -877,7 +877,15 @@ rect {
   top: 10.3125%;
   left: 86.666666667%;
 }
-
+.signature{
+  position: absolute;
+  width: 97.5%;
+  height: 7.96875%;
+  background-color: #6100DC15;
+  border-radius: 5px;
+  @include VAlign();
+  @include flex();
+}
 #loggedInAsLabel {
   top: 10.15625%;
   width: 86%;
@@ -887,6 +895,22 @@ rect {
   padding-left: 4%;
   justify-content: start;
   @include VAlign();
+}
+.sigcode{
+  position: absolute;
+  left: 56.695156695%;
+}
+.sigIDLabel{
+  top: 11.764705882%;
+  left: 2%;
+}
+.sigStatusLabel{
+  top: 56.862745098%;
+  left: 2%;
+  width: 24%;
+  height: 28%;
+  @include flex();
+  border-radius: 5px;
 }
 #loggedInAsLabelLoading{
   top: 10.15625%;

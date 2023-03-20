@@ -313,8 +313,8 @@ function Home() {
 
   return (
     <div>
-      <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter" show={showErr} text="Failed to get notification object"></Label>
-      <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter2" show={netErr.status} text={`Network Erorr [${netErr.error}]`}></Label>
+      {/* <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter" show={showErr} text="Failed to get notification object"></Label> */}
+      {/* <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter2" show={netErr.status} text={`Network Erorr [${netErr.error}]`}></Label> */}
       <NotificationsDialog onHide={onHideNotificationsDialog} show={notificationsDialogShow}></NotificationsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>

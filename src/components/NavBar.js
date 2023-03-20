@@ -15,9 +15,9 @@ function NavBar(props) {
 
     function checkSys() {
         axios.get(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
-            setSystemStatus({ text: `Systems Nominal ${window.matchMedia('(display-mode: standalone)').matches ? '' : ''}`, color: '#00FF85', last: Date.now() });
+            setSystemStatus({ text: `Systems Nominal ${window.Notification ? '_' : 'Γ'}`, color: '#00FF85', last: Date.now() });
         }).catch(e => {
-            setSystemStatus({ text: `System Error ${window.matchMedia('(display-mode: standalone)').matches ? '' : ''}`, color: '#FF002E', last: Date.now() });
+            setSystemStatus({ text: `System Error ${window.Notification ? '_' : 'Γ'}}`, color: '#FF002E', last: Date.now() });
         });
     }
 

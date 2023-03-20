@@ -166,7 +166,7 @@ function NewAccount() {
             <Label id="generatingKeyPairLabel" fontSize="2.1vh" show={!hasKeys} bkg={`${accountInfoLabel.color}30`} style={{top: '85.5%', height: '5.46875%'}} color={accountInfoLabel.color} text={accountInfoLabel.label}></Label>
             <Label id="newAccountFailedLabel" fontSize="2vh" show={!newAccountStatus.status} bkg="#FF002E30" color="#FF002E" text={newAccountStatus.label}></Label>
             <PasswordValidator top="49%" password={password}></PasswordValidator>
-            <Link to={"/login"}><Button show={newAccountStatus.status} style={{top: '77.3%'}} id="goToLoginButton" width="79.444444444%" height="5.46875%" color="#6000D9" bkg="#6000D9" label="Login"></Button></Link>
+            <Link to={"/login"}><Button show={newAccountStatus.status} style={{top: '77.3%', fontSize: '1.9vh'}} id="goToLoginButton" width="79.444444444%" height="5.46875%" color="#6000D9" bkg="#6000D9" label="Already have an account? Log In"></Button></Link>
         </div>
     );
 }
