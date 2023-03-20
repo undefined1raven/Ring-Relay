@@ -109,14 +109,13 @@ function Home() {
   useEffect(() => {
     var rtdbl = false;
     if (!rtdbListnerIni && authorized && ownUID != 0 && window.realtimeBufferIni == false) {
-      console.log(window.realtimeBufferIni)
       window['realtimeBufferIni'] = true;
       rtdbListnerIni = true;
       rtdbl = onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
         setOwnMessageBuffer(snap)
       });
     }
-    return () => rtdbl ? off(`messageBuffer/${ownUID}`, rtdbl) : 0;
+    // return () => rtdbl ? off(`messageBuffer/${ownUID}`) : 0;//not like it was doing anything anyway
   }, [authorized])
 
 
@@ -155,22 +154,22 @@ function Home() {
 
 
   const getNewMessageCounts = (res) => {
-    let messageCountHash = {};
     if (res.data.refs.length > 0) {
-      for (let ix = 0; ix < res.data.refs.length; ix++) {
-        axios.post(`${DomainGetter('prodx')}api/dbop?getNewMessagesCount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: res.data.refs[ix].uid }).then(resx => {
-          if (!resx.data.error) {
-            messageCountHash[res.data.refs[ix].uid] = { msg: resx.data.count };
-            if (ix == res.data.refs.length - 1) {
-              setmessageCountHash({ ini: true, hash: messageCountHash, last: Date.now() });
-              setRefreshingRefs(false);
-              setTimeout(() => {
-                checkContactsStatus(messageCountHash)
-              }, 200);
+      axios.post(`${DomainGetter('prodx')}api/dbop?getNewMessagesCount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), refs: res.data.refs }).then(resx => {
+        if (!resx.data.error) {
+          let lmessageCountsHash = resx.data.messageCountsHash;
+          for (let ix = 0; ix < res.data.refs.length; ix++) {
+            if (resx.data.messageCountsHash[res.data.refs[ix].uid] == undefined) {
+              lmessageCountsHash[res.data.refs[ix].uid] = { msg: -1 };
             }
           }
-        }).catch(e => { })
-      }
+          setmessageCountHash({ ini: true, hash: resx.data.messageCountsHash, last: Date.now() });
+          setRefreshingRefs(false);
+          setTimeout(() => {
+            checkContactsStatus(resx.data.messageCountsHash)
+          }, 200);
+        }
+      }).catch(e => { })
     }
   }
 
