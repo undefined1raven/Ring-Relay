@@ -113,21 +113,25 @@ html {
   color: #d6b7ff;
 }
 
+#msgInputActual::selection{
+  background-color: #22222250;
+  color: #999;
+}
+
 #msgInputActual{
   position: absolute;
   top: 0%;
   left: 2.643478261%;
   width: calc(100% - 6.043478261%);
-  height: 97%;
   outline: none;
   border: none;
-  background-color: #6100DC20;
   border-left: solid 1px #6100DC;
   color: #FFF;
   font-size: var(--FS_M_Normal);
   text-decoration: none;
   padding-left: 3%;
   transition: all linear 0.1s;
+  background-color: #001AFF;
 }
 #minLogo{
   position: absolute;
@@ -511,9 +515,6 @@ rect {
   @include VAlign();
 }
 
-#msgInputActual:focus {
-  background-color: #7000FF40 !important;
-}
 
 #msgInput {
   width: 78%;
@@ -568,12 +569,12 @@ rect {
   width: 14.619883041%;
   height: 51.219512195%;
   left: 102%;
-  top: 1.75vh;
+  top: 1vh;/*1.75vh*/
 }
 
 .signatureContainer {
   position: absolute;
-  top: 4.8vh;
+  top: 2.12vh;
   height: 2vh;
   @include flex();
 }

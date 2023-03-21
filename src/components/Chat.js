@@ -79,6 +79,9 @@ function Chat(props) {
     const [conversationSig, setConversationSig] = useState({ ini: false, sig: '' });
     const [ghostModeEnabled, setGhostModeEnabled] = useState(false);
     const [ghostModeEverBeenEnabled, setGhostModeEverBeenEnabled] = useState(false);
+    const [msgInputHasFocus, setMsgInputHasFocus] = useState(false)
+    const [msgInputBkgColor, setMsgInputBkgColor] = useState('#8c33ff30')
+
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -91,11 +94,17 @@ function Chat(props) {
             let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.uid}`);
             let rawOwnEncryptionPukKey = localStorage.getItem(`OWN-PUBK`);
 
-            let remotePublicEncryptionKeyJWK = JSON.parse(rawRemoteEncryptionPukKey);
-            let rawOwnEncryptionPukKeyJWK = JSON.parse(rawOwnEncryptionPukKey);
+            let remotePublicEncryptionKeyJWK = { n: 'xxxx' };
+            if (rawRemoteEncryptionPukKey != undefined) {
+                remotePublicEncryptionKeyJWK = JSON.parse(rawRemoteEncryptionPukKey);
+            }
+            let rawOwnEncryptionPukKeyJWK = { n: 'xxxx' };
+            if (rawOwnEncryptionPukKey != undefined) {
+                rawOwnEncryptionPukKeyJWK = JSON.parse(rawOwnEncryptionPukKey);
+            }
 
-            let lPKSH0 = `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 5)}.${remotePublicEncryptionKeyJWK.n.toString().substring(0, 5)}`;
-            let lPKSH1 = `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 5)}.${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 5)}`;
+            let lPKSH0 = `${rawOwnEncryptionPukKeyJWK?.n.toString().substring(0, 5)}.${remotePublicEncryptionKeyJWK?.n.toString().substring(0, 5)}`;
+            let lPKSH1 = `${remotePublicEncryptionKeyJWK?.n.toString().substring(0, 5)}.${rawOwnEncryptionPukKeyJWK?.n.toString().substring(0, 5)}`;
 
             if (lPKSH0 == PKSH || lPKSH1 == PKSH) {
                 setConversationSig({ verified: true, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
@@ -103,11 +112,13 @@ function Chat(props) {
                 setConversationSig({ verified: false, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
             }
 
-            if (rawRemoteEncryptionPukKey != undefined) {
+            if (remotePublicEncryptionKeyJWK.n != undefined) {
                 setRemoteEncryptionKeySig({ ini: true, sig: `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
             }
 
-            setRemoteSigningKeySig({ ini: true, sig: `${publicSigningKeyJWK.x.toString().substring(0, 4)}+${publicSigningKeyJWK.y.toString().substring(0, 4)}` })
+            if (publicSigningKeyJWK?.x != undefined) {
+                setRemoteSigningKeySig({ ini: true, sig: `${publicSigningKeyJWK.x.toString().substring(0, 4)}+${publicSigningKeyJWK.y.toString().substring(0, 4)}` })
+            }
         }
     }, [PKSH])
 
@@ -587,10 +598,32 @@ function Chat(props) {
     }
 
     useEffect(() => {
+        msgInputBkgColorSetter();
         if (!ghostModeEnabled && ghostModeEverBeenEnabled) {
-            props.onBackButton({ghost: true, uid: props.chatObj.uid});
+            props.onBackButton({ ghost: true, uid: props.chatObj.uid });
         }
     }, [ghostModeEnabled])
+
+
+    const msgInputBkgColorSetter = () => {
+        if (msgInputHasFocus) {
+            if (ghostModeEnabled) {
+                setMsgInputBkgColor('#0500FF50');
+            } else {
+                setMsgInputBkgColor('#7000FF50');
+            }
+        } else {
+            if (ghostModeEnabled) {
+                setMsgInputBkgColor('#0500FF30');
+            } else {
+                setMsgInputBkgColor('#7000FF30');
+            }
+        }
+    }
+
+    useEffect(() => {
+        msgInputBkgColorSetter();
+    }, [msgInputHasFocus])
 
     if (props.show) {
         return (
@@ -598,7 +631,7 @@ function Chat(props) {
                 <div className='chatHeader' style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}` }}>
                     <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
                     <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg={ghostModeEnabled ? '#0500FF' : "#7000FF"} width="9.428571429%" height="100%" child={<BackDeco color={ghostModeEnabled ? '#0500FF' : "#7000FF"} />}></Button>
-                    {/* <Label color="#5600C3" style={{left: '60%'}} text="Tap for details" fontSize="1.5vh"></Label> */}
+                    <Label color={ghostModeEnabled ? "#0500FF" : "#5600C3"} style={{ left: '58%' }} text="Tap for details" fontSize="1.5vh"></Label>
                     <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
@@ -607,7 +640,7 @@ function Chat(props) {
                     <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
                         <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
                             <VerticalLine color={msgListBorderColorController()} top="0%" left="0%" height="100%"></VerticalLine>
-                            {props.privateKeyStatus ? <textarea id="msgInputActual" onSelect={(e) => {e.target.style.backgroundColor = `${ghostModeEnabled ? '#0500FF30' : '#8c33ff60'}`}} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgListBorderColorController()}30`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea> : ''}
+                            {props.privateKeyStatus ? <textarea id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
                         </div>
                         {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>

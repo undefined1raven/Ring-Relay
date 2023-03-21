@@ -17,7 +17,7 @@ function NavBar(props) {
         axios.get(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setSystemStatus({ text: `Systems Nominal ${window.Notification ? '_' : 'Γ'}`, color: '#00FF85', last: Date.now() });
         }).catch(e => {
-            setSystemStatus({ text: `System Error ${window.Notification ? '_' : 'Γ'}}`, color: '#FF002E', last: Date.now() });
+            setSystemStatus({ text: `System Error ${window.Notification ? '_' : 'Γ'}`, color: '#FF002E', last: Date.now() });
         });
     }
 

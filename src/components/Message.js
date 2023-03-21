@@ -119,7 +119,7 @@ function Message(props) {
                     {ghost ? <MsgGhost /> : ''}
                     {(props.msgObj.seen && props.msgObj.type == 'tx') ? <Label fontSize="2.5vw" className="msgSeen" color={ghost ? '#0500FF' : "#8300B0"} bkg={ghost ? '#0500FF20' : "#55007340"} text="Seen" /> : ''}
                     {(liked && !deleted) ? <MsgLikedDeco /> : ''}
-                    <div className='chashContainer'>
+                    <div className='chashContainer' style={{display: 'none'}}>
                         <CommonSigMismatchDeco className="chashIndi"></CommonSigMismatchDeco>
                         <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />
                     </div>
