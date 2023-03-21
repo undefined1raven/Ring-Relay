@@ -629,10 +629,10 @@ function Chat(props) {
         return (
             <div className="chatContainer">
                 <div className='chatHeader' style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}` }}>
-                    <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
+                    <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails((prev) => { return !prev }) : ''} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
                     <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg={ghostModeEnabled ? '#0500FF' : "#7000FF"} width="9.428571429%" height="100%" child={<BackDeco color={ghostModeEnabled ? '#0500FF' : "#7000FF"} />}></Button>
-                    <Label color={ghostModeEnabled ? "#0500FF" : "#5600C3"} style={{ left: '58%' }} text="Tap for details" fontSize="1.5vh"></Label>
-                    <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
+                    <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails((prev) => { return !prev }) : ''} color={ghostModeEnabled ? "#0500FF" : "#5600C3"} style={{ left: `${showChatDetails ? '53%' : '58%'}` }} text={showChatDetails ? "Tap to hide details" : "Tap for details"} fontSize="1.5vh"></Label>
+                    <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails((prev) => { return !prev }) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
