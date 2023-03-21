@@ -459,7 +459,7 @@ function Chat(props) {
 
 
     const onNewMessageContent = (e) => {
-        set(ref(db, `messageBuffer/${props.chatObj.uid}/typing`), { status: true, targetUID: props.chatObj.uid, tx: Date.now() });
+        set(ref(db, `messageBuffer/${props.chatObj.uid}/typing`), { status: true, targetUID: props.chatObj.uid, tx: Date.now(), ghost: ghostModeEnabled });
         setNewMessageContents(e.target.value);
         let inputActual = document.getElementById('msgInputActual');
         let overflowDelta = inputActual.scrollHeight - inputActual.clientHeight;
@@ -476,8 +476,8 @@ function Chat(props) {
 
     useEffect(() => {
         let interval = setInterval(() => {
-            if (isTypingLastUnix) {
-                if (Date.now() - isTypingLastUnix > 500) {
+            if (isTypingLastUnix.tx) {
+                if (Date.now() - isTypingLastUnix.tx > 500) {
                     setShowIsTyping(false)
                     remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));
                 } else {
@@ -569,7 +569,7 @@ function Chat(props) {
                 }
                 if (RXrealtimeBuffer.typing != null) {
                     if (RXrealtimeBuffer.typing.targetUID == props.ownUID) {
-                        setIsTypingLastUnix(RXrealtimeBuffer.typing.tx)
+                        setIsTypingLastUnix({ tx: RXrealtimeBuffer.typing.tx, ghost: RXrealtimeBuffer.typing.ghost })
                     }
                 }
 
@@ -647,7 +647,7 @@ function Chat(props) {
                     <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${msgListBorderColorController()}` }}>
                         {(chatLoadingLabel.label == '[Done]' && !ghostModeEnabled) ? msgList : ''}
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
-                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}`, width: `${ghostModeEnabled ? '40%' : '20.545189504%'}` }} bkg={ghostModeEnabled ? '#0500FF30' : "#6100DC30"} text={ghostModeEnabled ? 'Ghostly Typing...' : "Typing..."} color={ghostModeEnabled ? '#0500FF' : "#A9A9A9"}></Label> : ''}
+                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${ghostModeEnabled ? '40%' : '20.545189504%'}` }} bkg={ghostModeEnabled ? '#0500FF30' : "#6100DC30"} text={ghostModeEnabled ? 'Ghostly Typing...' : "Typing..."} color={ghostModeEnabled ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>

@@ -134,7 +134,7 @@ function Home() {
             lstat = 'Offline';
           }
           if (msgCountHash) {
-            updatedRefsWithStatus.push({ ...refs.arr[ix], status: lstat, msg: msgCountHash[refs.arr[ix].uid].msg });
+            updatedRefsWithStatus.push({ ...refs.arr[ix], status: lstat, msg: msgCountHash[refs.arr[ix].uid]?.msg });
           } else {
             updatedRefsWithStatus.push({ ...refs.arr[ix], status: lstat });
           }
