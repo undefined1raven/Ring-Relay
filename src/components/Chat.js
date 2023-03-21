@@ -15,6 +15,7 @@ import ChatDetails from '../components/ChatDetails.js'
 import { initializeApp } from "firebase/app";
 import { getDatabase, remove, get, set, ref, onValue, update } from "firebase/database";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
+import Signature from '../components/Signature.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -57,6 +58,7 @@ function Chat(props) {
     const [msgList, setMsgList] = useState(0);
     const [msgCount, setMsgCount] = useState(30)
     const [MSUID, setMSUID] = useState('')
+    const [PKSH, setPKSH] = useState('')
     const [chatLoadingLabel, setChatLoadingLabel] = useState({ label: '[Fetching Conversation]', opacity: 1 });
     const [failedMessageActionLabel, setFailedMessageActionLabel] = useState({ opacity: 0, label: 'Message Action Failed' })
     const [realtimeBuffer, setRealtimeBuffer] = useState([])
@@ -74,6 +76,7 @@ function Chat(props) {
     const [showChatDetails, setShowChatDetails] = useState(false)
     const [remoteSigningKeySig, setRemoteSigningKeySig] = useState({ ini: false, sig: '' });
     const [remoteEncryptionKeySig, setRemoteEncryptionKeySig] = useState({ ini: false, sig: '' });
+    const [conversationSig, setConversationSig] = useState({ ini: false, sig: '' });
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -82,13 +85,29 @@ function Chat(props) {
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
     useEffect(() => {
-        let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.uid}`);
-        if (rawRemoteEncryptionPukKey != undefined) {
+        if (!PKSH == '') {
+            let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.uid}`);
+            let rawOwnEncryptionPukKey = localStorage.getItem(`OWN-PUBK`);
+
             let remotePublicEncryptionKeyJWK = JSON.parse(rawRemoteEncryptionPukKey);
-            setRemoteEncryptionKeySig({ ini: true, sig: `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
+            let rawOwnEncryptionPukKeyJWK = JSON.parse(rawOwnEncryptionPukKey);
+
+            let lPKSH0 = `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 5)}.${remotePublicEncryptionKeyJWK.n.toString().substring(0, 5)}`;
+            let lPKSH1 = `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 5)}.${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 5)}`;
+
+            if (lPKSH0 == PKSH || lPKSH1 == PKSH) {
+                setConversationSig({ verified: true, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
+            } else {
+                setConversationSig({ verified: false, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
+            }
+
+            if (rawRemoteEncryptionPukKey != undefined) {
+                setRemoteEncryptionKeySig({ ini: true, sig: `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
+            }
+
+            setRemoteSigningKeySig({ ini: true, sig: `${publicSigningKeyJWK.x.toString().substring(0, 4)}+${publicSigningKeyJWK.y.toString().substring(0, 4)}` })
         }
-        setRemoteSigningKeySig({ ini: true, sig: `${publicSigningKeyJWK.x.toString().substring(0, 4)}+${publicSigningKeyJWK.y.toString().substring(0, 4)}` })
-    }, [])
+    }, [PKSH])
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -171,6 +190,7 @@ function Chat(props) {
                 let rawMsgArr = res.data.messages;
                 rawMsgArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
                 setMSUID(res.data.MSUID);
+                setPKSH(res.data.PKSH);
                 decryptMessages(rawMsgArr);
                 let lastRXMID = ''
                 for (let ix = 0; ix < rawMsgArr.length; ix++) {
@@ -547,7 +567,7 @@ function Chat(props) {
             <div className="chatContainer">
                 <div className='chatHeader'>
                     <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className='chatHeaderBkg'></div>
-                    <Button onClick={!showChatDetails ? props.onBackButton : () => {setShowChatDetails(false); scrollToBottom();}} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
+                    <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
                     <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
@@ -565,12 +585,18 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" bkg="#6100DC30" text="Typing..." color="#A9A9A9"></Label> : ''}
                     </ul>
+                    {chatLoadingLabel.label == '[No Messages]' ?
+                        <>
+                            <Signature sigLabel="Conversation Signature" valid={conversationSig.ini && conversationSig.sig?.length == 9} verified={conversationSig.verified} sig={conversationSig.sig} top="52%"></Signature>
+                            <Signature sigLabel="Remote SIG Verification Key" valid={remoteSigningKeySig.ini && remoteSigningKeySig.sig?.length == 9} verified={true} sig={remoteSigningKeySig.sig} top="62%"></Signature>
+                            <Signature sigLabel="Remote Encryption Key" valid={remoteEncryptionKeySig.ini && remoteEncryptionKeySig.sig?.length == 9} verified={true} sig={remoteEncryptionKeySig.sig} top="72%"></Signature>
+                        </> : ''}
                     <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                     <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
                     <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
                 </>
                     :
-                    <ChatDetails tx={props.chatObj.tx} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
+                    <ChatDetails tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
             </div>
         )
     } else {

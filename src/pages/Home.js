@@ -297,6 +297,9 @@ function Home() {
     }
     axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
       if (res.data.refs) {
+        if (res.data.refs.length == 0) {
+          setRefreshingRefs(false);
+        }
         setRefs({ ini: true, arr: res.data.refs });
         localStorage.setItem(`refs-${res.data.ownUID}`, JSON.stringify({ array: res.data.refs }));
         getNewMessageCounts(res);
