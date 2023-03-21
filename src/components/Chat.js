@@ -507,7 +507,7 @@ function Chat(props) {
                                             decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
                                                 setRealtimeBuffer((prevBuf) => {
                                                     if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                                        return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }]
+                                                        return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen, ghost: rawMsg.ghost }]
                                                     } else {
                                                         return [...prevBuf]
                                                     }
