@@ -14,7 +14,7 @@ function ChatDetails(props) {
         <Button style={{ top: '26.5625%' }} label="Backup Conversation [Coming Soon]" className="convoDetailsButton" color="#7100FF" bkg="#6100DC"></Button>
         <Button style={{ top: '35.625%' }} label="Delete Conversation" className="convoDetailsButton" color="#FF002E" bkg="#FF002E"></Button>
         <HorizontalLine className="convoDetailsLn" top="45.3125%" width="90%" color="#7100FF"></HorizontalLine>
-        <Button style={{ top: '48.4375%' }} label="Enter Ghost Mode [Coming Soon]" className="convoDetailsButton" color="#7100FF" bkg="#6100DC"></Button>
+        <Button onClick={props.ghostModeToggle} style={{ top: '48.4375%' }} label={props.ghost ? 'Disable Ghost Mode' : 'Enable Ghost Mode'} className="convoDetailsButton" color="#7100FF" bkg="#6100DC"></Button>
         <Label color="#FFF" bkg="#6100DC30" fontSize="1.6vh" className="convoDetailsLabel" style={{ top: '56.71875%', height: '9.0625%' }} text="Use the real-time buffer to send/receive messages without them ever being permanently stored. Exiting the chat or quitting the app resets the buffer"></Label>
         <HorizontalLine className="convoDetailsLn" top="68.75%" width="97.5%" color="#7100FF"></HorizontalLine>
 

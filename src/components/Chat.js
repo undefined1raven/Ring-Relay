@@ -77,6 +77,8 @@ function Chat(props) {
     const [remoteSigningKeySig, setRemoteSigningKeySig] = useState({ ini: false, sig: '' });
     const [remoteEncryptionKeySig, setRemoteEncryptionKeySig] = useState({ ini: false, sig: '' });
     const [conversationSig, setConversationSig] = useState({ ini: false, sig: '' });
+    const [ghostModeEnabled, setGhostModeEnabled] = useState(false);
+    const [ghostModeEverBeenEnabled, setGhostModeEverBeenEnabled] = useState(false);
     const onInputFocus = () => {
         setScrollToY(30000);
     }
@@ -217,7 +219,7 @@ function Chat(props) {
             let local_nMsgObj = { type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
             setRealtimeBuffer((prevBuf) => {
-                return [...prevBuf, { ...local_nMsgObj }]
+                return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
             })
             setTimeout(() => {
                 filterDeletedMessages('159');
@@ -229,16 +231,18 @@ function Chat(props) {
                             pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
                                 sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
                                     let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
-                                    set(ref(db, `messageBuffer/${props.chatObj.uid}/messages/${MID}`), { ...nMsgObj });
-                                    set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj });
-                                    axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
-                                        AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
-                                    }).then(res => { }).catch(e => {
-                                        setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
-                                        setTimeout(() => {
-                                            setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
-                                        }, 2000);
-                                    })
+                                    set(ref(db, `messageBuffer/${props.chatObj.uid}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
+                                    set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
+                                    if (!ghostModeEnabled) {
+                                        axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
+                                            AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
+                                        }).then(res => { }).catch(e => {
+                                            setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
+                                            setTimeout(() => {
+                                                setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
+                                            }, 2000);
+                                        })
+                                    }
                                 })
                             })
                         })
@@ -562,12 +566,39 @@ function Chat(props) {
         }
     }, [props.ownMessageBuffer])
 
+
+    const msgListBorderColorController = () => {
+        if (props.privateKeyStatus) {
+            if (ghostModeEnabled) {
+                return '#0500FF';
+            } else {
+                return '#7000FF';
+            }
+        } else {
+            return '#FF002E';
+        }
+    }
+
+    const ghostModeToggle = () => {
+        setGhostModeEverBeenEnabled(true);
+        setGhostModeEnabled(prev => { return !prev });
+        setShowChatDetails(false);
+        scrollToBottom();
+    }
+
+    useEffect(() => {
+        if (!ghostModeEnabled && ghostModeEverBeenEnabled) {
+            props.onBackButton({ghost: true, uid: props.chatObj.uid});
+        }
+    }, [ghostModeEnabled])
+
     if (props.show) {
         return (
             <div className="chatContainer">
-                <div className='chatHeader'>
-                    <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className='chatHeaderBkg'></div>
-                    <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg="#7000FF" width="9.428571429%" height="100%" child={<BackDeco color="#7000FF" />}></Button>
+                <div className='chatHeader' style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}` }}>
+                    <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
+                    <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg={ghostModeEnabled ? '#0500FF' : "#7000FF"} width="9.428571429%" height="100%" child={<BackDeco color={ghostModeEnabled ? '#0500FF' : "#7000FF"} />}></Button>
+                    {/* <Label color="#5600C3" style={{left: '60%'}} text="Tap for details" fontSize="1.5vh"></Label> */}
                     <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails(true) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
@@ -575,15 +606,15 @@ function Chat(props) {
                 {!showChatDetails ? <>
                     <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
                         <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
-                            <VerticalLine color={props.privateKeyStatus ? "#7000FF" : '#FF002E'} top="0%" left="0%" height="100%"></VerticalLine>
-                            {props.privateKeyStatus ? <textarea style={{ height: `${msgInputTextareaHeight}` }} maxLength="445" spellCheck="false" className='inputField' value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea> : ''}
+                            <VerticalLine color={msgListBorderColorController()} top="0%" left="0%" height="100%"></VerticalLine>
+                            {props.privateKeyStatus ? <textarea id="msgInputActual" onSelect={(e) => {e.target.style.backgroundColor = `${ghostModeEnabled ? '#0500FF30' : '#8c33ff60'}`}} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgListBorderColorController()}30`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent} onFocus={onInputFocus} id='msgInputActual'></textarea> : ''}
                         </div>
-                        {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg="#7000FF" width="20%" height="100%" color="#7000FF" label="Send"></Button> : ''}
+                        {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>
-                    <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${props.privateKeyStatus ? '#7000FF' : '#FF002E'}` }}>
-                        {(chatLoadingLabel.label == '[Done]') ? msgList : ''}
+                    <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${msgListBorderColorController()}` }}>
+                        {(chatLoadingLabel.label == '[Done]' && !ghostModeEnabled) ? msgList : ''}
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
-                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" bkg="#6100DC30" text="Typing..." color="#A9A9A9"></Label> : ''}
+                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}`, width: `${ghostModeEnabled ? '40%' : '20.545189504%'}` }} bkg={ghostModeEnabled ? '#0500FF30' : "#6100DC30"} text={ghostModeEnabled ? 'Ghostly Typing...' : "Typing..."} color={ghostModeEnabled ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>
@@ -596,7 +627,7 @@ function Chat(props) {
                     <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
                 </>
                     :
-                    <ChatDetails tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
+                    <ChatDetails ghost={ghostModeEnabled} ghostModeToggle={ghostModeToggle} tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
             </div>
         )
     } else {

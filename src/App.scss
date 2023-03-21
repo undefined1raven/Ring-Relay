@@ -113,6 +113,23 @@ html {
   color: #d6b7ff;
 }
 
+#msgInputActual{
+  position: absolute;
+  top: 0%;
+  left: 2.643478261%;
+  width: calc(100% - 6.043478261%);
+  height: 97%;
+  outline: none;
+  border: none;
+  background-color: #6100DC20;
+  border-left: solid 1px #6100DC;
+  color: #FFF;
+  font-size: var(--FS_M_Normal);
+  text-decoration: none;
+  padding-left: 3%;
+  transition: all linear 0.1s;
+}
+
 .inputField:focus {
   background-color: #6100DC60;
 }
@@ -655,6 +672,12 @@ rect {
   left: 94.336734694%;
 }
 
+.msgGhost {
+  position: absolute;
+  top: 4.8vh;
+  left: 89.036734694%;
+}
+
 .msgTypeDeco {
   top: 4.8vh;
 }
@@ -894,22 +917,26 @@ rect {
   top: 10.3125%;
   left: 86.666666667%;
 }
-.convoDetailsLn{
+
+.convoDetailsLn {
   @include VAlign();
 }
-.convoDetailsLabel{
+
+.convoDetailsLabel {
   width: 90%;
   text-align: center;
   @include flex();
   border-radius: 5px;
   @include VAlign();
 }
-.convoDetailsButton{
+
+.convoDetailsButton {
   width: 90%;
   @include VAlign();
   height: 6.71875%;
   border-radius: 5px;
 }
+
 .signature {
   position: absolute;
   width: 97.5%;

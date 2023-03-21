@@ -76,11 +76,18 @@ function Home() {
   const switchToNewContacts = () => {
     setWindowId('newContact')
   }
-  const onBackButton = (listner) => {
+  const onBackButton = (args) => {
     remove(ref(db, `messageBuffer/${ownUID}`));
-    setChatObj({ uid: '', name: '', status: '', since: '', tx: '' })
     refreshRefs();
     setWindowId('chats');
+
+    if (args.ghost) {
+      setTimeout(() => {
+        setWindowId('chat')
+      }, 50)
+    } else {
+      setChatObj({ uid: '', name: '', status: '', since: '', tx: '' })
+    }
   }
 
   useEffect(() => {

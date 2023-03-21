@@ -14,14 +14,14 @@ import MsgLikedDeco from '../components/MsgLikedDeco.js'
 import CommonSigMismatchDeco from '../components/CommonSigMismatchDeco.js'
 import SignatureVerificationFailedDeco from '../components/SignatureVerificationFailedDeco.js'
 import SignatureVerificatioSuccessDeco from '../components/SignatureVerificationSuccessDeco.js'
-
+import MsgGhost from '../components/MsgGhost.js'
 
 
 function Message(props) {
     const [liked, setLiked] = useState(props.msgObj.liked);
     const [deleted, setDeleted] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
-
+    const [ghost, setGhost] = useState(false);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -29,6 +29,9 @@ function Message(props) {
                 setShowMenu(false)
             }
         })
+        if (props.msgObj.ghost != undefined) {
+            setGhost(props.msgObj.ghost)
+        }
     }, [])
 
 
@@ -110,10 +113,11 @@ function Message(props) {
         } else {
             return (
                 <>
-                    <Label className="msgTime" bkg="#55007340" color="#8300B0" text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
-                    {props.msgObj.auth ? <AuthedMsgDeco /> : <NotAuthedMsgDeco />}
-                    {props.msgObj.type == 'rx' ? <MsgRXDeco /> : <MsgTXDeco />}
-                    {(props.msgObj.seen && props.msgObj.type == 'tx') ? <Label fontSize="2.5vw" className="msgSeen" color="#8300B0" bkg="#55007340" text="Seen" /> : ''}
+                    <Label className="msgTime" bkg={ghost ? '#0500FF50' : "#55007340"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
+                    {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
+                    {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}
+                    {ghost ? <MsgGhost /> : ''}
+                    {(props.msgObj.seen && props.msgObj.type == 'tx') ? <Label fontSize="2.5vw" className="msgSeen" color={ghost ? '#0500FF' : "#8300B0"} bkg={ghost ? '#0500FF20' : "#55007340"} text="Seen" /> : ''}
                     {(liked && !deleted) ? <MsgLikedDeco /> : ''}
                     <div className='chashContainer'>
                         <CommonSigMismatchDeco className="chashIndi"></CommonSigMismatchDeco>
@@ -123,7 +127,7 @@ function Message(props) {
                         {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
                         <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
                     </div>
-                    <Label className="msgDate" bkg="#55007350" color="#8300B0" text={`${msgDateLocal.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateLocal.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateLocal.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
+                    <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#55007350"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateLocal.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateLocal.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )
@@ -132,12 +136,39 @@ function Message(props) {
 
     const messageContentColorController = () => {
         if (props.decrypted) {
-            return props.msgObj.type == 'rx' ? '#FFF' : '#C09AFF';
+            if(ghost){
+                return props.msgObj.type == 'rx' ? '#FFF' : '#4B47FF';
+            }else{
+                return props.msgObj.type == 'rx' ? '#FFF' : '#C09AFF';
+            }
         } else {
             return '#CA0024';
         }
     }
 
+    const messageBkgController = () => {
+        if (props.decrypted) {
+            if (ghost) {
+                return '#0500FF20';
+            } else {
+                return '#6100DC20';
+            }
+        } else {
+            return '#88001830';
+        }
+    }
+
+    const messageBorderColorController = () => {
+        if (props.decrypted) {
+            if (ghost) {
+                return '#0500FF';
+            } else {
+                return '#7000FF';
+            }
+        } else {
+            return '#E20028';
+        }
+    }
 
     const sigLabelHash = {
         local: { label: 'Local', color: '#7000FF' }, 'self': { label: 'OSIG', color: '#00FFD1' }, 'no_self': { label: 'OSIG_F', color: '#f39e00' }, true: { label: 'Signed', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
@@ -146,7 +177,7 @@ function Message(props) {
 
     return (
         <div>
-            <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={props.decrypted ? "#6100DC20" : '#88001830'} style={{ borderLeft: `solid 1px ${props.decrypted ? '#7000FF' : '#E20028'}` }} child={
+            <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={messageBkgController()} style={{ borderLeft: `solid 1px ${messageBorderColorController()}` }} child={
                 props.decrypted ?
                     <div>
                         {menuController()}
