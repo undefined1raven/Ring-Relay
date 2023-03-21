@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom'
-import WideLogo from '../components/WideLogo.js'
+import MinLogo from '../components/MinLogo.js'
 import LinkDeco from '../components/LinkDeco.js'
 import InputField from '../components/InputField.js'
 import Label from '../components/Label.js'
@@ -95,7 +95,7 @@ function Login() {
             }).catch(e => {
                 auth('Failed To Get');
             });
-        }else{
+        } else {
             setAuthStatusLabelObj({ text: '[Invalid Input]', color: '#D80027', bkg: '#D80027' });
             setTimeout(() => {
                 setAuthStatusLabelObj({ color: '#8F00FF', bkg: '#6100DC', text: '[Awaiting Credentials]' });
@@ -105,7 +105,8 @@ function Login() {
     }
     return (
         <div>
-            <WideLogo></WideLogo>
+            <div id="logoBkg"></div>
+            <MinLogo id="minLogo"></MinLogo>
             <form onSubmit={submit}>
                 <InputField color={usernameFieldColor} onChange={(e) => fieldOnChange(e, setUserid)} value={userid} id="loginUsernameField" type="text" placeholder="Username/Email" name="userid"></InputField>
                 <InputField color={passwordFieldColor} onChange={(e) => fieldOnChange(e, setPassword)} value={password} id="loginPasswordField" type="password" placeholder="Password" name="password"></InputField>

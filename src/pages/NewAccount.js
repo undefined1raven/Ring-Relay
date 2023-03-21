@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import WideLogo from '../components/WideLogo.js'
+import MinLogo from '../components/MinLogo.js'
 import LinkDeco from '../components/LinkDeco.js'
 import InputField from '../components/InputField.js'
 import Label from '../components/Label.js'
@@ -149,7 +150,8 @@ function NewAccount() {
     }
     return (
         <div>
-            <WideLogo></WideLogo>
+            <div id="logoBkg"></div>
+            <MinLogo id="minLogo"></MinLogo>
             <form onSubmit={submit}>
                 <InputField color={usernameFieldColor} onChange={(e) => fieldOnChange(e, setUsername)} value={username} id="usernameField" type="text" placeholder="Username" name="username"></InputField>
                 <InputField color={emailFieldColor} onChange={(e) => fieldOnChange(e, setEmail)} value={email} id="emailField" type="email" placeholder="Email" name="email"></InputField>

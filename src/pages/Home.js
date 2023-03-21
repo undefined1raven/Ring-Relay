@@ -81,7 +81,7 @@ function Home() {
     refreshRefs();
     setWindowId('chats');
 
-    if (args.ghost) {
+    if (args?.ghost) {
       setTimeout(() => {
         setWindowId('chat')
       }, 50)
@@ -97,18 +97,7 @@ function Home() {
   });
 
   useEffect(() => {
-    try {
-      if (window.Notification) {
-        if (window.Notification.permission == 'granted') {
-          oneSig.registerForPushNotifications();
-        } else if (window.Notification.permission == 'default' || window.Notification.permission == 'denied') {
-          setNotificationsDialogShow(true);
-        }
-      }
 
-    } catch (e) {
-      setShowErr(true)
-    }
   }, [])
 
   let rtdbListnerIni = false;
@@ -218,6 +207,18 @@ function Home() {
           localStorage.removeItem('refs')
         } else {
           setAuthorized(true);
+          try {
+            if (window.Notification) {
+              if (window.Notification.permission == 'granted') {
+                oneSig.registerForPushNotifications();
+              } else if (window.Notification.permission == 'default' || window.Notification.permission == 'denied') {
+                setNotificationsDialogShow(true);
+              }
+            }
+
+          } catch (e) {
+            setShowErr(true)
+          }
           oneSig.push(() => {
             oneSig.setExternalUserId(res.data.ownUID);
           })
