@@ -119,14 +119,14 @@ function Message(props) {
                     {ghost ? <MsgGhost /> : ''}
                     {(props.msgObj.seen && props.msgObj.type == 'tx') ? <Label fontSize="2.5vw" className="msgSeen" color={ghost ? '#0500FF' : "#8300B0"} bkg={ghost ? '#0500FF20' : "#55007340"} text="Seen" /> : ''}
                     {(liked && !deleted) ? <MsgLikedDeco /> : ''}
-                    <div className='chashContainer' style={{display: 'none'}}>
+                    <div className='chashContainer' style={{ display: 'none' }}>
                         <CommonSigMismatchDeco className="chashIndi"></CommonSigMismatchDeco>
                         <Label fontSize="2.5vw" className="chashLabel" color="#FF002E" text="inad2" />
                     </div>
                     <div className='signatureContainer'>
-                        {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />}
-                        <Label fontSize="2.5vw" className="sigLabel" color={sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
+                        {/* {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />} */}
                     </div>
+                    <Label bkg={`${ghost ? '#0500FF50' : SignatureSuccessDecoColorHash[props.msgObj.signed] + '30'}`} fontSize="2.5vw" className="sigLabel" color={ghost ? "#FFF" : sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
                     <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#55007350"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateLocal.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateLocal.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
@@ -136,9 +136,9 @@ function Message(props) {
 
     const messageContentColorController = () => {
         if (props.decrypted) {
-            if(ghost){
+            if (ghost) {
                 return props.msgObj.type == 'rx' ? '#FFF' : '#4B47FF';
-            }else{
+            } else {
                 return props.msgObj.type == 'rx' ? '#FFF' : '#C09AFF';
             }
         } else {
@@ -171,7 +171,7 @@ function Message(props) {
     }
 
     const sigLabelHash = {
-        local: { label: 'Local', color: '#7000FF' }, 'self': { label: 'OSIG', color: '#00FFD1' }, 'no_self': { label: 'OSIG_F', color: '#f39e00' }, true: { label: 'Signed', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
+        local: { label: 'Local ▣', color: '#7000FF' }, 'self': { label: '[OSIG]', color: '#00FFD1' }, 'no_self': { label: 'OSIG_F', color: '#f39e00' }, true: { label: '[Signed]', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
     };
     const SignatureSuccessDecoColorHash = { 'self': '#00FFD1', true: '#00FFD1', 'local': '#7000FF' }
 

@@ -594,8 +594,15 @@ rect {
 }
 
 .sigLabel {
-  left: 10%;
+  // left: 10%;
+  top: 2.1vh;
+  @include flex();
+  width: 100%;
+  height: 2.1vh;
+  left: 102%;
+  width: 14.6%;
 }
+
 
 .msgsList::-webkit-scrollbar {
   width: 0vh;
