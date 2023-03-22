@@ -14,6 +14,7 @@ function NavBar(props) {
 
 
     function checkSys() {
+        setSystemStatus({ text: `▣`, color: '#001AFF', last: Date.now() });
         axios.get(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
             setSystemStatus({ text: `Systems Nominal ${window.Notification ? '_' : 'Γ'}`, color: '#00FF85', last: Date.now() });
         }).catch(e => {
@@ -25,7 +26,7 @@ function NavBar(props) {
         checkSys()
         let interval = setInterval(() => {
             checkSys()
-        }, 300000);
+        }, 15000);
         return () => clearInterval(interval)
     }, []);
 

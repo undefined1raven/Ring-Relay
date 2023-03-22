@@ -106,7 +106,7 @@ function Message(props) {
             return (
                 <>
                     <Button onClick={onDelete} color={props.msgObj.type == 'tx' ? "#FF002E" : '#999'} className="msgDeleteButton" bkg={props.msgObj.type == 'tx' ? "#FF002E" : ''} label="Delete"></Button>
-                    <Button onClick={onCopy} color="#7100FF" className="msgCopyButton" bkg="#7100FF" label="Copy"></Button>
+                    <Button onClick={onCopy} color={ghost ? "#FFF" : "#7100FF"} style={{border: `solid 1px ${ghost ? "#0500FF" : '#7100FF'}`}} className="msgCopyButton" bkg={ghost ? "#0500FF" : "#7100FF"} label="Copy"></Button>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )

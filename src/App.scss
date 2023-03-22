@@ -117,7 +117,9 @@ html {
   background-color: #22222250;
   color: #999;
 }
-
+#msgInputActual::placeholder{
+  color: #5e00d1;
+}
 #msgInputActual{
   position: absolute;
   top: 0%;
@@ -303,6 +305,7 @@ html {
 .navButton {
   height: 100%;
   border: none !important;
+  user-select: none;
   border-right: solid 1px #6100DC !important;
   border-left: solid 1px #6100DC !important;
 }
