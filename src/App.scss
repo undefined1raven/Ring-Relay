@@ -594,7 +594,6 @@ rect {
 }
 
 .sigLabel {
-  // left: 10%;
   top: 2.1vh;
   @include flex();
   width: 100%;
@@ -602,7 +601,14 @@ rect {
   left: 102%;
   width: 14.6%;
 }
-
+#convoStartedLabel{
+  top: 0%;
+  @include VAlign();
+  @include flex();
+  width: 100%;
+  height: 100%;
+  border-radius: 0px 5px 5px 0px;
+}
 
 .msgsList::-webkit-scrollbar {
   width: 0vh;
