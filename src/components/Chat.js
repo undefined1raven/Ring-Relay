@@ -334,6 +334,7 @@ function Chat(props) {
 
     useEffect(() => {
         if (realtimeBuffer.length > 0) {
+            setChatLoadingLabel({ label: '[Done]', opacity: 0 });
             let lastRXMID = '';
             for (let ix = 0; ix < realtimeBuffer.length; ix++) {
                 if (realtimeBuffer[ix].type == 'rx') {
@@ -598,9 +599,9 @@ function Chat(props) {
 
     useEffect(() => {
         msgInputBkgColorSetter();
-        if(ghostModeEnabled){
+        if (ghostModeEnabled) {
             document.documentElement.style.setProperty('--msgInputPlaceholderColor', "#0013BF")
-        }else{
+        } else {
             document.documentElement.style.setProperty('--msgInputPlaceholderColor', "#5e00d1")
         }
         if (!ghostModeEnabled && ghostModeEverBeenEnabled) {

@@ -171,7 +171,7 @@ function Message(props) {
     }
 
     const sigLabelHash = {
-        local: { label: 'Local ▣', color: '#7000FF' }, 'self': { label: '[OSIG]', color: '#00FFD1' }, 'no_self': { label: 'OSIG_F', color: '#f39e00' }, true: { label: '[Signed]', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
+        local: { label: 'Local ▣', color: '#7000FF' }, 'self': { label: '[Own SIG]', color: '#00FFD1' }, 'no_self': { label: '[OSIG_F]', color: '#f39e00' }, true: { label: '[Signed]', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
     };
     const SignatureSuccessDecoColorHash = { 'self': '#00FFD1', true: '#00FFD1', 'local': '#7000FF' }
 
