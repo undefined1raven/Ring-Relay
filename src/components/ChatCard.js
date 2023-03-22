@@ -48,8 +48,10 @@ function ChatCard(props) {
             <VerticalLine top="0%" left="0%" height="100%" color={props.obj.msg == -1 ? '#001AFF' : '#7000FF'}></VerticalLine>
             <div style={{ position: 'absolute', left: '2.285714286%', borderLeft: `solid 1px ${props.obj.msg == -1 ? '#001AFF' : '#7000FF'}`, width: '83.428571429%', height: "100%", backgroundColor: `${props.obj.msg == -1 ? '#001AFF20' : '#6100DC40'}` }}></div>
             <Label color="#FFF" fontSize="2.1vh" className="chatCardName" text={props.obj.name}></Label>
-            <Label style={{ top: msgCountLabelProps.top }} className="chatCardMsgCount" color={msgCountLabelProps.color} fontSize="1.6vh" text={msgCountLabelProps.text}></Label>
-            <NewMsgsDeco show={props.obj.msg > 0} color={msgCountDecoColor}></NewMsgsDeco>
+            <div className='msgCountContainer'>
+                <Label style={{ top: msgCountLabelProps.top }} className="chatCardMsgCount" color={msgCountLabelProps.color} fontSize="1.6vh" text={msgCountLabelProps.text}></Label>
+                <NewMsgsDeco show={props.obj.msg > 0} color={msgCountDecoColor}></NewMsgsDeco>
+            </div>
             <Label className="chatCardStatus" fontSize="1.8vh" color={statusProps.color} text={props.obj.status} bkg={`${statusProps.color}20`} style={{ borderLeft: `solid 1px ${statusProps.color}` }}></Label>
             <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.obj.since}></Label>
         </div>

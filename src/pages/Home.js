@@ -172,18 +172,18 @@ function Home() {
   useEffect(() => {
     var contactStatusInterval = false;
     var newMessageCountsInterval = false;
-    contactStatusInterval = setInterval(() => {
-      if (messageCountHash.ini) {
-        checkContactsStatus(messageCountHash.hash);
-      }
-      setContactStatusIntervalEnabled(true)
-    }, 5000)
-    setNewMessageCountsIntervalEnabled(true);
-    newMessageCountsInterval = setInterval(() => {
-      if (Date.now() - messageCountHash.last > 20000) {
-        getNewMessageCounts({ data: { refs: refs.arr } });
-      }
-    }, 7000)
+    // contactStatusInterval = setInterval(() => {
+    //   if (messageCountHash.ini) {
+    //     checkContactsStatus(messageCountHash.hash);
+    //   }
+    //   setContactStatusIntervalEnabled(true)
+    // }, 5000)
+    // setNewMessageCountsIntervalEnabled(true);
+    // newMessageCountsInterval = setInterval(() => {
+    //   if (Date.now() - messageCountHash.last > 20000) {
+    //     getNewMessageCounts({ data: { refs: refs.arr } });
+    //   }
+    // }, 7000)
     return () => { clearInterval(contactStatusInterval); clearInterval(newMessageCountsInterval); }
   }, [messageCountHash])
 
