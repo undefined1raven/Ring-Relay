@@ -120,6 +120,12 @@ function Chat(props) {
         }, 50);
     }
 
+    const scrollToTop = () => {
+        setTimeout(() => {
+            try { document.getElementById('msgsList').scrollTo({ top: 0, behavior: 'instant' }); } catch (e) { }
+        }, 50);
+    }
+
     const atomicDecrypt = async (rawMsg, ownPUBSK, privateKey, pubSigningKey) => {
         if (rawMsg.type == 'tx') {
             return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
@@ -198,6 +204,7 @@ function Chat(props) {
 
     useEffect(() => {
         setFetchingOlderMessages(true);
+        scrollToTop();
         axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: MSUID, count: 30, offset: msgCount.count, targetUID: props.chatObj.uid }).then(async (resx) => {
             if (resx.data.error == undefined) {
                 let rawMsgPrependArr = resx.data.messages;
@@ -220,7 +227,7 @@ function Chat(props) {
                                         if (document.getElementById(firstMIDBeforeUpdate)) {
                                             document.getElementById(firstMIDBeforeUpdate).scrollIntoView(true);
                                             let latestTop = document.getElementById('msgsList').scrollTop;
-                                            document.getElementById('msgsList').scrollTo({top: latestTop - 40});
+                                            document.getElementById('msgsList').scrollTo({ top: latestTop - 40 });
                                         }
                                     }, 50);
                                     setFetchingOlderMessages(false);
@@ -638,7 +645,7 @@ function Chat(props) {
                     </div>
                     <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${msgListBorderColorController()}` }}>
                         {fetchingOlderMessages && chatLoadingLabel.label == '[Done]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#001AFF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Fetching Older Messages]" color="#001AFF" bkg="#001AFF30"></Label></li> : ''}
-                        {!ghostModeEnabled && scrolledToStart && chatLoadingLabel.label != '[No Messages]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Conversation Started]" color="#9644FF" bkg="#7000FF30"></Label></li> : ''}
+                        {!fetchingOlderMessages && !ghostModeEnabled && scrolledToStart && chatLoadingLabel.label != '[No Messages]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Conversation Started]" color="#9644FF" bkg="#7000FF30"></Label></li> : ''}
                         {ghostModeEnabled ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#0500FF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Ghostly Conversation Started]" color="#FFF" bkg="#0500FF30"></Label></li> : ''}
                         {(chatLoadingLabel.label == '[Done]' && !ghostModeEnabled) ? msgList : ''}
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
