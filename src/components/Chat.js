@@ -27,11 +27,6 @@ const firebaseConfig = {
     appId: "1:931166613472:web:a7ab26055d59cc2535c585"
 };
 
-
-function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
-}
-
 const app = initializeApp(firebaseConfig);
 
 const db = getDatabase(app);
@@ -51,8 +46,6 @@ const db = getDatabase(app);
 
 function Chat(props) {
     const [statusProps, setStatusProps] = useState({ color: '#FF002E' });
-    const [scrollToY, setScrollToY] = useState(0);
-    const [msgListscrollToY, setMsgListscrollToY] = useState(0);
     const [newMessageContents, setNewMessageContents] = useState('');
     const [msgArray, setMsgArray] = useState({ ini: false, array: [] });
     const [msgList, setMsgList] = useState(0);
@@ -82,11 +75,8 @@ function Chat(props) {
     const [msgInputHasFocus, setMsgInputHasFocus] = useState(false)
     const [msgInputBkgColor, setMsgInputBkgColor] = useState('#8c33ff30')
     const [scrolledToStart, setScrolledToStart] = useState(false);
-    const [bringIntoView, setBringIntoView] = useState({ last: 0, MID: '' });
     const [fetchingOlderMessages, setFetchingOlderMessages] = useState(false);
-    const onInputFocus = () => {
-        setScrollToY(30000);
-    }
+
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
@@ -146,7 +136,7 @@ function Chat(props) {
         }
     }
 
-    const decryptMessages = (rawMsgArr, scrollOnCompletion, beforeOrAfter) => {
+    const initialFetch = (rawMsgArr) => {
         if (rawMsgArr.length > 0) {
             let lastTXMID = ''
             for (let ix = 0; ix < rawMsgArr.length; ix++) {
@@ -159,59 +149,23 @@ function Chat(props) {
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
                         JSONtoKey(JSON.parse(localStorage.getItem('OWN-PUBSK')), 'ECDSA').then(ownPUBSK => {
                             window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
+                                let promiseArray = [];
                                 for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                                    let rawMsg = rawMsgArr[ix];
-                                    if (rawMsgArr[ix].type == 'tx') {
-                                        verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(ownSigStatus => {
-                                            decryptMessage(privateKey, rawMsgArr[ix].ownContent, 'base64').then(plain => {
-                                                addMsgToMsgArr({ signed: (ownSigStatus) ? 'self' : 'no_self', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: (rawMsg.seen && rawMsg.MID == lastTXMID) }, beforeOrAfter)
-                                                if (ix == rawMsgArr.length - 1) {
-                                                    addMsgToMsgArr({ end: true }, beforeOrAfter);
-                                                    if (scrollOnCompletion) {
-                                                        scrollToBottom();
-                                                    }
-                                                }
-                                                filterDeletedMessages('91');
-                                            })
-                                        });
-                                    } else {
-                                        verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
-                                            decryptMessage(privateKey, rawMsgArr[ix].remoteContent, 'base64').then(plain => {
-                                                addMsgToMsgArr({ signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }, beforeOrAfter);
-                                                if (ix == rawMsgArr.length - 1) {
-                                                    addMsgToMsgArr({ end: true }, beforeOrAfter);
-                                                    if (scrollOnCompletion) {
-                                                        scrollToBottom();
-                                                    }
-                                                }
-                                                filterDeletedMessages('101');
-                                            });
-                                        })
-                                    }
+                                    promiseArray.push(atomicDecrypt(rawMsgArr[ix], ownPUBSK, privateKey, pubSigningKey));
                                 }
+                                Promise.all(promiseArray).then(msgArr => {
+                                    setMsgArray({ ini: true, array: [...msgArr] });
+                                    filterDeletedMessages('91');
+                                    setChatLoadingLabel({ opacity: 0, label: '[Done]' });
+                                    scrollToBottom();
+                                })
                             }).catch(e => {
                                 setMsgArray({ ini: true, array: rawMsgArr });
                             })
                         })
                     })
                 }
-            } catch (e) {
-                for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                    let rawMsg = rawMsgArr[ix];
-                    if (rawMsgArr[ix].type == 'tx') {
-                        addMsgToMsgArr({ signed: 'UNK', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }, beforeOrAfter)
-                        if (ix == rawMsgArr.length - 1) {
-                            addMsgToMsgArr({ end: true }, beforeOrAfter);
-                        }
-                    } else {
-                        addMsgToMsgArr({ signed: 'UNK', MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.type, content: undefined, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen }, beforeOrAfter);
-                        if (ix == rawMsgArr.length - 1) {
-                            addMsgToMsgArr({ end: true }, beforeOrAfter);
-                        }
-                    }
-                }
-            }
-
+            } catch (e) { }
         } else {
             setChatLoadingLabel({ opacity: 1, label: '[No Messages]' })
         }
@@ -226,7 +180,7 @@ function Chat(props) {
                 rawMsgArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
                 setMSUID(res.data.MSUID);
                 setPKSH(res.data.PKSH);
-                decryptMessages(rawMsgArr, true, 'after');
+                initialFetch(rawMsgArr);
                 let lastRXMID = ''
                 for (let ix = 0; ix < rawMsgArr.length; ix++) {
                     if (rawMsgArr[ix].type == 'rx') {
@@ -265,6 +219,8 @@ function Chat(props) {
                                     setTimeout(() => {
                                         if (document.getElementById(firstMIDBeforeUpdate)) {
                                             document.getElementById(firstMIDBeforeUpdate).scrollIntoView(true);
+                                            let latestTop = document.getElementById('msgsList').scrollTop;
+                                            document.getElementById('msgsList').scrollTo({top: latestTop - 40});
                                         }
                                     }, 50);
                                     setFetchingOlderMessages(false);
@@ -282,7 +238,7 @@ function Chat(props) {
             setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
             setMsgsListHeight('74.21875%')
             setMsgInputTextareaHeight('47%');
-            setMsgListscrollToY(30000);
+            scrollToBottom();
             setNewMessageContents('');
             let MID = `${v4()}-${v4()}`;
             let local_nMsgObj = { type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
@@ -320,26 +276,6 @@ function Chat(props) {
             });
         }
     }
-
-    let msgArrBatch = [];
-
-    const addMsgToMsgArr = (msgObj, location) => {
-        setMsgArray({ ini: true, array: [...msgArray.array, msgObj] });
-        msgArrBatch.push(msgObj);
-        if (msgArrBatch[msgArrBatch.length - 1]['end']) {
-            msgArrBatch.pop();
-            if (location == 'before') {
-                setMsgArray({ ini: true, array: [...msgArrBatch, ...msgArray.array] })
-            } else if (location == 'after') {
-                setMsgArray({ ini: true, array: [...msgArray.array, ...msgArrBatch] })
-            }
-            msgArrBatch = [];
-            setChatLoadingLabel({ opacity: 0, label: '[Done]' })
-        }
-        filterDeletedMessages('198');
-    };
-
-
 
     const deleteMessage = (MID) => {
         set(ref(db, `messageBuffer/${props.ownUID}/deleted/${MID}`), { tx: Date.now() });
@@ -384,7 +320,7 @@ function Chat(props) {
 
 
     useEffect(() => {
-        if (msgListScroll.top < 100 && Date.now() - msgCount.last > 400 && !scrolledToStart) {
+        if (msgListScroll.top < 100 && Date.now() - msgCount.last > 800 && !scrolledToStart && props.privateKeyStatus && !ghostModeEnabled) {
             setMsgCount((prev) => { return { count: prev.count + 30, last: Date.now() } })
         }
     }, [msgListScroll])
@@ -402,10 +338,7 @@ function Chat(props) {
             }
 
             setRealtimeBufferList(realtimeBuffer.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
-
-            // setTimeout(() => {
-            //     try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
-            // }, 100);
+            scrollToBottom();
         }
     }, [realtimeBuffer])
 
@@ -414,7 +347,6 @@ function Chat(props) {
         remove(ref(db, `messageBuffer/${props.ownUID}`));
         var interval = false
         if (!msgArray.ini && props.visible) {
-            msgArrBatch = [];
             getMessagesAndUpdateChat();
             interval = setInterval(() => {
                 get(ref(db, `activeUIDs/${props.chatObj.uid}`)).then(snap => {
@@ -451,12 +383,6 @@ function Chat(props) {
     useEffect(() => {
         setMsgList(msgArray.array.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
     }, [msgArray])
-
-    // useEffect(() => {
-    //     setTimeout(() => {
-    //         try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
-    //     }, 50);
-    // }, [msgListscrollToY])
 
     const filterDeletedMessages = (id) => {
         setTimeout(() => {
@@ -712,7 +638,8 @@ function Chat(props) {
                     </div>
                     <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${msgListBorderColorController()}` }}>
                         {fetchingOlderMessages && chatLoadingLabel.label == '[Done]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#001AFF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Fetching Older Messages]" color="#001AFF" bkg="#001AFF30"></Label></li> : ''}
-                        {scrolledToStart ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Conversation Started]" color="#9644FF" bkg="#7000FF30"></Label></li> : ''}
+                        {!ghostModeEnabled && scrolledToStart && chatLoadingLabel.label != '[No Messages]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Conversation Started]" color="#9644FF" bkg="#7000FF30"></Label></li> : ''}
+                        {ghostModeEnabled ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#0500FF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Ghostly Conversation Started]" color="#FFF" bkg="#0500FF30"></Label></li> : ''}
                         {(chatLoadingLabel.label == '[Done]' && !ghostModeEnabled) ? msgList : ''}
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
