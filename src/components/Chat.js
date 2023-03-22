@@ -598,6 +598,11 @@ function Chat(props) {
 
     useEffect(() => {
         msgInputBkgColorSetter();
+        if(ghostModeEnabled){
+            document.documentElement.style.setProperty('--msgInputPlaceholderColor', "#0013BF")
+        }else{
+            document.documentElement.style.setProperty('--msgInputPlaceholderColor', "#5e00d1")
+        }
         if (!ghostModeEnabled && ghostModeEverBeenEnabled) {
             props.onBackButton({ ghost: true, uid: props.chatObj.uid });
         }
@@ -639,7 +644,7 @@ function Chat(props) {
                     <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
                         <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
                             <VerticalLine color={msgListBorderColorController()} top="0%" left="0%" height="100%"></VerticalLine>
-                            {props.privateKeyStatus ? <textarea placeholder='Message...' id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
+                            {props.privateKeyStatus ? <textarea placeholder={ghostModeEnabled ? 'Ghostly Message...' : 'Message...'} id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
                         </div>
                         {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>

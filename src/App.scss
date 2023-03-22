@@ -14,6 +14,7 @@ html {
   --FS_M_BigMedium: 2.69vh;
   --FS_M_Normal: 2.34vh;
   --FS_M_SmallMedium: 1.9vh;
+  --msgInputPlaceholderColor: '#5e00d1'
 }
 
 @keyframes ani {
@@ -118,7 +119,7 @@ html {
   color: #999;
 }
 #msgInputActual::placeholder{
-  color: #5e00d1;
+  color: var(--msgInputPlaceholderColor);
 }
 #msgInputActual{
   position: absolute;
