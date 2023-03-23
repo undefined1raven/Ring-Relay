@@ -2,16 +2,37 @@ import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import Map, { NavigationControl } from 'react-map-gl';
 import LocationIndi from '../components/LocationIndi.js'
+import Button from '../components/Button.js'
+import Label from '../components/Label.js'
+import { useEffect, useState } from 'react';
 
 function LocationPickerOverlay(props) {
+    const [mapVisible, setMapVisible] = useState(true)
+    const [loadingLabelVisible, setLoadingLabelVisible] = useState(true)
+
+
+    useEffect(() => {
+        setMapVisible(false);
+    }, [])
+
+    useEffect(() => {
+        if (mapVisible == false) {
+            setTimeout(() => {
+                setMapVisible(true)
+            }, 80);
+        }
+    }, [mapVisible])
+
+
     if (props.show) {
         const update = (e) => props.updateLocationInput(e);
+
         return (
             <div className="locPickerOverlayContainer">
-                <Map
+                {mapVisible ? <Map
                     onZoom={(e) => update(e)}
                     onMove={(e) => update(e)}
-                    onLoad={(e) => update(e)}
+                    onLoad={(e) => { update(e); setLoadingLabelVisible(false) }}
                     onDragStart={(e) => update(e)}
                     onDragEnd={(e) => update(e)}
                     onBoxZoomEnd={(e) => update(e)}
@@ -26,7 +47,10 @@ function LocationPickerOverlay(props) {
                 >
                     {/* <NavigationControl position="top-left" /> */}
                 </Map>
-                <LocationIndi></LocationIndi>
+                    : ''}
+                {!loadingLabelVisible ? <LocationIndi></LocationIndi> : ''}
+                {!loadingLabelVisible ? <Button bkg="#7100FF" fontSize="2vh" width="60%" height="6%" className="locationPickerUseDeviceLocationButton" color="#7100FF" label="Use Device Location"></Button> : ''}
+                <Label show={loadingLabelVisible} fontSize="2vh" color="#001AFF" style={{ borderRadius: '5px', width: '50%', height: '5%' }} bkg="#001AFF30" className="mapLoadingLabel" text="[Loading Map]"></Label>
             </div>
         )
     } else {

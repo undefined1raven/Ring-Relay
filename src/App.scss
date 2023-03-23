@@ -1354,6 +1354,9 @@ stop {
 .maplibregl-ctrl{
   display: none;
 }
+.mapLoadingLabel{
+  @include flex();
+}
 .locPickerOverlayContainer {
   position: absolute;
   top: 15.85625%;
@@ -1361,11 +1364,16 @@ stop {
   width: 97.222222222%;
   height: 75.63125%;
   @include flex();
-  background-color: rgba(10, 0, 16, .9);
+  background-color: rgba(20, 0, 30, .5);
   backdrop-filter: blur(5px);
   z-index: 10;
 }
-
+.locationPickerUseDeviceLocationButton{
+  background-color: rgba(15, 0, 25, 0.7) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 5px !important;
+  top: 5% !important;
+}
 .colorMsgTypePreviewContainer {
   position: absolute;
   width: 100%;
