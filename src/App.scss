@@ -1352,7 +1352,13 @@ stop {
   font-family: 'Electrolize', sans-serif;
   resize: none;
 }
-
+.colorMsgTypePreviewContainer{
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #6100DC20;
+  @include flex();
+}
 #msgInputActual::-webkit-scrollbar {
   width: 0vh;
   height: 0px;

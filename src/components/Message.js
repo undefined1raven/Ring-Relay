@@ -113,7 +113,7 @@ function Message(props) {
         } else {
             return (
                 <>
-                    <Label className="msgTime" bkg={ghost ? '#0500FF50' : "#55007340"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
+                    <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}
                     {ghost ? <MsgGhost /> : ''}
@@ -127,7 +127,7 @@ function Message(props) {
                         {/* {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />} */}
                     </div>
                     <Label bkg={`${ghost ? '#0500FF50' : SignatureSuccessDecoColorHash[props.msgObj.signed] + '30'}`} fontSize="2.5vw" className="sigLabel" color={ghost ? "#FFF" : sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
-                    <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#55007350"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateLocal.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateLocal.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
+                    <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#6100DC20"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateLocal.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateLocal.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )

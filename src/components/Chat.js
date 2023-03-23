@@ -17,6 +17,7 @@ import { getDatabase, remove, get, set, ref, onValue, update } from "firebase/da
 import { getAuth, signInWithCustomToken } from "firebase/auth";
 import Signature from '../components/Signature.js'
 import MessageTypeSelector from '../components/MessageTypeSelector.js'
+import ColorMsgTypePreview from '../components/ColorMsgTypePreview.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -77,7 +78,10 @@ function Chat(props) {
     const [msgInputBkgColor, setMsgInputBkgColor] = useState('#8c33ff30')
     const [scrolledToStart, setScrolledToStart] = useState(false);
     const [fetchingOlderMessages, setFetchingOlderMessages] = useState(false);
-    const [messageTypeSelectorLeft, setMessageTypeSelectorLeft] = useState('-71.111111111%')
+    const [showTextMsgPreview, setShowTextMsgPreview] = useState(true)
+    const [showColorMsgPreview, setShowColorMsgPreview] = useState(false)
+    const [selectedMsgType, setSelectedMsgType] = useState('text')
+    const [selectedColor, setSelectedColor] = useState('#8100D0')
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
@@ -631,14 +635,45 @@ function Chat(props) {
         msgInputBkgColorSetter();
     }, [msgInputHasFocus])
 
+
+    const convoDetailsToggle = (e) => {
+        if (e.target.id != 'chatHeaderBackButton') {
+            setShowChatDetails((prev) => { return !prev });
+
+        }
+    }
+
+    useEffect(() => {
+        if (selectedMsgType == 'color') {
+            setShowColorMsgPreview(true);
+            setShowTextMsgPreview(false);
+        }
+        if (selectedMsgType == 'text') {
+            setShowColorMsgPreview(false);
+            setShowTextMsgPreview(true);
+        }
+    }, [selectedMsgType])
+
+    const onColorInputChange = (e) => {
+        setSelectedColor(e.target.value.toUpperCase())
+    }
+
+    useEffect(() => {
+        if (showChatDetails) {
+            setTimeout(() => {
+                scrollToBottom();
+            }, 50);
+        }
+    }, [showChatDetails])
+
     if (props.show) {
         return (
             <div className="chatContainer">
                 <div className='chatHeader' style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}` }}>
-                    <div onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails((prev) => { return !prev }) : ''} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
+                    <div onClick={convoDetailsToggle} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
                     <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg={ghostModeEnabled ? '#0500FF' : "#7000FF"} width="9.428571429%" height="100%" child={<BackDeco color={ghostModeEnabled ? '#0500FF' : "#7000FF"} />}></Button>
-                    <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails((prev) => { return !prev }) : ''} color={ghostModeEnabled ? "#0500FF" : "#5600C3"} style={{ left: `${showChatDetails ? '53%' : '58%'}` }} text={showChatDetails ? "Tap to hide details" : "Tap for details"} fontSize="1.5vh"></Label>
-                    <Label onClick={(e) => e.target.id != 'chatHeaderBackButton' ? setShowChatDetails((prev) => { return !prev }) : ''} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
+                    <Label onClick={convoDetailsToggle} color={ghostModeEnabled ? "#0500FF" : "#5600C3"} style={{ left: `${showChatDetails ? '53%' : '58%'}` }} text={showChatDetails ? "Tap to hide details" : "Tap for details"} fontSize="1.5vh"></Label>
+                    <Label onClick={convoDetailsToggle} className="chatHeaderName" color="#FFF" fontSize="1.9vh" text={props.chatObj.name}></Label>
                     <Label className="chatHeaderStatus" color={statusProps.color} fontSize="1.9vh" text={!statusOverride ? props.chatObj.status : statusOverride} bkg={`${statusProps.color}20`} style={{ borderLeft: 'solid 1px' + statusProps.color }}></Label>
                     <Label className="chatCardStatusLast" fontSize="1.2vh" color={statusProps.color} text={props.chatObj.since}></Label>
                 </div>
@@ -646,7 +681,8 @@ function Chat(props) {
                     <div className='chatInput' style={{ top: inputDynamicStyle.top, height: inputDynamicStyle.height }}>
                         <div id="msgInput" style={{ width: '78%' }} className={`inputFieldContainer`}>
                             <VerticalLine color={msgListBorderColorController()} top="0%" left="0%" height="100%"></VerticalLine>
-                            {props.privateKeyStatus ? <textarea placeholder={ghostModeEnabled ? 'Ghostly Message...' : 'Message...'} id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
+                            {props.privateKeyStatus && showTextMsgPreview ? <textarea placeholder={ghostModeEnabled ? 'Ghostly Message...' : 'Message...'} id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
+                            {props.privateKeyStatus ? <ColorMsgTypePreview onColorInputChange={onColorInputChange} onCancel={() => setSelectedMsgType('text')} color={selectedColor} show={showColorMsgPreview} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></ColorMsgTypePreview> : ""}
                         </div>
                         {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>
@@ -658,7 +694,7 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
-                    <MessageTypeSelector></MessageTypeSelector>
+                    <MessageTypeSelector onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>
                             <Signature sigLabel="Conversation Signature" valid={conversationSig.ini && conversationSig.sig?.length == 9} verified={conversationSig.verified} sig={conversationSig.sig} top="52%"></Signature>
