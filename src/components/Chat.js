@@ -283,6 +283,11 @@ function Chat(props) {
             setNewMessageContents('');
             setSelectedMsgType('text');
         }
+        if (selectedMsgType == 'location' && selectedLocation.ini) {
+            LocalMsgContent = JSON.stringify(selectedLocation.locationObj);
+            setNewMessageContents('');
+            setSelectedMsgType('text');
+        }
         if (LocalMsgContent != 0) {
             let local_nMsgObj = { contentType: selectedMsgType, type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: LocalMsgContent, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
@@ -301,6 +306,9 @@ function Chat(props) {
                 }
                 if (selectedMsgType == 'color') {
                     messageContentsObj = { contentType: 'color', content: selectedColor.toString() };
+                }
+                if (selectedMsgType == 'location' && selectedLocation.ini) {
+                    messageContentsObj = { contentType: 'location', content: JSON.stringify(selectedLocation.locationObj) };
                 }
                 if (messageContentsObj.contentType != '' && messageContentsObj.content != '') {
                     encryptMessage(remotePubkey, JSON.stringify(messageContentsObj)).then(remoteCipher => {
@@ -753,7 +761,7 @@ function Chat(props) {
                             <VerticalLine color={msgListBorderColorController()} top="0%" left="0%" height="100%"></VerticalLine>
                             {props.privateKeyStatus && showTextMsgPreview ? <textarea placeholder={ghostModeEnabled ? 'Ghostly Message...' : 'Message...'} id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
                             {props.privateKeyStatus ? <ColorMsgTypePreview onColorInputChange={onColorInputChange} onCancel={() => setSelectedMsgType('text')} color={selectedColor} show={showColorMsgPreview} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></ColorMsgTypePreview> : ""}
-                            {props.privateKeyStatus ? <LocationMsgTypePreview selectedLocation={selectedLocation} show={showLocationMsgPreview} onCancel={() => setSelectedMsgType('text')} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></LocationMsgTypePreview> : ''}
+                            {props.privateKeyStatus ? <LocationMsgTypePreview ghost={ghostModeEnabled} selectedLocation={selectedLocation} show={showLocationMsgPreview} onCancel={() => setSelectedMsgType('text')} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></LocationMsgTypePreview> : ''}
                         </div>
                         {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>
@@ -765,7 +773,7 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ left: `${isTypingLastUnix.ghost ? "56.6%" : "76%"}`, borderRight: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
-                    <LocationPickerOverlay updateLocationInput={updateLocationInput} show={showLocationMsgPreview}></LocationPickerOverlay>
+                    <LocationPickerOverlay ghost={ghostModeEnabled} updateLocationInput={updateLocationInput} show={showLocationMsgPreview}></LocationPickerOverlay>
                     <MessageTypeSelector top={messageTypeSelectorTop} ghost={ghostModeEnabled} onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>

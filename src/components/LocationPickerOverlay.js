@@ -38,9 +38,9 @@ function LocationPickerOverlay(props) {
                     onBoxZoomEnd={(e) => update(e)}
                     onDrag={(e) => update(e)} mapLib={maplibregl}
                     initialViewState={{
-                        longitude: 16.62662018,
-                        latitude: 49.2125578,
-                        zoom: 14
+                        longitude: 8.362,
+                        latitude: 46.774,
+                        zoom: 3
                     }}
                     style={{ position: 'absolute', width: "100%", height: "100%", borderLeft: 'solid 1px #7000FF' }}
                     mapStyle="https://api.maptiler.com/maps/fcae873d-7ff0-480b-8d6d-41963084ad90/style.json?key=R1cyh6lj1mTfNEycg2N1"
@@ -49,8 +49,9 @@ function LocationPickerOverlay(props) {
                 </Map>
                     : ''}
                 {!loadingLabelVisible ? <LocationIndi></LocationIndi> : ''}
-                {!loadingLabelVisible ? <Button bkg="#7100FF" fontSize="2vh" width="60%" height="6%" className="locationPickerUseDeviceLocationButton" color="#7100FF" label="Use Device Location"></Button> : ''}
+                {!loadingLabelVisible ? <Button bkg={props.ghost ? "#0500FF" : "#7100FF"} fontSize="2vh" width="60%" height="6%" className="locationPickerUseDeviceLocationButton" color={props.ghost ? "#0500FF" : "#7100FF"} label="Use Device Location" style={{ backgroundColor: `${props.ghost ? "rgba(15, 0, 120, 0.7)" : 'rgba(25, 0, 15, 0.7)'}`, border: `solid 1px ${props.ghost ? "#0500FF" : '#7100FF'}`, color: `${props.ghost ? '#FFF' : '#7100FF'}` }}></Button> : ''}
                 <Label show={loadingLabelVisible} fontSize="2vh" color="#001AFF" style={{ borderRadius: '5px', width: '50%', height: '5%' }} bkg="#001AFF30" className="mapLoadingLabel" text="[Loading Map]"></Label>
+                <Label show={!loadingLabelVisible} fontSize="1.8vh" color="#AAA" style={{ borderRadius: '5px', width: '90%', height: '5%', top: '93%', backdropFilter: 'blur(5px)' }} bkg={props.ghost ? "#0013BAAA" : "#2E0067AA"} className="mapLoadingLabel" text="The message you send will contain this view"></Label>
             </div>
         )
     } else {

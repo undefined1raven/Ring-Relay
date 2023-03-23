@@ -1369,7 +1369,7 @@ stop {
   z-index: 10;
 }
 .locationPickerUseDeviceLocationButton{
-  background-color: rgba(15, 0, 25, 0.7) !important;
+  background-color: rgba(15, 0, 25, 0.7);
   backdrop-filter: blur(10px);
   border-radius: 5px !important;
   top: 5% !important;

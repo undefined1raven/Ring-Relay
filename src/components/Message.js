@@ -17,13 +17,19 @@ import SignatureVerificatioSuccessDeco from '../components/SignatureVerification
 import MsgGhost from '../components/MsgGhost.js'
 import ColorPreview from '../components/ColorPreview.js'
 import MsgTypeColorDeco from '../components/MsgTypeColorDeco.js'
-
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import Map, { NavigationControl, Marker } from 'react-map-gl';
+import StaticMapMarker from '../components/StaticMapMarker.js'
 
 function Message(props) {
     const [liked, setLiked] = useState(props.msgObj.liked);
     const [deleted, setDeleted] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [ghost, setGhost] = useState(false);
+    const [location, setLocation] = useState({ ini: false, long: 0, lat: 0, zoom: 5 });
+    const [showMap, setShowMap] = useState(false);
+
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -34,7 +40,19 @@ function Message(props) {
         if (props.msgObj.ghost != undefined) {
             setGhost(props.msgObj.ghost)
         }
+        if (props.msgObj.contentType == 'location') {
+            try {
+                let lob = JSON.parse(props.msgObj.content);
+                setLocation({ ...lob, ini: true });
+            } catch (e) { }
+        }
     }, [])
+
+    useEffect(() => {
+        if (location.ini == true) {
+            setShowMap(true)
+        }
+    }, [location])
 
 
     useEffect(() => {
@@ -87,6 +105,8 @@ function Message(props) {
                     return props.msgObj.content;
                 } else if (props.msgObj.contentType == 'color') {
                     return '<>';
+                } else if (props.msgObj.contentType == 'location') {
+                    return '[Location]'
                 }
             } else {
                 return '[Failed to decrypt]';
@@ -127,6 +147,17 @@ function Message(props) {
                             <ColorPreview color={props.msgObj.content} style={{ left: '15%' }}></ColorPreview>
                             <Label style={{ left: '46%' }} fontSize="2.2vh" color={props.msgObj.content} text={props.msgObj.content}></Label></div>
                         : ''}
+                    {props.msgObj.contentType == 'location' && showMap ? <Map
+                        mapLib={maplibregl}
+                        initialViewState={{
+                            longitude: location.long,
+                            latitude: location.lat,
+                            zoom: location.zoom
+                        }}
+                        style={{ position: 'absolute', width: "100%", height: "100%", top: 0, left: 0 }}
+                        mapStyle="https://api.maptiler.com/maps/fcae873d-7ff0-480b-8d6d-41963084ad90/style.json?key=R1cyh6lj1mTfNEycg2N1"
+
+                    ><Marker children={<StaticMapMarker />} draggable={false} longitude={location.long} latitude={location.lat}></Marker></Map> : ""}
                     <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}
@@ -195,7 +226,7 @@ function Message(props) {
 
     return (
         <div>
-            <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={messageBkgController()} style={{ borderLeft: `solid 1px ${messageBorderColorController()}` }} child={
+            <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={messageBkgController()} style={{ borderLeft: `solid 1px ${messageBorderColorController()}`, paddingTop: `${props.msgObj.contentType == 'location' ? '30%' : 'auto'}` }} child={
                 props.decrypted ?
                     <div>
                         {menuController()}
