@@ -18,6 +18,8 @@ import { getAuth, signInWithCustomToken } from "firebase/auth";
 import Signature from '../components/Signature.js'
 import MessageTypeSelector from '../components/MessageTypeSelector.js'
 import ColorMsgTypePreview from '../components/ColorMsgTypePreview.js'
+import LocationMsgTypePreview from '../components/LocationMsgTypePreview.js'
+import LocationPickerOverlay from '../components/LocationPickerOverlay.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -82,8 +84,9 @@ function Chat(props) {
     const [showColorMsgPreview, setShowColorMsgPreview] = useState(false)
     const [selectedMsgType, setSelectedMsgType] = useState('text')
     const [selectedColor, setSelectedColor] = useState('#8100D0')
+    const [selectedLocation, setSelectedLocation] = useState({ ini: false, locationObj: {} });
     const [messageTypeSelectorTop, setMessageTypeSelectorTop] = useState('86.79375%');
-
+    const [showLocationMsgPreview, setShowLocationMsgPreview] = useState(false);
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
@@ -702,10 +705,17 @@ function Chat(props) {
         if (selectedMsgType == 'color') {
             setShowColorMsgPreview(true);
             setShowTextMsgPreview(false);
+            setShowLocationMsgPreview(false);
         }
         if (selectedMsgType == 'text') {
             setShowColorMsgPreview(false);
+            setShowLocationMsgPreview(false);
             setShowTextMsgPreview(true);
+        }
+        if (selectedMsgType == 'location') {
+            setShowColorMsgPreview(false);
+            setShowLocationMsgPreview(true);
+            setShowTextMsgPreview(false);
         }
     }, [selectedMsgType])
 
@@ -718,6 +728,13 @@ function Chat(props) {
             scrollToBottom();
         }
     }, [showChatDetails])
+
+    const updateLocationInput = (e) => {
+        if (e.viewState) {
+            let u = { ini: true, locationObj: { long: e.viewState.longitude, lat: e.viewState.latitude, zoom: e.viewState.zoom } }
+            setSelectedLocation(u)
+        }
+    }
 
     if (props.show) {
         return (
@@ -736,6 +753,7 @@ function Chat(props) {
                             <VerticalLine color={msgListBorderColorController()} top="0%" left="0%" height="100%"></VerticalLine>
                             {props.privateKeyStatus && showTextMsgPreview ? <textarea placeholder={ghostModeEnabled ? 'Ghostly Message...' : 'Message...'} id="msgInputActual" onBlur={() => setMsgInputHasFocus(false)} onFocus={() => setMsgInputHasFocus(true)} style={{ height: `${msgInputTextareaHeight}`, backgroundColor: `${msgInputBkgColor}`, borderLeft: `solid 1px ${msgListBorderColorController()}` }} maxLength="445" spellCheck="false" value={newMessageContents} onChange={onNewMessageContent}></textarea> : ''}
                             {props.privateKeyStatus ? <ColorMsgTypePreview onColorInputChange={onColorInputChange} onCancel={() => setSelectedMsgType('text')} color={selectedColor} show={showColorMsgPreview} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></ColorMsgTypePreview> : ""}
+                            {props.privateKeyStatus ? <LocationMsgTypePreview selectedLocation={selectedLocation} show={showLocationMsgPreview} onCancel={() => setSelectedMsgType('text')} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></LocationMsgTypePreview> : ''}
                         </div>
                         {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>
@@ -747,6 +765,7 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ left: `${isTypingLastUnix.ghost ? "56.6%" : "76%"}`, borderRight: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
+                    <LocationPickerOverlay updateLocationInput={updateLocationInput} show={showLocationMsgPreview}></LocationPickerOverlay>
                     <MessageTypeSelector top={messageTypeSelectorTop} ghost={ghostModeEnabled} onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>

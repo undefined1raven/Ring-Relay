@@ -16,10 +16,13 @@ import DomainGetter from '../fn/DomainGetter.js'
 import { useEffect, useState } from 'react'
 import axios from 'axios';
 import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
-
 import { initializeApp } from "firebase/app";
 import { getDatabase, get, remove, set, ref, onValue, off } from "firebase/database";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
+
+import maplibregl from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import Map, { NavigationControl } from 'react-map-gl';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
