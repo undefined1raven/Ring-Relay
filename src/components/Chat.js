@@ -270,11 +270,22 @@ function Chat(props) {
         scrollToBottom();
         setNewMessageContents('');
         let MID = `${v4()}-${v4()}`;
-        let local_nMsgObj = { type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
-        //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
-        setRealtimeBuffer((prevBuf) => {
-            return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
-        })
+        let LocalMsgContent = 0;
+        if (selectedMsgType == 'text') {
+            LocalMsgContent = newMessageContents;
+        }
+        if (selectedMsgType == 'color') {
+            LocalMsgContent = selectedColor;
+            setNewMessageContents('');
+            setSelectedMsgType('text');
+        }
+        if (LocalMsgContent != 0) {
+            let local_nMsgObj = { contentType: selectedMsgType, type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: LocalMsgContent, tx: Date.now(), auth: true, seen: false, liked: false }
+            //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
+            setRealtimeBuffer((prevBuf) => {
+                return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
+            })
+        }
         setTimeout(() => {
             filterDeletedMessages('159');
         }, 50);
@@ -553,7 +564,18 @@ function Chat(props) {
                                             decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
                                                 setRealtimeBuffer((prevBuf) => {
                                                     if (prevBuf.find(elm => elm.MID == rawMsg.MID) == undefined) {
-                                                        return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen, ghost: rawMsg.ghost }]
+                                                        try {
+                                                            let messageContentObj = JSON.parse(plain);
+                                                            if (messageContentObj.content.length > 0 && messageContentObj.contentType == 'text' || messageContentObj.contentType == 'color' || messageContentObj.contentType == 'location') {
+                                                                return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: messageContentObj.content, contentType: messageContentObj.contentType, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen, ghost: rawMsg.ghost }]
+
+                                                            } else {
+                                                                return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen, ghost: rawMsg.ghost }]
+
+                                                            }
+                                                        } catch (e) {
+                                                            return [...prevBuf, { signed: sigStatus, MID: rawMsg.MID, liked: rawMsg.liked, type: rawMsg.targetUID == props.ownUID ? 'rx' : 'tx', content: plain, tx: rawMsg.tx, auth: rawMsg.auth, seen: rawMsg.seen, ghost: rawMsg.ghost }]
+                                                        }
                                                     } else {
                                                         return [...prevBuf]
                                                     }
