@@ -2,8 +2,8 @@
 import MinLogo from '../components/MinLogo.js'
 import InputField from '../components/InputField.js'
 import Label from '../components/Label.js'
-import VerticalLine from '../components/VerticalLine.js'
 import Button from '../components/Button.js'
+import VerticalLine from '../components/VerticalLine.js'
 import BackDeco from '../components/BackDeco.js'
 import Message from '../components/Message.js'
 import { useEffect, useState } from 'react'
@@ -16,6 +16,7 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, remove, get, set, ref, onValue, update } from "firebase/database";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
 import Signature from '../components/Signature.js'
+import MessageTypeSelector from '../components/MessageTypeSelector.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -76,7 +77,7 @@ function Chat(props) {
     const [msgInputBkgColor, setMsgInputBkgColor] = useState('#8c33ff30')
     const [scrolledToStart, setScrolledToStart] = useState(false);
     const [fetchingOlderMessages, setFetchingOlderMessages] = useState(false);
-
+    const [messageTypeSelectorLeft, setMessageTypeSelectorLeft] = useState('-71.111111111%')
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
@@ -657,6 +658,7 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
+                    <MessageTypeSelector></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>
                             <Signature sigLabel="Conversation Signature" valid={conversationSig.ini && conversationSig.sig?.length == 9} verified={conversationSig.verified} sig={conversationSig.sig} top="52%"></Signature>

@@ -464,6 +464,23 @@ html {
   width: 22%;
 }
 
+.msgTypeSelector {
+  position: absolute;
+  top: 86.79375%;
+  // left: 1.388888889%;/*-71.111111111%*/
+  width: 86.111111111%;
+  height: 4.6875%;
+  @include flex();
+  transition: left ease-in-out 0.2s;
+}
+
+.msgTypeSelectorExpand {
+  border-radius: 5px;
+}
+
+.msgType {
+  border-radius: 5px;
+}
 
 fill,
 rect {
