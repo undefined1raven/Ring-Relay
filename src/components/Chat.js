@@ -464,7 +464,7 @@ function Chat(props) {
 
 
     const onNewMessageContent = (e) => {
-        set(ref(db, `messageBuffer/${props.chatObj.uid}/typing`), { status: true, targetUID: props.chatObj.uid, tx: Date.now(), ghost: ghostModeEnabled });
+        set(ref(db, `messageBuffer/${props.chatObj.uid}/typing`), { status: true, ownUID: props.ownUID, tx: Date.now(), ghost: ghostModeEnabled });
         setNewMessageContents(e.target.value);
         let inputActual = document.getElementById('msgInputActual');
         let overflowDelta = inputActual.scrollHeight - inputActual.clientHeight;
@@ -485,9 +485,9 @@ function Chat(props) {
                 if (Date.now() - isTypingLastUnix.tx > 500) {
                     setShowIsTyping(false)
                     remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));
-                } else {
+                } else if (isTypingLastUnix.ownUID == props.chatObj.uid) {
                     setShowIsTyping(true)
-                    // scrollToBottom();
+                    scrollToBottom();
                 }
             }
         }, 100)
@@ -574,7 +574,7 @@ function Chat(props) {
                 }
                 if (RXrealtimeBuffer.typing != null) {
                     if (RXrealtimeBuffer.typing.targetUID == props.ownUID) {
-                        setIsTypingLastUnix({ tx: RXrealtimeBuffer.typing.tx, ghost: RXrealtimeBuffer.typing.ghost })
+                        setIsTypingLastUnix({ tx: RXrealtimeBuffer.typing.tx, ghost: RXrealtimeBuffer.typing.ghost, ownUID: RXrealtimeBuffer.typing.ownUID })
                     }
                 }
 
