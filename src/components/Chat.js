@@ -135,13 +135,31 @@ function Chat(props) {
         if (rawMsg.type == 'tx') {
             return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
                 return await decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
-                    return { ...rawMsg, content: plain, signed: (ownSigStatus) ? 'self' : 'no_self' }
+                    try {
+                        let messageContentsObj = JSON.parse(plain);
+                        if (messageContentsObj.content.length > 0 && messageContentsObj.contentType == 'text' || messageContentsObj.contentType == 'color' || messageContentsObj.contentType == 'location') {
+                            return { ...rawMsg, content: messageContentsObj.content, contentType: messageContentsObj.contentType, signed: (ownSigStatus) ? 'self' : 'no_self' }
+                        } else {
+                            return { ...rawMsg, content: plain, signed: (ownSigStatus) ? 'self' : 'no_self' }
+                        }
+                    } catch (e) {
+                        return { ...rawMsg, content: plain, signed: (ownSigStatus) ? 'self' : 'no_self' }
+                    }
                 })
             });
         } else {
             return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
                 return await decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                    return { ...rawMsg, content: plain, signed: sigStatus }
+                    try {
+                        let messageContentsObj = JSON.parse(plain);
+                        if (messageContentsObj.content.length > 0 && messageContentsObj.contentType == 'text' || messageContentsObj.contentType == 'color' || messageContentsObj.contentType == 'location') {
+                            return { ...rawMsg, content: messageContentsObj.content, contentType: messageContentsObj.contentType, signed: sigStatus }
+                        } else {
+                            return { ...rawMsg, content: plain, signed: sigStatus }
+                        }
+                    } catch (e) {
+                        return { ...rawMsg, content: plain, signed: sigStatus }
+                    }
                 })
             })
         }
@@ -246,25 +264,32 @@ function Chat(props) {
     }, [msgCount])
 
     const onSend = () => {
-        if (newMessageContents.length > 0) {
-            setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
-            setMsgsListHeight('74.21875%')
-            setMsgInputTextareaHeight('47%');
-            scrollToBottom();
-            setNewMessageContents('');
-            let MID = `${v4()}-${v4()}`;
-            let local_nMsgObj = { type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
-            //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
-            setRealtimeBuffer((prevBuf) => {
-                return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
-            })
-            setTimeout(() => {
-                filterDeletedMessages('159');
-            }, 50);
-            window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
-                window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
-                    encryptMessage(remotePubkey, newMessageContents).then(remoteCipher => {
-                        encryptMessage(ownPubkey, newMessageContents).then(ownCipher => {
+        setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
+        setMsgsListHeight('74.21875%')
+        setMsgInputTextareaHeight('47%');
+        scrollToBottom();
+        setNewMessageContents('');
+        let MID = `${v4()}-${v4()}`;
+        let local_nMsgObj = { type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: newMessageContents, tx: Date.now(), auth: true, seen: false, liked: false }
+        //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
+        setRealtimeBuffer((prevBuf) => {
+            return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
+        })
+        setTimeout(() => {
+            filterDeletedMessages('159');
+        }, 50);
+        window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
+            window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
+                let messageContentsObj = { contentType: '', content: '' };
+                if (selectedMsgType == 'text') {
+                    messageContentsObj = { contentType: 'text', content: newMessageContents };
+                }
+                if (selectedMsgType == 'color') {
+                    messageContentsObj = { contentType: 'color', content: selectedColor.toString() };
+                }
+                if (messageContentsObj.contentType != '' && messageContentsObj.content != '') {
+                    encryptMessage(remotePubkey, JSON.stringify(messageContentsObj)).then(remoteCipher => {
+                        encryptMessage(ownPubkey, JSON.stringify(messageContentsObj)).then(ownCipher => {
                             pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
                                 sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
                                     let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
@@ -284,9 +309,14 @@ function Chat(props) {
                             })
                         })
                     })
-                });
+                } else {
+                    setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message [NTYX]' });
+                    setTimeout(() => {
+                        setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message [NTYX]' });
+                    }, 2000);
+                }
             });
-        }
+        });
     }
 
     const deleteMessage = (MID) => {

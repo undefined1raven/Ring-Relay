@@ -15,6 +15,8 @@ import CommonSigMismatchDeco from '../components/CommonSigMismatchDeco.js'
 import SignatureVerificationFailedDeco from '../components/SignatureVerificationFailedDeco.js'
 import SignatureVerificatioSuccessDeco from '../components/SignatureVerificationSuccessDeco.js'
 import MsgGhost from '../components/MsgGhost.js'
+import ColorPreview from '../components/ColorPreview.js'
+import MsgTypeColorDeco from '../components/MsgTypeColorDeco.js'
 
 
 function Message(props) {
@@ -61,7 +63,7 @@ function Message(props) {
     }
 
     const onDoubleClick = () => {
-        // setLiked(!liked)
+        setLiked(!liked)
         props.likeMessageUpdate({ state: !liked, MID: props.msgObj.MID });
     }
 
@@ -79,7 +81,13 @@ function Message(props) {
             if (deleted) {
                 return '[Deleted]';
             } else if (props.decrypted) {
-                return props.msgObj.content;
+                if (props.msgObj.contentType == undefined) {
+                    return props.msgObj.content;
+                } else if (props.msgObj.contentType == 'text') {
+                    return props.msgObj.content;
+                } else if (props.msgObj.contentType == 'color') {
+                    return '<>';
+                }
             } else {
                 return '[Failed to decrypt]';
             }
@@ -106,13 +114,19 @@ function Message(props) {
             return (
                 <>
                     <Button onClick={onDelete} color={props.msgObj.type == 'tx' ? "#FF002E" : '#999'} className="msgDeleteButton" bkg={props.msgObj.type == 'tx' ? "#FF002E" : ''} label="Delete"></Button>
-                    <Button onClick={onCopy} color={ghost ? "#FFF" : "#7100FF"} style={{border: `solid 1px ${ghost ? "#0500FF" : '#7100FF'}`}} className="msgCopyButton" bkg={ghost ? "#0500FF" : "#7100FF"} label="Copy"></Button>
+                    <Button onClick={onCopy} color={ghost ? "#FFF" : "#7100FF"} style={{ border: `solid 1px ${ghost ? "#0500FF" : '#7100FF'}` }} className="msgCopyButton" bkg={ghost ? "#0500FF" : "#7100FF"} label="Copy"></Button>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )
         } else {
             return (
                 <>
+                    {props.msgObj.contentType == 'color' ?
+                        <div style={{ top: '0%', left: '0%', backgroundColor: '#00000000' }} className="colorMsgTypePreviewContainer">
+                            <MsgTypeColorDeco style={{ left: '3%' }}></MsgTypeColorDeco>
+                            <ColorPreview color={props.msgObj.content} style={{ left: '15%' }}></ColorPreview>
+                            <Label style={{ left: '46%' }} fontSize="2.2vh" color={props.msgObj.content} text={props.msgObj.content}></Label></div>
+                        : ''}
                     <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}
@@ -136,10 +150,14 @@ function Message(props) {
 
     const messageContentColorController = () => {
         if (props.decrypted) {
-            if (ghost) {
-                return props.msgObj.type == 'rx' ? '#FFF' : '#4B47FF';
+            if (props.msgObj.contentType == undefined || props.msgObj.contentType == 'text') {
+                if (ghost) {
+                    return props.msgObj.type == 'rx' ? '#FFF' : '#4B47FF';
+                } else {
+                    return props.msgObj.type == 'rx' ? '#FFF' : '#C09AFF';
+                }
             } else {
-                return props.msgObj.type == 'rx' ? '#FFF' : '#C09AFF';
+                return '#00000000';
             }
         } else {
             return '#CA0024';
