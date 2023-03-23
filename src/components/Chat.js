@@ -659,10 +659,8 @@ function Chat(props) {
     }
 
     useEffect(() => {
-        if (showChatDetails) {
-            setTimeout(() => {
-                scrollToBottom();
-            }, 50);
+        if (!showChatDetails) {
+            scrollToBottom();
         }
     }, [showChatDetails])
 
@@ -694,7 +692,7 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
-                    <MessageTypeSelector onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
+                    <MessageTypeSelector ghost={ghostModeEnabled} onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>
                             <Signature sigLabel="Conversation Signature" valid={conversationSig.ini && conversationSig.sig?.length == 9} verified={conversationSig.verified} sig={conversationSig.sig} top="52%"></Signature>
