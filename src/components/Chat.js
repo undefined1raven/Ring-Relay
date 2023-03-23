@@ -82,6 +82,7 @@ function Chat(props) {
     const [showColorMsgPreview, setShowColorMsgPreview] = useState(false)
     const [selectedMsgType, setSelectedMsgType] = useState('text')
     const [selectedColor, setSelectedColor] = useState('#8100D0')
+    const [messageTypeSelectorTop, setMessageTypeSelectorTop] = useState('86.79375%');
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
@@ -513,10 +514,12 @@ function Chat(props) {
             setInputDynamicStyle({ top: '88.1875%', height: '10.5625%' })
             setMsgsListHeight('70.21875%')
             setMsgInputTextareaHeight('66%');
+            setMessageTypeSelectorTop('82.9%');
         } else if (overflowDelta / inputActual.clientHeight < 0.1) {
             setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
             setMsgsListHeight('74.21875%')
             setMsgInputTextareaHeight('47%');
+            setMessageTypeSelectorTop('86.79375%');
         }
     }
 
@@ -528,7 +531,7 @@ function Chat(props) {
                     remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));
                 } else {
                     setShowIsTyping(true)
-                    // scrollToBottom();
+                    scrollToBottom();
                 }
             }
         }, 100)
@@ -742,9 +745,9 @@ function Chat(props) {
                         {ghostModeEnabled ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#0500FF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Ghostly Conversation Started]" color="#FFF" bkg="#0500FF30"></Label></li> : ''}
                         {(chatLoadingLabel.label == '[Done]' && !ghostModeEnabled) ? msgList : ''}
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
-                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ borderLeft: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
+                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ left: `${isTypingLastUnix.ghost ? "56.6%" : "76%"}`, borderRight: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
-                    <MessageTypeSelector ghost={ghostModeEnabled} onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
+                    <MessageTypeSelector top={messageTypeSelectorTop} ghost={ghostModeEnabled} onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>
                             <Signature sigLabel="Conversation Signature" valid={conversationSig.ini && conversationSig.sig?.length == 9} verified={conversationSig.verified} sig={conversationSig.sig} top="52%"></Signature>
