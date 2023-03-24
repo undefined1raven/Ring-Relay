@@ -19,6 +19,7 @@
     "react": "^18.2.0",
     "react-barcode": "^1.4.6",
     "react-dom": "^18.2.0",
+    "react-freeze": "^1.0.3",
     "react-map-gl": "^7.0.21",
     "react-qr-reader": "^3.0.0-beta-1",
     "react-router-dom": "^6.8.1",

@@ -111,7 +111,7 @@ function Home() {
       window['realtimeBufferIni'] = true;
       rtdbListnerIni = true;
       rtdbl = onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
-        setOwnMessageBuffer(snap)
+        setOwnMessageBuffer(snap.val())
       });
     }
     // return () => rtdbl ? off(`messageBuffer/${ownUID}`) : 0;//not like it was doing anything anyway

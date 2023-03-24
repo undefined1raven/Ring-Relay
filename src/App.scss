@@ -1368,6 +1368,13 @@ stop {
   backdrop-filter: blur(5px);
   z-index: 10;
 }
+.messageMapGoInteractiveButton{
+  top: 80%;
+  border-radius: 5px;
+  @include VAlign();
+  height: 15%;
+  backdrop-filter: blur(3px);
+}
 .locationPickerUseDeviceLocationButton{
   background-color: rgba(15, 0, 25, 0.7);
   backdrop-filter: blur(10px);

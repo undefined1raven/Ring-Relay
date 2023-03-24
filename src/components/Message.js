@@ -29,7 +29,7 @@ function Message(props) {
     const [ghost, setGhost] = useState(false);
     const [location, setLocation] = useState({ ini: false, long: 0, lat: 0, zoom: 5 });
     const [showMap, setShowMap] = useState(false);
-
+    const [isMapInteractive, setIsMapInteractive] = useState(false);
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -154,10 +154,13 @@ function Message(props) {
                             latitude: location.lat,
                             zoom: location.zoom
                         }}
+
                         style={{ position: 'absolute', width: "100%", height: "100%", top: 0, left: 0 }}
                         mapStyle="https://api.maptiler.com/maps/fcae873d-7ff0-480b-8d6d-41963084ad90/style.json?key=R1cyh6lj1mTfNEycg2N1"
 
                     ><Marker children={<StaticMapMarker />} draggable={false} longitude={location.long} latitude={location.lat}></Marker></Map> : ""}
+                    {!isMapInteractive && props.msgObj.contentType == 'location' && showMap ? <div className='mapInteractionDisallower' style={{ position: 'absolute', width: '100%', height: '100%', top: '0%', left: '0%' }}></div> : ''}
+                    {props.msgObj.contentType == 'location' && showMap ? <Button onClick={() => setIsMapInteractive(prev => !prev)} className="messageMapGoInteractiveButton" fontSize="1.7vh" width="60%" color="#999" label={`Tap here to go ${isMapInteractive ? 'static' : 'interactive'}`} style={{ backgroundColor: `${ghost ? "#00109EAA" : "#2E0067AA"}`, border: `solid 1px ${ghost ? "#0500FF" : "#7100FF"}` }}></Button> : ''}
                     <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}

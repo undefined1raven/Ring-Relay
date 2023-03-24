@@ -20,6 +20,7 @@ import MessageTypeSelector from '../components/MessageTypeSelector.js'
 import ColorMsgTypePreview from '../components/ColorMsgTypePreview.js'
 import LocationMsgTypePreview from '../components/LocationMsgTypePreview.js'
 import LocationPickerOverlay from '../components/LocationPickerOverlay.js'
+import { Freeze } from "react-freeze";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -87,6 +88,7 @@ function Chat(props) {
     const [selectedLocation, setSelectedLocation] = useState({ ini: false, locationObj: {} });
     const [messageTypeSelectorTop, setMessageTypeSelectorTop] = useState('86.79375%');
     const [showLocationMsgPreview, setShowLocationMsgPreview] = useState(false);
+    const [lastMsgSentUnix, setLastMsgSendUnix] = useState(0);
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
@@ -268,6 +270,7 @@ function Chat(props) {
     }, [msgCount])
 
     const onSend = () => {
+        setLastMsgSendUnix(Date.now())
         setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
         setMsgsListHeight('74.21875%')
         setMsgInputTextareaHeight('47%');
@@ -402,9 +405,10 @@ function Chat(props) {
             if (lastRXMID != '') {
                 set(ref(db, `messageBuffer/${props.chatObj.uid}/seen/${props.ownUID}`), { MID: lastRXMID, status: false });
             }
-
-            setRealtimeBufferList(realtimeBuffer.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
-            scrollToBottom();
+            // if (!showIsTyping || (Date.now() - lastMsgSentUnix < 1000 && lastMsgSentUnix != 0)) {
+                setRealtimeBufferList(realtimeBuffer.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+                scrollToBottom();
+            // }
         }
     }, [realtimeBuffer])
 
@@ -447,7 +451,9 @@ function Chat(props) {
     }, [props])
 
     useEffect(() => {
-        setMsgList(msgArray.array.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        if (!showIsTyping || msgList.length == 0) {
+            setMsgList(msgArray.array.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        }
     }, [msgArray])
 
     const filterDeletedMessages = (id) => {
@@ -539,6 +545,10 @@ function Chat(props) {
             if (isTypingLastUnix.tx) {
                 if (Date.now() - isTypingLastUnix.tx > 500) {
                     setShowIsTyping(false)
+
+                    setRealtimeBufferList(realtimeBuffer.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+                    scrollToBottom();
+
                     remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));
                 } else {
                     setShowIsTyping(true)
@@ -552,8 +562,7 @@ function Chat(props) {
 
     useEffect(() => {
         if (props.visible && props.ownMessageBuffer != 0) {
-
-            let RXrealtimeBuffer = props.ownMessageBuffer.val();
+            let RXrealtimeBuffer = props.ownMessageBuffer;
             if (RXrealtimeBuffer != null) {
                 if (RXrealtimeBuffer.messages != null) {
                     let RTrawMessagesArray = []
@@ -638,15 +647,22 @@ function Chat(props) {
                         setSeenMsgs(RXrealtimeBuffer.seen[props.chatObj.uid].MID)
                     }
                 }
-                if (RXrealtimeBuffer.typing != null) {
-                    if (RXrealtimeBuffer.typing.targetUID == props.ownUID) {
-                        setIsTypingLastUnix({ tx: RXrealtimeBuffer.typing.tx, ghost: RXrealtimeBuffer.typing.ghost })
-                    }
-                }
-
             }
         }
-    }, [props.ownMessageBuffer])
+    }, [props.ownMessageBuffer?.messages, props.ownMessageBuffer?.liked, props.ownMessageBuffer?.deleted])
+
+
+    useEffect(() => {
+        if (props.visible && props.ownMessageBuffer != 0) {
+            if (props.ownMessageBuffer != null) {
+                if (props.ownMessageBuffer.typing != null) {
+                    if (props.ownMessageBuffer.typing.targetUID == props.ownUID) {
+                        setIsTypingLastUnix({ tx: props.ownMessageBuffer.typing.tx, ghost: props.ownMessageBuffer.typing.ghost })
+                    }
+                }
+            }
+        }
+    }, [props.ownMessageBuffer?.typing])
 
 
     const msgListBorderColorController = () => {
