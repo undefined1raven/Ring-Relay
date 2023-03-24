@@ -6,14 +6,27 @@ import Button from '../components/Button.js'
 import Label from '../components/Label.js'
 import { useEffect, useState } from 'react';
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min) + min); //max e | min i
+}
+
 function LocationPickerOverlay(props) {
     const [mapVisible, setMapVisible] = useState(true)
     const [loadingLabelVisible, setLoadingLabelVisible] = useState(true)
+    const [location, setLocation] = useState({ lat: 0, long: 0 })
 
+    // useEffect(() => {
+    //     setMapVisible(false);
+    //     let int = setInterval(() => {
+    //         setLocation({ lat: getRandomInt(0, 60), long: getRandomInt(0, 60) });
+    //     }, 1000);
+    // }, [])
 
     useEffect(() => {
-        setMapVisible(false);
-    }, [])
+        console.log(location)
+    }, [location])
 
     useEffect(() => {
         if (mapVisible == false) {
@@ -38,8 +51,8 @@ function LocationPickerOverlay(props) {
                     onBoxZoomEnd={(e) => update(e)}
                     onDrag={(e) => update(e)} mapLib={maplibregl}
                     initialViewState={{
-                        longitude: 8.362,
-                        latitude: 46.774,
+                        longitude: 8.362,//8.362
+                        latitude: 46.774,//46.774
                         zoom: 3
                     }}
                     style={{ position: 'absolute', width: "100%", height: "100%", borderLeft: 'solid 1px #7000FF' }}

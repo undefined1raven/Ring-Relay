@@ -553,7 +553,7 @@ function Chat(props) {
     useEffect(() => {
         if (props.visible && props.ownMessageBuffer != 0) {
 
-            let RXrealtimeBuffer = props.ownMessageBuffer.val();
+            let RXrealtimeBuffer = props.ownMessageBuffer;
             if (RXrealtimeBuffer != null) {
                 if (RXrealtimeBuffer.messages != null) {
                     let RTrawMessagesArray = []
