@@ -278,14 +278,18 @@ function Home() {
     if (refs.ini && refs.arr.length > 0) {
       if (!hasPubKeys.ini || (hasPubKeys.ini && Date.now() - hasPubKeys.last > 600000 && hasPubKeys.last != 0)) {
         setHasPubKeys({ ini: true, last: Date.now() });
+        let uidArr = [];
         for (let ix = 0; ix < refs.arr.length; ix++) {
-          axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: refs.arr[ix].uid }).then(res => {
-            if (!res.data.error) {
-              localStorage.setItem(`PUBK-${refs.arr[ix].uid}`, res.data.publicKey);
-              localStorage.setItem(`PUBSK-${refs.arr[ix].uid}`, res.data.publicSigningKey);
-            }
-          });
+          uidArr.push(refs.arr[ix].uid);
         }
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uidArray: uidArr }).then(res => {
+          if (!res.data.error) {
+            for (let key in res.data.pubkeyHash) {
+              localStorage.setItem(`PUBK-${key}`, res.data.pubkeyHash[key].publicKey);
+              localStorage.setItem(`PUBSK-${key}`, res.data.pubkeyHash[key].publicSigningKey);
+            }
+          }
+        });
         axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
           if (!res.data.error) {
             localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
