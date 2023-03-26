@@ -2,8 +2,8 @@ import QRCode from 'qrcode'
 import { useEffect, useState } from 'react';
 import { QrReader } from 'react-qr-reader';
 import Label from './Label';
-import InputField from '../components/InputField.js'
 import Button from '../components/Button.js'
+import InputField from '../components/InputField.js'
 import HorizontalLine from '../components/HorizontalLine.js'
 import AuthDeviceImportDeco from '../components/authDeviceImportDeco.js'
 import AuthDeviceExportDeco from '../components/authDeviceExportDeco.js'
@@ -19,7 +19,7 @@ import DomainGetter from '../fn/DomainGetter';
 import { download } from '../fn/download';
 import { v4 } from 'uuid';
 import NotificationsDialog from '../components/NotificationsDialog.js'
-
+import SettingsLogs from '../components/SettingsLogs.js'
 const salt = window.crypto.getRandomValues(new Uint8Array(16))
 const iv = window.crypto.getRandomValues(new Uint8Array(12))
 
@@ -290,7 +290,7 @@ function Settings(props) {
                     <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="1.9vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
                     <Button onClick={onDeviceRemoveAuth} id="removeAuthFromDeviceButton" className="settingsMenuButton" fontSize="2vh" color="#FF002E" bkg="#FF002E" label="Distrust This Device"></Button>
                     <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pair [Coming Soon]" : '[Not Available]'}></Button>
-                    <Button id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs [Coming Soon]"></Button>
+                    <Button onClick={() => setActiveWindowId('logs')} id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
                 </div>
                 : ''}
@@ -387,6 +387,7 @@ function Settings(props) {
             <PasswordReset onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changePassword'}></PasswordReset>
             <NotificationsDialog onHide={() => setActiveWindowId('home')} show={activeWindowId == 'notificationSettings'}></NotificationsDialog>
             <ChangeUsername onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changeUsername'}></ChangeUsername>
+            <SettingsLogs onBack={() => setActiveWindowId('home')} show={activeWindowId == 'logs'}></SettingsLogs>
         </div>
     )
 }

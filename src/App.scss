@@ -416,6 +416,31 @@ html {
   height: 7%;
 }
 
+.logsLn {
+  @include VAlign();
+}
+
+.logsButton {
+  border-radius: 5px;
+}
+
+
+.logCardContainer {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  width: 99%;
+  height: 100.722007722%;
+  @include flex();
+  backdrop-filter: blur(5px);
+  border-radius: 5px;
+}
+
+.logCardLi{
+  height: 11.676646707%;
+  margin-bottom: 3%;
+}
+
 .chatCard,
 .chatHeader {
   position: relative;
@@ -429,6 +454,20 @@ html {
 
 .chatCard {
   margin-bottom: 20%;
+}
+
+.logsFiltersLabel {
+  width: 20.833333333%;
+  height: 4.53125%;
+  border-radius: 5px;
+  @include flex();
+  left: 5%;
+}
+
+.logsFilterButton {
+  width: 20.833333333%;
+  height: 4.53125%;
+  border-radius: 5px;
 }
 
 .chatHeader {
@@ -576,6 +615,21 @@ rect {
   padding: 0;
   @include VAlign();
   overflow-y: scroll;
+}
+
+#logsList {
+  position: absolute;
+  top: 35.78125%;
+  width: 92.3%;
+  height: 52.1875%;
+  margin: 0;
+  padding: 0;
+  @include VAlign();
+  overflow-y: scroll;
+}
+#logsList::-webkit-scrollbar {
+  width: 0vh;
+  height: 0px;
 }
 
 //message | msg
@@ -1353,12 +1407,15 @@ stop {
   font-family: 'Electrolize', sans-serif;
   resize: none;
 }
-.maplibregl-ctrl{
+
+.maplibregl-ctrl {
   display: none;
 }
-.mapLoadingLabel{
+
+.mapLoadingLabel {
   @include flex();
 }
+
 .locPickerOverlayContainer {
   position: absolute;
   top: 15.85625%;
@@ -1370,23 +1427,27 @@ stop {
   backdrop-filter: blur(5px);
   z-index: 10;
 }
-path{
+
+path {
   transition: fill linear 0.5s;
   transition: stroke linear 0.25s;
 }
-.messageMapGoInteractiveButton{
+
+.messageMapGoInteractiveButton {
   top: 80%;
   border-radius: 5px;
   @include VAlign();
   height: 15%;
   backdrop-filter: blur(3px);
 }
-.locationPickerUseDeviceLocationButton{
+
+.locationPickerUseDeviceLocationButton {
   background-color: rgba(15, 0, 25, 0.7);
   backdrop-filter: blur(10px);
   border-radius: 5px !important;
   top: 5% !important;
 }
+
 .colorMsgTypePreviewContainer {
   position: absolute;
   width: 100%;
