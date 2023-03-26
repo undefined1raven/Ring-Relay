@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import ChatCard from '../components/ChatCard.js'
 import Label from '../components/Label.js'
 import Button from '../components/Button.js'
+import LoadingNewDeco from '../components/LoadingNewDeco.js'
 import GenericLoadingDeco from '../components/GenericLoadingDeco.js'
 import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import NotAuthedMsgDeco from '../components/NotAuthedMsgDeco.js'
@@ -58,9 +59,9 @@ function Chats(props) {
     if (props.show) {
         return (
             <div>
-                <ul id="chatsContainer">
+                <ul id="chatsContainer" style={{ zIndex: 50 }}>
                     {getChatList()}
-                    {(props.refs.ini && props.refs.arr.length > 0) ? <li style={{ marginLeft: '20%' }}><Button onClick={onRefresh} style={{ borderRadius: '5px', transition: 'all linear 0.1s', transition: 'color ease-in 0.25s', border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="60%" height="6%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button></li> : ''}
+                    {(props.refs.ini && props.refs.arr.length > 0) ? <li style={{ marginLeft: '20%' }}><Button onClick={onRefresh} style={{ backdropFilter: 'blur(5px)', borderRadius: '5px', transition: 'all linear 0.1s', transition: 'color ease-in 0.25s', border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="60%" height="6%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button></li> : ''}
                 </ul>
                 <Label className="chatsFetchingLabel" id="chatsFetchingLabel" bkg="#6100DC30" color="#E09FFF" fontSize="2.3vh" show={!props.refs.ini} text="[Fetching Data]"></Label>
                 <Label id="privateKeyStatusLabel" bkg={`${keyStatusLabelController().color}30`} color={keyStatusLabelController().color} show={showKeysStatus} fontSize="2.1vh" text={keyStatusLabelController().label}></Label>
@@ -68,7 +69,7 @@ function Chats(props) {
                 <Button onClick={props.switchToNewContactSection} fontSize="2.2vh" show={props.refs.arr.length == 0 && props.refs.ini} id="noConvosButton" bkg="#001AFF" color="#001AFF" label="Add New Contact"></Button>
                 <Button show={props.refs.arr.length == 0 && props.refs.ini} onClick={onRefresh} id="chatsRefreshButton" style={{ border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="66.944444444%" height="6.71875%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button>
                 {keyStatusDecoController()}
-                <GenericLoadingDeco id="chatsFetchingDeco" show={!props.refs.ini} pathCN="chatsFetchingDecoElm"></GenericLoadingDeco>
+                <LoadingNewDeco top={props.refs.ini ? '40%' : '20%'} fillOpacity={props.refs.ini ? 0.03 : 0.2} strokeWidth={props.refs.ini ? 0 : 0.5} width="40vh" height="30vh" id="chatsFetchingDeco" show={true} pathCN="chatsFetchingDecoElm"></LoadingNewDeco>
             </div>
         )
     } else {

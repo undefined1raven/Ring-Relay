@@ -424,6 +424,7 @@ html {
   width: 98%;
   height: 100.722007722%;
   @include flex();
+  backdrop-filter: blur(5px);
 }
 
 .chatCard {
@@ -777,7 +778,8 @@ rect {
 
 #chatsFetchingDeco {
   position: absolute;
-  top: 30%;
+  @include VAlign();
+  top: 60%;
 }
 
 @keyframes chatsFetchingDecoElmAni {
@@ -1367,6 +1369,10 @@ stop {
   background-color: rgba(20, 0, 30, .5);
   backdrop-filter: blur(5px);
   z-index: 10;
+}
+path{
+  transition: fill linear 0.5s;
+  transition: stroke linear 0.25s;
 }
 .messageMapGoInteractiveButton{
   top: 80%;
