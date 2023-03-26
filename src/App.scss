@@ -616,7 +616,34 @@ rect {
   @include VAlign();
   overflow-y: scroll;
 }
-
+.logDetailsBackBtn{
+  top: 34.375%;
+  left: 5%;
+  width: 12.222222222%;
+  height: 5.79375%;
+  border-radius: 5px;
+}
+.logDetailsTitle{
+  top: 34.375%;
+  left: 19.722222222%;
+  width: 73.577777778%;
+  height: 6.09375%;
+  @include flex();
+  justify-content: start;
+  padding-left: 2%;
+  border-radius: 5px;
+}
+.logDetailTypeLabel, .logDetailActual{
+  width: 37.5%;
+  left: 5%;
+  height: 5%;
+  @include flex();
+  border-radius: 5px;
+}
+.logDetailActual{
+  left: 44.166666667%;
+  width: 50.833333333%;
+}
 #logsList {
   position: absolute;
   top: 35.78125%;

@@ -127,8 +127,7 @@ function Message(props) {
     }
 
     const onMsgClick = useSingleAndDoubleClick(() => { }, onDoubleClick)
-    const msgDateUnix = new Date(parseInt(props.msgObj.tx)).toLocaleString();
-    const msgDateLocal = new Date(msgDateUnix);
+    const msgDateUnix = new Date(parseInt(props.msgObj.tx));
     const menuController = () => {
         if (showMenu) {
             return (
@@ -161,7 +160,7 @@ function Message(props) {
                     ><Marker children={<StaticMapMarker />} draggable={false} longitude={location.long} latitude={location.lat}></Marker></Map> : ""}
                     {!isMapInteractive && props.msgObj.contentType == 'location' && showMap ? <div className='mapInteractionDisallower' style={{ position: 'absolute', width: '100%', height: '100%', top: '0%', left: '0%' }}></div> : ''}
                     {props.msgObj.contentType == 'location' && showMap ? <Button onClick={() => setIsMapInteractive(prev => !prev)} className="messageMapGoInteractiveButton" fontSize="1.7vh" width="60%" color="#999" label={`Tap here to go ${isMapInteractive ? 'static' : 'interactive'}`} style={{ backgroundColor: `${ghost ? "#00109EAA" : "#2E0067AA"}`, border: `solid 1px ${ghost ? "#0500FF" : "#7100FF"}` }}></Button> : ''}
-                    <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getHours().toString().padStart(2, '0')}:${msgDateLocal.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
+                    <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateUnix.getHours().toString().padStart(2, '0')}:${msgDateUnix.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
                     {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
                     {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}
                     {ghost ? <MsgGhost /> : ''}
@@ -175,7 +174,7 @@ function Message(props) {
                         {/* {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />} */}
                     </div>
                     <Label bkg={`${ghost ? '#0500FF50' : SignatureSuccessDecoColorHash[props.msgObj.signed] + '30'}`} fontSize="2.5vw" className="sigLabel" color={ghost ? "#FFF" : sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
-                    <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#6100DC20"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateLocal.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateLocal.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateLocal.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
+                    <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#6100DC20"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateUnix.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateUnix.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateUnix.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
             )
