@@ -11,6 +11,7 @@ import Chats from '../components/Chats.js'
 import Chat from '../components/Chat.js'
 import Settings from '../components/Settings.js'
 import NotificationsDialog from '../components/NotificationsDialog.js'
+import LogsDialog from '../components/LogsDialog.js'
 import NewContact from '../components/NewContact.js'
 import DomainGetter from '../fn/DomainGetter.js'
 import { useEffect, useState } from 'react'
@@ -51,6 +52,7 @@ function Home() {
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
   const [refreshingRefs, setRefreshingRefs] = useState(false)
   const [notificationsDialogShow, setNotificationsDialogShow] = useState(false)
+  const [logsDialogShow, setLogsDialogShow] = useState(false)
   const [showErr, setShowErr] = useState(false)
   const [netErr, setNetErr] = useState({ status: false, error: '' });
   const [hasPubKeys, setHasPubKeys] = useState({ ini: false, last: 0 });
@@ -100,7 +102,11 @@ function Home() {
   });
 
   useEffect(() => {
-
+    if (sessionStorage.getItem('showLogsConfig') != null) {
+      if (sessionStorage.getItem('showLogsConfig')) {
+        setLogsDialogShow(true);
+      }
+    }
   }, [])
 
   let rtdbListnerIni = false;
@@ -334,6 +340,7 @@ function Home() {
       {/* <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter" show={showErr} text="Failed to get notification object"></Label> */}
       {/* <Label fontSize="2vh" color="#FF002E" bkg="#150000CC" id="noter2" show={netErr.status} text={`Network Erorr [${netErr.error}]`}></Label> */}
       <NotificationsDialog onHide={onHideNotificationsDialog} show={notificationsDialogShow}></NotificationsDialog>
+      <LogsDialog onHide={() => setLogsDialogShow(false)} show={logsDialogShow}></LogsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat ownMessageBuffer={ownMessageBuffer} privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}

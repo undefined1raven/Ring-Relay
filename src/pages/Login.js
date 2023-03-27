@@ -42,6 +42,9 @@ function Login() {
             location: JSON.stringify(location),
             details: JSON.stringify(details)
         }).then(res => {
+            if (res.data.showLogsConfig == true) {
+                sessionStorage.setItem('showLogsConfig', true);
+            }
             if (res.data['redirect']) {
                 setItem('AT', res.data['AT']);
                 setItem('CIP', cip);
