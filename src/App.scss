@@ -1163,6 +1163,7 @@ rect {
   }
 }
 
+.logsFetchingLabel,
 .chatLoadingStatus,
 .failedMessageAction {
   top: 45%;
@@ -1174,6 +1175,7 @@ rect {
   transition: all linear 0.1s;
   animation: chatLoadingLabelAni linear 0.1s;
 }
+
 
 .failedMessageAction {
   animation: none;

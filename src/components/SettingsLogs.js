@@ -58,9 +58,13 @@ function SettingsLogs(props) {
             </> : ''}
 
             {!showLogDetails.show ?
-                <ul id="logsList">
-                    {logsArrayList}
-                </ul>
+                <>
+                    <ul id="logsList">
+                        {logsArray.ini ? logsArrayList : ''}
+                    </ul>
+                    <Label fontSize="2vh" show={!logsArray.ini} className="logsFetchingLabel" color="#001AFF" style={{top: '60%'}} bkg="#001AFF20" text="[Fetching Logs]"></Label>
+                    <Label fontSize="2vh" show={logsArray.ini && logsArrayList.length == 0} className="logsFetchingLabel" style={{top: '60%'}} color="#001AFF" bkg="#001AFF20" text="[No Logs To Display]"></Label>
+                </>
                 : ''}
             <LogDetails onBack={() => setShowLogDetails({ show: false, logObj: {} })} show={showLogDetails.show} logObj={showLogDetails.logObj}></LogDetails>
         </div>)
