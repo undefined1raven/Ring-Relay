@@ -9,6 +9,7 @@ import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
 import DomainGetter from '../fn/DomainGetter.js'
 import axios from 'axios';
+import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 
 
 function setItem(key, value) {
@@ -33,11 +34,13 @@ function Login() {
         validateInput(true);
     }
 
-    function auth(cip) {
+    function auth(cip, location, details) {
         axios.post(`${DomainGetter('prodx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
-            ip: cip
+            ip: cip,
+            location: JSON.stringify(location),
+            details: JSON.stringify(details)
         }).then(res => {
             if (res.data['redirect']) {
                 setItem('AT', res.data['AT']);
@@ -91,9 +94,11 @@ function Login() {
         if (userid.length > 2 && password.length > 5) {
             setAuthStatusLabelObj({ text: '[Awaiting Response]', color: '#0057FF', bkg: '#0057FF' });
             axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
-                auth(res.data.ip_address);
+                let location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
+                let detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}` };
+                auth(res.data.ip_address, location, detailsObj);
             }).catch(e => {
-                auth('Failed To Get');
+                auth('Failed To Get', { name: 'Unknown', coords: { lat: 0, long: 0 } }, { device: 'Unknown', browser: 'Unknown', os: 'Unknown' });
             });
         } else {
             setAuthStatusLabelObj({ text: '[Invalid Input]', color: '#D80027', bkg: '#D80027' });

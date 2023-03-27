@@ -30,9 +30,9 @@ function LogDetails(props) {
             if (props.logObj.details?.PKShareType.method == 'scan') {
                 return { label: 'QR Code Scan', type: actionTypeLabel }
             } else {
-                if(actionTypeLabel == 'Import'){
+                if (actionTypeLabel == 'Import') {
                     return { label: 'File Upload', type: actionTypeLabel }
-                }else{
+                } else {
                     return { label: 'File Download', type: actionTypeLabel }
                 }
             }
@@ -49,7 +49,7 @@ function LogDetails(props) {
                 <Label fontSize="1.9vh" color="#BABABA" bkg="#6300E020" className="logDetailTypeLabel" style={{ top: '43.59375%', height: '6.09375%' }} text="Time and date"></Label>
                 <Label fontSize="1.9vh" color="#FFF" bkg="#6300E020" className="logDetailActual" style={{ top: '43.59375%', height: '3.79375%', paddingBottom: '5%' }} text={dateFormatter().date}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" style={{ top: '45.99375%', height: '3.79375%' }} text={dateFormatter().time}></Label>
-                <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (1 * 7%))', height: '6.09375%' }} text={props.logObj.details.device}></Label>
+                <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (1 * 7%))', height: '6.09375%' }} text={props.logObj.details.device[0].toString().toUpperCase() + props.logObj.details.device.toString().substring(1, props.logObj.details.device.toString().length)}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (2 * 7%))', height: '6.09375%' }} text={props.logObj.details.browser}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (3 * 7%))', height: '6.09375%' }} text={props.logObj.details.os}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (4 * 7%))', height: '6.09375%' }} text={props.logObj.ip}></Label>

@@ -5,37 +5,35 @@ import { useEffect, useState } from 'react';
 import LogCard from './LogCard';
 import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 import LogDetails from './LogDetails';
+import axios from 'axios';
+import DomainGetter from '../fn/DomainGetter';
 
 function SettingsLogs(props) {
 
     const [showLogDetails, setShowLogDetails] = useState({ show: false, logObj: {} });
 
-    useEffect(() => {
-        console.log(`${browserName} v${browserVersion} on ${deviceType} ${osName} ${osVersion}`)
-    }, [])
-
     const [logsArray, setLogsArray] = useState({
-        ini: true, array: [
-            { severity: 'warning', type: 'Account', subtype: 'Log In', tx: Date.now(), ip: '5.00.188.058', location: 'Aiur City', details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'critical', type: 'Security', subtype: 'Keys Export', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { PKShareType: { method: 'scan', type: 'export' }, device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'critical', type: 'Security', subtype: 'Keys Export', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { PKShareType: { method: 'scan', type: 'export' }, device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'important', type: 'Security', subtype: 'Password Changed', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'info', type: 'Account', subtype: 'Username Changed', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'important', type: 'Security', subtype: 'Password Reset', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'critical', type: 'Security', subtype: 'Keys Import', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { PKShareType: { method: 'scan', type: 'import' }, device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'warning', type: 'Account', subtype: 'Log In', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { session: true, device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'warning', type: 'Account', subtype: 'Log In', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'warning', type: 'Account', subtype: 'Log In', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'warning', type: 'Account', subtype: 'Log In', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'warning', type: 'Account', subtype: 'Log In', tx: Date.now(), ip: '190.15.32.51', location: { name: 'Aiur City', coords: { lat: 0, long: 0 } }, details: { session: false, device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-            { severity: 'critical', type: 'Security', subtype: 'Keys Import', tx: Date.now(), ip: '251.22.94.23', location: { name: 'Laconia Gate', coords: { lat: 0, long: 0 } }, details: { PKShareType: { method: 'file', type: 'import' }, device: 'iPhone 12', browser: 'Chrome v102', os: 'iOS 16' } },
-        ]
+        ini: false, array: []
     });
     const [logsArrayList, setLogsArrayList] = useState([]);
 
     useEffect(() => {
         setLogsArrayList(logsArray.array.map(log => <li onClick={() => setShowLogDetails({ show: true, logObj: { ...log } })} key={log.type + Math.random()} className='logCardLi'><LogCard logObj={{ ...log }}></LogCard></li>))
     }, [logsArray])
+
+    useEffect(() => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getLogs`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), count: 30 }).then(resx => {
+            if (resx.data.error == undefined) {
+                if (resx.data.logs) {
+                    let parsedLogArray = [];
+                    for (let ix = 0; ix < resx.data.logs.length; ix++) {
+                        parsedLogArray.push({ ...resx.data.logs[ix], tx: parseInt(resx.data.logs[ix].tx), location: JSON.parse(resx.data.logs[ix].location), details: JSON.parse(resx.data.logs[ix].details) });
+                    }
+                    setLogsArray({ ini: true, array: parsedLogArray });
+                }
+            }
+        });
+    }, [])
 
     if (props.show) {
         return (<div>
