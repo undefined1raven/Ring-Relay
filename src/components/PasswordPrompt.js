@@ -5,27 +5,57 @@ import axios from 'axios';
 import { useState } from 'react';
 import DomainGetter from '../fn/DomainGetter';
 import { sha256 } from 'crypto-hash';
+import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 
 function PasswordPrompt(props) {
     const [input, setInput] = useState('');
     const [failedLabel, setFailedLabel] = useState(false);
+
+    const passwordVerificationHandle = (res) => {
+        if (res.data.flag) {
+            props.onValid();
+            props.setExportPassword(sha256(input))
+        } else {
+            setInput('');
+            if (props.onFailed) {
+                props.onFailed();
+            }
+            setFailedLabel(true);
+            setTimeout(() => {
+                setFailedLabel(false)
+            }, 2000);
+        }
+    }
+
     const enter = () => {
         if (input.length > 5) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, { rtdbPayload: props.rtdbPayload, password: input, authShareType: props.authShareType, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
-                if (res.data.flag) {
-                    props.onValid();
-                    props.setExportPassword(sha256(input))
-                } else {
-                    setInput('');
-                    if (props.onFailed) {
-                        props.onFailed();
-                    }
-                    setFailedLabel(true);
-                    setTimeout(() => {
-                        setFailedLabel(false)
-                    }, 2000);
-                }
-            })
+            var detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}`, PKShareType: { method: props.authShareType.toString().split('.')[0], type: props.authShareType.toString().split('.')[1] } };
+            axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
+                var location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
+                axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, {
+                    rtdbPayload: props.rtdbPayload,
+                    password: input,
+                    authShareType: props.authShareType,
+                    AT: localStorage.getItem('AT'),
+                    CIP: localStorage.getItem('CIP'),
+                    location: JSON.stringify(location),
+                    details: JSON.stringify(detailsObj),
+                }).then(res => {
+                    passwordVerificationHandle(res);
+                }).catch(e => { })
+            }).catch(e => {
+                axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, {
+                    rtdbPayload: props.rtdbPayload,
+                    password: input,
+                    authShareType: props.authShareType,
+                    AT: localStorage.getItem('AT'),
+                    CIP: localStorage.getItem('CIP'),
+                    location: false,
+                    details: JSON.stringify(detailsObj),
+                }).then(res => {
+                    passwordVerificationHandle(res);
+                }).catch(e => { })
+            });
         }
     }
     if (props.show) {

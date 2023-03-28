@@ -318,7 +318,7 @@ function Settings(props) {
                         <AuthDeviceScanDeco className="mainButtonDeco"></AuthDeviceScanDeco>
                     </div>
                     <Label fontSize={scanMode == 'export' ? '2vh' : '1.6vh'} id="scanFromDeviceOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Scan QR Codes using the target device" : 'Scan the QR Code from the device you’re exporting from'}></Label>
-                    <div onClick={() => { setActiveWindowId('fileExportID'); setAuthShareType('file.export'); if (!authed.ini) { setPasswordPrompt({ visible: true }) } }} id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
+                    <div onClick={() => { setActiveWindowId('fileExportID'); if(scanMode == 'export'){setAuthShareType('file.export');}else{setAuthShareType('file.import');}  if (!authed.ini) { setPasswordPrompt({ visible: true }) } }} id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
                         <Label className="mainButtonLabel" text={scanMode == 'export' ? 'Make a backup' : 'Load a backup'} color="#D9D9D9"></Label>
                         {scanMode == 'export' ? <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco className="mainButtonDeco"></AuthDeviceLoadDeco>}
                     </div>
