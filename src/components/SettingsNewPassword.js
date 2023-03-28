@@ -5,6 +5,7 @@ import PasswordValidator from '../components/PasswordValidator.js'
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
+import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 
 
 function SettingsNewPassword(props) {
@@ -21,6 +22,25 @@ function SettingsNewPassword(props) {
         setCurrentPasswordInput('')
         setNewPasswordInput('')
     }, [props.show])
+
+    const passwordResetResponse = (resx) => {
+        if (resx.data.flag) {
+            setEnterButtonProps({ label: 'Success', color: '#00FFD1' });
+            localStorage.removeItem('AT');
+            localStorage.removeItem('CIP');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            setEnterButtonProps({ label: 'Action Failed', color: '#FF002E' });
+            setCurrentPasswordInput('')
+            setNewPasswordInput('')
+            setTimeout(() => {
+                setEnterButtonProps({ label: 'Enter', color: '#7100FF' });
+            }, 2000);
+        }
+    }
+
 
     const onEnter = () => {
         if (enterButtonProps.label == 'Enter') {
@@ -42,26 +62,36 @@ function SettingsNewPassword(props) {
                 }, 2000);
             }
             if (currentPasswordInput.length > 7 && !currentPasswordInput.match(reg) && newPasswordInput.length > 7 && !newPasswordInput.match(reg)) {
+                var detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}` };
                 setEnterButtonProps({ label: 'Validating ▣', color: '#001AFF' });
-                axios.post(`${DomainGetter('prodx')}api/dbop?changePassword`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), currentPassword: currentPasswordInput.toString(), newPassword: newPasswordInput.toString() }).then(resx => {
-                    if (resx.data.flag) {
-                        setEnterButtonProps({ label: 'Success', color: '#00FFD1' });
-                        localStorage.removeItem('AT');
-                        localStorage.removeItem('CIP');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        setEnterButtonProps({ label: 'Action Failed', color: '#FF002E' });
-                        setCurrentPasswordInput('')
-                        setNewPasswordInput('')
-                        setTimeout(() => {
-                            setEnterButtonProps({ label: 'Enter', color: '#7100FF' });
-                        }, 2000);
-                    }
+                axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
+                    var location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
+                    axios.post(`${DomainGetter('prodx')}api/dbop?changePassword`, {
+                        AT: localStorage.getItem('AT'),
+                        CIP: localStorage.getItem('CIP'),
+                        currentPassword: currentPasswordInput.toString(),
+                        newPassword: newPasswordInput.toString(),
+                        location: JSON.stringify(location),
+                        details: JSON.stringify(detailsObj),
+                    }).then(resx => {
+                        passwordResetResponse(resx);
+                    }).catch(e => {
+                        setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
+                    })
                 }).catch(e => {
-                    setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
-                })
+                    axios.post(`${DomainGetter('prodx')}api/dbop?changePassword`, {
+                        AT: localStorage.getItem('AT'),
+                        CIP: localStorage.getItem('CIP'),
+                        currentPassword: currentPasswordInput.toString(),
+                        newPassword: newPasswordInput.toString(),
+                        location: JSON.stringify({ name: 'Unknown', coords: { lat: 0, long: 0 } }),
+                        details: JSON.stringify(detailsObj),
+                    }).then(resx => {
+                        passwordResetResponse(resx);
+                    }).catch(e => {
+                        setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
+                    })
+                });
             }
         }
     }

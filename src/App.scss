@@ -1162,7 +1162,41 @@ rect {
     opacity: 1;
   }
 }
-
+.logCollectionSettingsTitle{
+  @include flex();
+  padding-left: 5%;
+  justify-content: start;
+  border-radius: 5px;
+}
+.logCollectionSettingsButton{
+  border-radius: 5px;
+  height: 5.7%;
+  width: 32.577777778%;
+}
+.logCollectionSettingsLabel{
+  width: 48.333333333%;
+  height: 6.09375%;
+  border-radius: 5px;
+  @include flex();
+  justify-content: start;
+  padding-left: 5%;
+  left: 5%;
+}
+.actionFailed{
+  @include VAlign();
+  @include flex();
+  padding: 0;
+}
+.logCollectionSettingsContainer{
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(9, 0, 10, 0.95);
+  backdrop-filter: blur(5px);
+  @include flex();
+}
 .logsFetchingLabel,
 .chatLoadingStatus,
 .failedMessageAction {

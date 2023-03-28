@@ -23,7 +23,7 @@ function LogCard(props) {
 
     return (
         <div className="logCardContainer" style={{ backgroundColor: colorController().bkg }}>
-            <Label style={{ top: '10.256410256%', left: '11.111111111%' }} fontSize="2vh" color={colorController().primary} text={`▣ ${props.logObj.type}.${props.logObj.subtype}`}></Label>
+            <Label style={{ top: '10.256410256%', left: '11.111111111%' }} fontSize="1.9vh" color={colorController().primary} text={`▣ ${props.logObj.type}.${props.logObj.subtype}`}></Label>
             <Label style={{ top: '12.956410256%', left: '69.75308642%', width: '28.395061728%', textAlign: 'end', paddingRight: '2%' }} fontSize="1.8vh" color={colorController().primary} text={props.logObj.location.name}></Label>
             <Label style={{ top: '61.538461538%', left: '11.111111111%', textAlign: 'start' }} fontSize="1.8vh" color={colorController().secondary} text={dateFormatter()}></Label>
             <Label style={{ top: '61.538461538%', left: '63.45308642%', width: '35%', textAlign: 'end', paddingRight: '2%' }} fontSize="1.8vh" color={colorController().secondary} text={props.logObj.ip}></Label>

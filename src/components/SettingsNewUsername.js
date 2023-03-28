@@ -4,6 +4,7 @@ import Button from '../components/Button.js'
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
+import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 
 
 function SettingsNewPassword(props) {
@@ -19,6 +20,23 @@ function SettingsNewPassword(props) {
         setCurrentPasswordInput('')
         setNewUsernameInput('')
     }, [props.show])
+
+
+    const usernameChangeResponse = (resx) => {
+        if (resx.data.flag) {
+            setEnterButtonProps({ label: 'Success', color: '#00FFD1' });
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            setEnterButtonProps({ label: 'Action Failed', color: '#FF002E' });
+            setCurrentPasswordInput('')
+            setNewUsernameInput('')
+            setTimeout(() => {
+                setEnterButtonProps({ label: 'Enter', color: '#7100FF' });
+            }, 2000);
+        }
+    }
 
     const onEnter = () => {
         if (enterButtonProps.label == 'Enter') {
@@ -40,23 +58,35 @@ function SettingsNewPassword(props) {
             }
             if (currentPasswordInput.length > 7 && !currentPasswordInput.match(reg) && newUsernameInput.length > 2) {
                 setEnterButtonProps({ label: 'Validating ▣', color: '#001AFF' });
-                axios.post(`${DomainGetter('prodx')}api/dbop?changeUsername`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), currentPassword: currentPasswordInput.toString(), newUsername: newUsernameInput.toString() }).then(resx => {
-                    if (resx.data.flag) {
-                        setEnterButtonProps({ label: 'Success', color: '#00FFD1' });
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
-                    } else {
-                        setEnterButtonProps({ label: 'Action Failed', color: '#FF002E' });
-                        setCurrentPasswordInput('')
-                        setNewUsernameInput('')
-                        setTimeout(() => {
-                            setEnterButtonProps({ label: 'Enter', color: '#7100FF' });
-                        }, 2000);
-                    }
+                var detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}` };
+                axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
+                    var location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
+                    axios.post(`${DomainGetter('prodx')}api/dbop?changeUsername`, {
+                        AT: localStorage.getItem('AT'),
+                        CIP: localStorage.getItem('CIP'),
+                        currentPassword: currentPasswordInput.toString(),
+                        newUsername: newUsernameInput.toString(),
+                        location: JSON.stringify(location),
+                        details: JSON.stringify(detailsObj),
+                    }).then(resx => {
+                        usernameChangeResponse(resx);
+                    }).catch(e => {
+                        setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
+                    })
                 }).catch(e => {
-                    setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
-                })
+                    axios.post(`${DomainGetter('prodx')}api/dbop?changeUsername`, {
+                        AT: localStorage.getItem('AT'),
+                        CIP: localStorage.getItem('CIP'),
+                        currentPassword: currentPasswordInput.toString(),
+                        newUsername: newUsernameInput.toString(),
+                        location: JSON.stringify({ name: 'Unknown', coords: { lat: 0, long: 0 } }),
+                        details: JSON.stringify(detailsObj),
+                    }).then(resx => {
+                        usernameChangeResponse(resx);
+                    }).catch(e => {
+                        setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
+                    })
+                });
             }
         }
     }

@@ -5,12 +5,14 @@ import { useEffect, useState } from 'react';
 import LogCard from './LogCard';
 import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 import LogDetails from './LogDetails';
+import LogCollectionSettings from './LogCollectionSettings';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
 
 function SettingsLogs(props) {
 
     const [showLogDetails, setShowLogDetails] = useState({ show: false, logObj: {} });
+    const [showLogCollectionSettings, setShowLogCollectionSettings] = useState(false);
 
     const [logsArray, setLogsArray] = useState({
         ini: false, array: []
@@ -47,7 +49,7 @@ function SettingsLogs(props) {
             {!showLogDetails.show ? <>
                 <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="89.375%"></HorizontalLine>
                 <Button onClick={props.onBack} label="Back" className="logsButton" style={{ top: '91.71875%', height: '6.25%', width: '43.055555556%', left: '5%' }} color="#929292"></Button>
-                <Button label="Settings" className="logsButton" style={{ top: '91.71875%', height: '6.25%', width: '43.055555556%', left: '51.944444444%' }} color="#7100FF" bkg="#7100FF"></Button>
+                <Button onClick={() => { setShowLogCollectionSettings(prev => !prev) }} label="Settings" className="logsButton" style={{ top: '91.71875%', height: '6.25%', width: '43.055555556%', left: '51.944444444%' }} color="#7100FF" bkg="#7100FF"></Button>
             </> : ''}
 
             {!showLogDetails.show ? <>
@@ -62,11 +64,12 @@ function SettingsLogs(props) {
                     <ul id="logsList">
                         {logsArray.ini ? logsArrayList : ''}
                     </ul>
-                    <Label fontSize="2vh" show={!logsArray.ini} className="logsFetchingLabel" color="#001AFF" style={{top: '60%'}} bkg="#001AFF20" text="[Fetching Logs]"></Label>
-                    <Label fontSize="2vh" show={logsArray.ini && logsArrayList.length == 0} className="logsFetchingLabel" style={{top: '60%'}} color="#001AFF" bkg="#001AFF20" text="[No Logs To Display]"></Label>
+                    <Label fontSize="2vh" show={!logsArray.ini} className="logsFetchingLabel" color="#001AFF" style={{ top: '60%' }} bkg="#001AFF20" text="[Fetching Logs]"></Label>
+                    <Label fontSize="2vh" show={logsArray.ini && logsArrayList.length == 0} className="logsFetchingLabel" style={{ top: '60%' }} color="#001AFF" bkg="#001AFF20" text="[No Logs To Display]"></Label>
                 </>
                 : ''}
             <LogDetails onBack={() => setShowLogDetails({ show: false, logObj: {} })} show={showLogDetails.show} logObj={showLogDetails.logObj}></LogDetails>
+            <LogCollectionSettings onBack={() => setShowLogCollectionSettings(prev => !prev)} show={showLogCollectionSettings}></LogCollectionSettings>
         </div>)
     } else {
         return '';

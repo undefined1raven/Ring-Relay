@@ -53,7 +53,7 @@ function LogDetails(props) {
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (2 * 7%))', height: '6.09375%' }} text={props.logObj.details.browser}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (3 * 7%))', height: '6.09375%' }} text={props.logObj.details.os}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (4 * 7%))', height: '6.09375%' }} text={props.logObj.ip}></Label>
-                <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (5 * 7%))', height: '6.09375%' }} text={props.logObj.location.name}></Label>
+                <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" style={{ top: 'calc(43.59375% + (5 * 7%))', height: '6.09375%' }} text={`${props.logObj.location.name} [Earth]`}></Label>
                 <Label fontSize="1.9vh" color={sessionDetailsController().color} className="logDetailActual" bkg={`${sessionDetailsController().color}20`} show={props.logObj.subtype == 'Log In'} style={{ top: 'calc(43.59375% + (6 * 7%))', height: '6.09375%' }} text={sessionDetailsController().label}></Label>
                 <Label fontSize="1.9vh" color="#FFF" className="logDetailActual" bkg="#7000FF20" show={props.logObj.subtype == 'Keys Import' || props.logObj.subtype == 'Keys Export'} style={{ top: 'calc(43.59375% + (6 * 7%))', height: '6.09375%' }} text={exportDetailsController().label}></Label>
 
@@ -66,7 +66,6 @@ function LogDetails(props) {
                 <Label fontSize="1.9vh" color="#BABABA" bkg="#6300E020" className="logDetailTypeLabel" style={{ top: 'calc(43.59375% + (5 * 7%))', height: '6.09375%' }} text="IP Location"></Label>
                 <Label fontSize="1.9vh" color="#BABABA" bkg="#6300E020" className="logDetailTypeLabel" show={props.logObj.subtype == 'Log In'} style={{ top: 'calc(43.59375% + (6 * 7%))', height: '6.09375%' }} text="Session Status"></Label>
                 <Label fontSize="1.9vh" color="#BABABA" bkg="#6300E020" className="logDetailTypeLabel" show={props.logObj.subtype == 'Keys Import' || props.logObj.subtype == 'Keys Export'} style={{ top: 'calc(43.59375% + (6 * 7%))', height: '6.09375%' }} text={`${exportDetailsController().type} Type`}></Label>
-
             </div>)
     } else {
         return '';
