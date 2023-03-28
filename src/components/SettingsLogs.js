@@ -6,21 +6,43 @@ import LogCard from './LogCard';
 import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 import LogDetails from './LogDetails';
 import LogCollectionSettings from './LogCollectionSettings';
+import LogFilter from './LogsFilter';
 import axios from 'axios';
 import DomainGetter from '../fn/DomainGetter';
+import LogsFilter from './LogsFilter';
 
 function SettingsLogs(props) {
 
     const [showLogDetails, setShowLogDetails] = useState({ show: false, logObj: {} });
     const [showLogCollectionSettings, setShowLogCollectionSettings] = useState(false);
+    const [showLogFilter, setShowLogFilter] = useState(false);
+    const [logFilters, setLogFilters] = useState({ login: true, usernameChanged: true, passwordReset: true, keysExport: true, keysImport: true, keysRegen: true, info: true, warning: true, important: true, critical: true, last24h: true, lastWeek: true, lastMonth: true });
 
     const [logsArray, setLogsArray] = useState({
         ini: false, array: []
     });
     const [logsArrayList, setLogsArrayList] = useState([]);
 
+
+    const filterLogs = () => {
+        setLogsArrayList(logsArray.array.filter(log =>
+            ((log.subtype == 'Log In' && logFilters.login) ||
+                (log.subtype == 'Username Changed' && logFilters.usernameChanged) ||
+                (log.subtype == 'Password Changed' && logFilters.passwordReset) ||
+                (log.subtype == 'Keys Export' && logFilters.keysExport) ||
+                (log.subtype == 'Keys Import' && logFilters.keysImport) ||
+                (log.subtype == 'Keys Regen' && logFilters.keysRegen)) &&
+            ((Date.now() - parseInt(log.tx) < 86400000 && logFilters.last24h) ||
+                (Date.now() - parseInt(log.tx) < 604800000 && logFilters.lastWeek) ||
+                (Date.now() - parseInt(log.tx) < 2629800000 && logFilters.lastMonth)) &&
+            ((log.severity == 'info' && logFilters.info) ||
+                (log.severity == 'warning' && logFilters.warning) ||
+                (log.severity == 'important' && logFilters.important) ||
+                (log.severity == 'critical' && logFilters.critical))).map(log => <li onClick={() => setShowLogDetails({ show: true, logObj: { ...log } })} key={log.type + Math.random()} className='logCardLi'><LogCard logObj={{ ...log }}></LogCard></li>))
+    }
+
     useEffect(() => {
-        setLogsArrayList(logsArray.array.map(log => <li onClick={() => setShowLogDetails({ show: true, logObj: { ...log } })} key={log.type + Math.random()} className='logCardLi'><LogCard logObj={{ ...log }}></LogCard></li>))
+        filterLogs();
     }, [logsArray])
 
     useEffect(() => {
@@ -37,6 +59,16 @@ function SettingsLogs(props) {
         });
     }, [])
 
+    const flipFilter = (key) => {
+        let nFilters = logFilters;
+        nFilters[key] = !nFilters[key];
+        setLogFilters({ ...nFilters });
+    }
+
+    useEffect(() => {
+        filterLogs();
+    }, [logFilters])
+
     if (props.show) {
         return (<div>
             <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="31.09375%"></HorizontalLine>
@@ -44,8 +76,8 @@ function SettingsLogs(props) {
             <Label style={{ top: '25%' }} className="logsFiltersLabel" fontSize="2vh" text="Time" color="#FFF" bkg="#7000FF20"></Label>
             <Button label="All" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '18.28125%', color: '#FFF' }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
             <Button label="Last 24h" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '25%', color: '#FFF' }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '18.28125%', color: '#9B9B9B' }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '25%', color: '#9B9B9B' }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '18.28125%', color: '#9B9B9B' }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '25%', color: '#9B9B9B' }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
             {!showLogDetails.show ? <>
                 <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="89.375%"></HorizontalLine>
                 <Button onClick={props.onBack} label="Back" className="logsButton" style={{ top: '91.71875%', height: '6.25%', width: '43.055555556%', left: '5%' }} color="#929292"></Button>
@@ -70,6 +102,7 @@ function SettingsLogs(props) {
                 : ''}
             <LogDetails onBack={() => setShowLogDetails({ show: false, logObj: {} })} show={showLogDetails.show} logObj={showLogDetails.logObj}></LogDetails>
             <LogCollectionSettings onBack={() => setShowLogCollectionSettings(prev => !prev)} show={showLogCollectionSettings}></LogCollectionSettings>
+            <LogFilter filteredCountLabel={`Showing ${logsArrayList.length} out of ${logsArray.array.length}`} onBack={() => setShowLogFilter(false)} flipFilter={flipFilter} logFilters={{ ...logFilters }} show={showLogFilter}></LogFilter>
         </div>)
     } else {
         return '';

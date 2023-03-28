@@ -436,7 +436,7 @@ html {
   border-radius: 5px;
 }
 
-.logCardLi{
+.logCardLi {
   height: 11.676646707%;
   margin-bottom: 3%;
 }
@@ -616,14 +616,16 @@ rect {
   @include VAlign();
   overflow-y: scroll;
 }
-.logDetailsBackBtn{
+
+.logDetailsBackBtn {
   top: 34.375%;
   left: 5%;
   width: 12.222222222%;
   height: 5.79375%;
   border-radius: 5px;
 }
-.logDetailsTitle{
+
+.logDetailsTitle {
   top: 34.375%;
   left: 19.722222222%;
   width: 73.577777778%;
@@ -633,17 +635,21 @@ rect {
   padding-left: 2%;
   border-radius: 5px;
 }
-.logDetailTypeLabel, .logDetailActual{
+
+.logDetailTypeLabel,
+.logDetailActual {
   width: 37.5%;
   left: 5%;
   height: 5%;
   @include flex();
   border-radius: 5px;
 }
-.logDetailActual{
+
+.logDetailActual {
   left: 44.166666667%;
   width: 50.833333333%;
 }
+
 #logsList {
   position: absolute;
   top: 35.78125%;
@@ -654,6 +660,7 @@ rect {
   @include VAlign();
   overflow-y: scroll;
 }
+
 #logsList::-webkit-scrollbar {
   width: 0vh;
   height: 0px;
@@ -1162,18 +1169,54 @@ rect {
     opacity: 1;
   }
 }
-.logCollectionSettingsTitle{
+
+.logFilterContainer {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(9, 0, 10, 0.95);
+  backdrop-filter: blur(5px);
+  @include flex();
+  z-index: 50;
+}
+.filterLogsMainButton{
+  width: 53.611111111%;
+  height: 4.84375%;
+  border-radius: 5px;
+  left: 11.111111111;
+}
+.filterLogsTypeTitle{
+  width: 78.055555556%;
+  height: 4.84375%;
+  @include VAlign();
+  @include flex();
+  border-radius: 5px;
+}
+#filterLogsTitle{
+  top: 1.71875%;
+  width: 90%;
+  padding-bottom: 5%;
+  height: 3.99375%;
+  border-radius: 5px;
+  @include VAlign();
+  @include flex();
+}
+.logCollectionSettingsTitle {
   @include flex();
   padding-left: 5%;
   justify-content: start;
   border-radius: 5px;
 }
-.logCollectionSettingsButton{
+
+.logCollectionSettingsButton {
   border-radius: 5px;
   height: 5.7%;
   width: 32.577777778%;
 }
-.logCollectionSettingsLabel{
+
+.logCollectionSettingsLabel {
   width: 48.333333333%;
   height: 6.09375%;
   border-radius: 5px;
@@ -1182,12 +1225,14 @@ rect {
   padding-left: 5%;
   left: 5%;
 }
-.actionFailed{
+
+.actionFailed {
   @include VAlign();
   @include flex();
   padding: 0;
 }
-.logCollectionSettingsContainer{
+
+.logCollectionSettingsContainer {
   position: absolute;
   top: 0;
   left: 0;
@@ -1197,6 +1242,7 @@ rect {
   backdrop-filter: blur(5px);
   @include flex();
 }
+
 .logsFetchingLabel,
 .chatLoadingStatus,
 .failedMessageAction {

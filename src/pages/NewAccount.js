@@ -9,7 +9,7 @@ import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
 import * as EmailValidator from 'email-validator';
 import DomainGetter from '../fn/DomainGetter.js'
-import { getKeyPair, keyToPem, getSigningKeyPair, pemToKey } from '../fn/crypto.js';
+import { getKeyPair, keyToPem, getSigningKeyPair } from '../fn/crypto.js';
 import axios from 'axios';
 import PasswordValidator from '../components/PasswordValidator.js'
 
@@ -42,12 +42,6 @@ function NewAccount() {
     useEffect(() => {
         window.location.hash = windowHash;
     }, [windowHash])
-
-    const privateKeyBackupOnClick = () => {
-        // if (privateKeyPem != undefined) {
-        //     download('ring-relay-key.pem', privateKeyPem);
-        // }
-    }
 
     const validateInput = (continous) => {
         if (username.length < 2 || username.indexOf('@') != -1) {
