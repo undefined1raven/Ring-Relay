@@ -96,7 +96,7 @@ function SettingsLogs(props) {
         if(props.show == true){
             fetchLogs();
         }
-    }, props.show)
+    }, [props.show])
 
     const flipFilter = (key) => {
         let nFilters = logFilters;

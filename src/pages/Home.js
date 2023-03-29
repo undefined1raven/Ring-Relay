@@ -61,6 +61,9 @@ function Home() {
   const [contactStatusIntervalEnabled, setContactStatusIntervalEnabled] = useState(false);
   const [newMessageCountsIntervalEnabled, setNewMessageCountsIntervalEnabled] = useState(false);
   const [ownMessageBuffer, setOwnMessageBuffer] = useState(0);
+  const [isTypingLastUnix, setIsTypingLastUnix] = useState(0);
+  const [showIsTyping, setShowIsTyping] = useState(false)
+  const [typingTruncatedBuffer, setTypingTruncatedBuffer] = useState({});
   const onNavButtonClick = (btnId) => {
     if (windowId == 'chat') {
       onBackButton();
@@ -70,6 +73,13 @@ function Home() {
     }
     refreshRefs();
   };
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      try { document.getElementById('msgsList').scrollTo({ top: document.getElementById('msgsList').scrollHeight, behavior: 'instant' }); } catch (e) { }
+    }, 50);
+  }
+
   const onChatSelected = (uid) => {
     for (let ix = 0; ix < refs.arr.length; ix++) {
       if (refs.arr[ix].uid == uid) {
@@ -117,11 +127,43 @@ function Home() {
       window['realtimeBufferIni'] = true;
       rtdbListnerIni = true;
       rtdbl = onValue(ref(db, `messageBuffer/${ownUID}`), (snap) => {
-        setOwnMessageBuffer(snap.val())
+        const buffer = snap.val();
+        setTypingTruncatedBuffer({ messages: buffer?.messages, deleted: buffer?.deleted, liked: buffer?.liked, seen: buffer?.seen })
+        let RXrealtimeBuffer = snap.val();
+        if (RXrealtimeBuffer != null) {
+          if (RXrealtimeBuffer.typing != null) {
+            if (RXrealtimeBuffer.typing.targetUID == ownUID) {
+              setIsTypingLastUnix({ tx: RXrealtimeBuffer.typing.tx, ghost: RXrealtimeBuffer.typing.ghost })
+            }
+          }
+        }
       });
     }
     // return () => rtdbl ? off(`messageBuffer/${ownUID}`) : 0;//not like it was doing anything anyway
   }, [authorized])
+
+
+  useEffect(() => {
+    if (Date.now() - isTypingLastUnix.tx > 150) {
+      setOwnMessageBuffer({ ...typingTruncatedBuffer })
+    }
+  }, [typingTruncatedBuffer])
+
+  useEffect(() => {
+    let interval = setInterval(() => {
+      if (isTypingLastUnix.tx) {
+        if (Date.now() - isTypingLastUnix.tx > 500) {
+          setShowIsTyping(false)
+          remove(ref(db, `messageBuffer/${chatObj.uid}/typing`));
+        } else {
+          setShowIsTyping(true)
+          scrollToBottom();
+        }
+      }
+    }, 100)
+
+    return () => clearInterval(interval)
+  }, [isTypingLastUnix])
 
 
   const checkContactsStatus = (msgCountHash) => {
@@ -343,7 +385,7 @@ function Home() {
       <LogsDialog onHide={() => setLogsDialogShow(false)} show={logsDialogShow}></LogsDialog>
       <NavBar onNavButtonClick={onNavButtonClick} wid={windowId}></NavBar>
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
-      {windowId == 'chat' ? <Chat ownMessageBuffer={ownMessageBuffer} privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
+      {windowId == 'chat' ? <Chat isTypingLastUnix={isTypingLastUnix} showIsTyping={showIsTyping} ownMessageBuffer={ownMessageBuffer} privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       {windowId == 'newContact' ? <NewContact refreshRefs={refreshRefs} show={windowId == 'newContact'}></NewContact> : ''}
       {windowId == 'settings' ? <Settings privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}
     </div>

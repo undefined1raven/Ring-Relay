@@ -69,8 +69,6 @@ function Chat(props) {
     const [msgsListHeight, setMsgsListHeight] = useState('74.21875%');
     const [msgInputTextareaHeight, setMsgInputTextareaHeight] = useState('47%');
     const [statusOverride, setStatusOverride] = useState(false);
-    const [showIsTyping, setShowIsTyping] = useState(false)
-    const [isTypingLastUnix, setIsTypingLastUnix] = useState(0);
     const [showChatDetails, setShowChatDetails] = useState(false)
     const [remoteSigningKeySig, setRemoteSigningKeySig] = useState({ ini: false, sig: '' });
     const [remoteEncryptionKeySig, setRemoteEncryptionKeySig] = useState({ ini: false, sig: '' });
@@ -536,24 +534,8 @@ function Chat(props) {
     }
 
     useEffect(() => {
-        let interval = setInterval(() => {
-            if (isTypingLastUnix.tx) {
-                if (Date.now() - isTypingLastUnix.tx > 500) {
-                    setShowIsTyping(false)
-                    remove(ref(db, `messageBuffer/${props.chatObj.uid}/typing`));
-                } else {
-                    setShowIsTyping(true)
-                    scrollToBottom();
-                }
-            }
-        }, 100)
-
-        return () => clearInterval(interval)
-    }, [isTypingLastUnix])
-
-    useEffect(() => {
+        console.log(props.ownMessageBuffer)
         if (props.visible && props.ownMessageBuffer != 0) {
-
             let RXrealtimeBuffer = props.ownMessageBuffer;
             if (RXrealtimeBuffer != null) {
                 if (RXrealtimeBuffer.messages != null) {
@@ -639,12 +621,6 @@ function Chat(props) {
                         setSeenMsgs(RXrealtimeBuffer.seen[props.chatObj.uid].MID)
                     }
                 }
-                if (RXrealtimeBuffer.typing != null) {
-                    if (RXrealtimeBuffer.typing.targetUID == props.ownUID) {
-                        setIsTypingLastUnix({ tx: RXrealtimeBuffer.typing.tx, ghost: RXrealtimeBuffer.typing.ghost })
-                    }
-                }
-
             }
         }
     }, [props.ownMessageBuffer])
@@ -772,7 +748,7 @@ function Chat(props) {
                         {ghostModeEnabled ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#0500FF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Ghostly Conversation Started]" color="#FFF" bkg="#0500FF30"></Label></li> : ''}
                         {(chatLoadingLabel.label == '[Done]' && !ghostModeEnabled) ? msgList : ''}
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
-                        {showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ left: `${isTypingLastUnix.ghost ? "56.6%" : "76%"}`, borderRight: `solid 1px ${isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
+                        {props.showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ left: `${props.isTypingLastUnix.ghost ? "56.6%" : "76%"}`, borderRight: `solid 1px ${props.isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${props.isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={props.isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={props.isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={props.isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
                     <LocationPickerOverlay ghost={ghostModeEnabled} updateLocationInput={updateLocationInput} show={showLocationMsgPreview}></LocationPickerOverlay>
                     <MessageTypeSelector top={messageTypeSelectorTop} ghost={ghostModeEnabled} onTypeSelected={(typeID) => setSelectedMsgType(typeID)}></MessageTypeSelector>
