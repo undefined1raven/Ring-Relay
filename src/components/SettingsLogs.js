@@ -16,7 +16,7 @@ function SettingsLogs(props) {
     const [showLogDetails, setShowLogDetails] = useState({ show: false, logObj: {} });
     const [showLogCollectionSettings, setShowLogCollectionSettings] = useState(false);
     const [showLogFilter, setShowLogFilter] = useState(false);
-    const [logFilters, setLogFilters] = useState({ login: true, usernameChanged: true, passwordReset: true, keysExport: true, keysImport: true, keysRegen: true, info: true, warning: true, important: true, critical: true, last24h: true, lastWeek: true, lastMonth: true });
+    const [logFilters, setLogFilters] = useState({ login: true, usernameChanged: true, passwordReset: true, keysExport: true, keysImport: true, keysRegen: true, info: true, warning: true, important: true, critical: true, last24h: true, lastWeek: false, lastMonth: false });
 
     const [logsArray, setLogsArray] = useState({
         ini: false, array: []
@@ -74,8 +74,8 @@ function SettingsLogs(props) {
         filterLogs();
     }, [logsArray])
 
-    useEffect(() => {
-        axios.post(`${DomainGetter('prodx')}api/dbop?getLogs`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), count: 30 }).then(resx => {
+    const fetchLogs = () => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getLogs`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), count: 150 }).then(resx => {
             if (resx.data.error == undefined) {
                 if (resx.data.logs) {
                     let parsedLogArray = [];
@@ -86,7 +86,17 @@ function SettingsLogs(props) {
                 }
             }
         });
+    }
+
+    useEffect(() => {
+        fetchLogs();
     }, [])
+
+    useEffect(() => {
+        if(props.show == true){
+            fetchLogs();
+        }
+    }, props.show)
 
     const flipFilter = (key) => {
         let nFilters = logFilters;

@@ -10,6 +10,7 @@ function LogCollectionSettings(props) {
     const [logsOptions, setLogsOptions] = useState({ account: true, security: false });
     const [showUpdateFailed, setShowUpdateFailed] = useState(false)
     const [isLogOptionUpdating, setIsLogOptionUpdating] = useState({ account: false, security: false });
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
 
     useEffect(() => {
         setChecking(true);
@@ -45,28 +46,47 @@ function LogCollectionSettings(props) {
             let flippedLogOptions = { ...logsOptions };
             flippedLogOptions[logTypeKey] = !flippedLogOptions[logTypeKey];
             setLogsOptions({ ...flippedLogOptions })
+            let newConfig = JSON.stringify({...flippedLogOptions, ini: true});
+            axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newConfig }).then(res => {
+                if (res.data.error == undefined) {
+                    if (logTypeKey == 'account') {
+                        setIsLogOptionUpdating({ ...isLogOptionUpdating, account: false })
+                    }
+                    if (logTypeKey == 'security') {
+                        setIsLogOptionUpdating({ ...isLogOptionUpdating, security: false })
+                    }
+                }
+            }).catch(e => {
+                setShowUpdateFailed(true);
+                setTimeout(() => {
+                    setShowUpdateFailed(false);
+                }, 2000);
+            });
         }
     }
 
-
-    useEffect(() => {
-        let newPrefs = JSON.stringify({ ...logsOptions, ini: true });
-        axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newPrefs }).then(res => {
-            if (res.data.error == undefined) {
-                if (isLogOptionUpdating.account) {
-                    setIsLogOptionUpdating({ ...isLogOptionUpdating, account: false })
+    const deleteAll = () => {
+        if (!isDeletingAll) {
+            setIsDeletingAll(true);
+            axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), deleteAll: true }).then(res => {
+                if (res.data.error == undefined) {
+                    setIsDeletingAll(false);
+                } else {
+                    setIsDeletingAll(false);
+                    setShowUpdateFailed(true);
+                    setTimeout(() => {
+                        setShowUpdateFailed(false);
+                    }, 2000);
                 }
-                if (isLogOptionUpdating.security) {
-                    setIsLogOptionUpdating({ ...isLogOptionUpdating, security: false })
-                }
-            }
-        }).catch(e => {
-            setShowUpdateFailed(true);
-            setTimeout(() => {
-                setShowUpdateFailed(false);
-            }, 2000);
-        });
-    }, [logsOptions])
+            }).catch(e => {
+                setIsDeletingAll(false);
+                setShowUpdateFailed(true);
+                setTimeout(() => {
+                    setShowUpdateFailed(false);
+                }, 2000);
+            });
+        }
+    }
 
     useEffect(() => {
         setTimeout(() => {
@@ -87,7 +107,7 @@ function LogCollectionSettings(props) {
                 <Label style={{ top: 'calc(9.5625%)' }} className="logCollectionSettingsLabel" fontSize="2vh" color="#FFF" bkg="#7000FF20" text="Account Logs"></Label>
                 <Label style={{ top: 'calc(9.5625% + (1 * 7.7%))' }} className="logCollectionSettingsLabel" fontSize="2vh" color="#FFF" bkg="#7000FF20" text="Security Logs"></Label>
                 <Label style={{ top: 'calc(9.5625% + (2 * 7.7%))' }} className="logCollectionSettingsLabel" fontSize="2vh" color="#FFF" bkg="#7000FF20" text="Auto-delete Logs"></Label>
-                <Button style={{ top: 'calc(9.5625% + (3 * 7.7%))', width: '90%' }} fontSize="2vh" color="#FF002E" bkg="#FF002E" className="logCollectionSettingsButton" label="Delete All"></Button>
+                <Button onClick={deleteAll} style={{ top: 'calc(9.5625% + (3 * 7.7%))', width: '90%' }} fontSize="2vh" color="#FF002E" bkg="#FF002E" className="logCollectionSettingsButton" label={isDeletingAll ? "▣ Deleting All Logs" : "Delete All"}></Button>
                 <Button onClick={() => flipState('account')} style={{ top: 'calc(9.5625% + (0 * 7.7%))', left: '62.222222222%' }} fontSize="2vh" color={selectorColorController('account').color} bkg={selectorColorController('account').color} className="logCollectionSettingsButton" label={selectorColorController('account').label}></Button>
                 <Button onClick={() => flipState('security')} style={{ top: 'calc(9.5625% + (1 * 7.7%))', left: '62.222222222%' }} fontSize="2vh" color={selectorColorController('security').color} bkg={selectorColorController('security').color} className="logCollectionSettingsButton" label={selectorColorController('security').label}></Button>
                 <Button style={{ top: 'calc(9.5625% + (2 * 7.7%))', left: '62.222222222%' }} fontSize="2vh" color="#999" bkg="#999" className="logCollectionSettingsButton" label="V"></Button>
