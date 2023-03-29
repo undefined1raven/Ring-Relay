@@ -534,7 +534,6 @@ function Chat(props) {
     }
 
     useEffect(() => {
-        console.log(props.ownMessageBuffer)
         if (props.visible && props.ownMessageBuffer != 0) {
             let RXrealtimeBuffer = props.ownMessageBuffer;
             if (RXrealtimeBuffer != null) {
@@ -759,7 +758,7 @@ function Chat(props) {
                             <Signature sigLabel="Remote Encryption Key" valid={remoteEncryptionKeySig.ini && remoteEncryptionKeySig.sig?.length == 9} verified={true} sig={remoteEncryptionKeySig.sig} top="72%"></Signature>
                         </> : ''}
                     <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
-                    <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ opacity: failedMessageActionLabel.opacity }}></Label>
+                    <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ backdropFilter: 'blur(5px)', opacity: failedMessageActionLabel.opacity }}></Label>
                     <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
                 </>
                     :
