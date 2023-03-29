@@ -23,6 +23,35 @@ function SettingsLogs(props) {
     });
     const [logsArrayList, setLogsArrayList] = useState([]);
 
+    const isFilteredByType = () => {
+        var l = logFilters
+        return !(l.login && l.usernameChanged && l.passwordReset && l.keysExport && l.keysImport && l.keysRegen && l.info && l.important && l.warning && l.critical);
+    }
+
+    const areTimeFiltersDefault = () => {
+        return (logFilters.last24h && logFilters.lastWeek == false && logFilters.lastMonth == false)
+    }
+
+    const removeTypeFilters = () => {
+        let nFilters = logFilters;
+        for (let ix = 0; ix < Object.keys(nFilters).length - 1; ix++) {
+            let key = Object.keys(nFilters)[ix]
+            if (key != 'last24h' && key != 'lastWeek' && key != 'lastMonth') {
+                nFilters[key] = true;
+            }
+        }
+        setLogFilters(nFilters);
+        filterLogs();
+    }
+
+    const resetTimeFilters = () => {
+        let nFilters = logFilters;
+        nFilters['last24h'] = true;
+        nFilters['lastWeek'] = false;
+        nFilters['lastMonth'] = false;
+        setLogFilters(nFilters);
+        filterLogs();
+    }
 
     const filterLogs = () => {
         setLogsArrayList(logsArray.array.filter(log =>
@@ -74,10 +103,10 @@ function SettingsLogs(props) {
             <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="31.09375%"></HorizontalLine>
             <Label style={{ top: '18.28125%' }} className="logsFiltersLabel" fontSize="2vh" text="Type" color="#FFF" bkg="#7000FF20"></Label>
             <Label style={{ top: '25%' }} className="logsFiltersLabel" fontSize="2vh" text="Time" color="#FFF" bkg="#7000FF20"></Label>
-            <Button label="All" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '18.28125%', color: '#FFF' }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button label="Last 24h" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '25%', color: '#FFF' }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '18.28125%', color: '#9B9B9B' }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '25%', color: '#9B9B9B' }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={() => removeTypeFilters()} label="All" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '18.28125%', color: `${isFilteredByType() ? '#9B9B9B' : '#FFF'}` }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={resetTimeFilters} label="Last 24h" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '25%', color: `${areTimeFiltersDefault() ? "#FFF" : "#9B9B9B"}` }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '18.28125%', color: `${isFilteredByType() ? '#FFF' : '#9B9B9B'}` }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '25%', color: `${areTimeFiltersDefault() ? "#9B9B9B" : "#FFF"}` }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
             {!showLogDetails.show ? <>
                 <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="89.375%"></HorizontalLine>
                 <Button onClick={props.onBack} label="Back" className="logsButton" style={{ top: '91.71875%', height: '6.25%', width: '43.055555556%', left: '5%' }} color="#929292"></Button>
@@ -85,10 +114,10 @@ function SettingsLogs(props) {
             </> : ''}
 
             {!showLogDetails.show ? <>
-                <Label fontSize="1.9vh" text="Info" className="logsFiltersLabel" style={{ top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color="#9644FF" bkg="#9644FF30"></Label>
-                <Label fontSize="1.9vh" text="Warning" className="logsFiltersLabel" style={{ left: '28%', top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color="#FF7A00" bkg="#FF7A0030"></Label>
-                <Label fontSize="1.9vh" text="Important" className="logsFiltersLabel" style={{ left: '51%', top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color="#FF0000" bkg="#FF000030"></Label>
-                <Label fontSize="1.9vh" text="Critical" className="logsFiltersLabel" style={{ left: '74%', top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color="#FF0099" bkg="#FF009930"></Label>
+                <Label fontSize="1.9vh" text="Info" className="logsFiltersLabel" style={{ top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color={logFilters.info ? "#9644FF" : "#999"} bkg={logFilters.info ? "#9644FF30" : "#99999920"}></Label>
+                <Label fontSize="1.9vh" text="Warning" className="logsFiltersLabel" style={{ left: '28%', top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color={logFilters.warning ? "#FF7A00" : "#999"} bkg={logFilters.warning ? "#FF7A0030" : "#99999920"}></Label>
+                <Label fontSize="1.9vh" text="Important" className="logsFiltersLabel" style={{ left: '51%', top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color={logFilters.important ? "#FF0000" : "#999"} bkg={logFilters.important ? "#FF000030" : "#99999920"}></Label>
+                <Label fontSize="1.9vh" text="Critical" className="logsFiltersLabel" style={{ left: '74%', top: '32.34375%', height: '2.34375%', paddingRight: '0.2%', paddingLeft: '0.2%' }} color={logFilters.critical ? "#FF0099" : "#999"} bkg={logFilters.critical ? "#FF009930" : "#99999920"}></Label>
             </> : ''}
 
             {!showLogDetails.show ?
