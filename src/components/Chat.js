@@ -20,7 +20,6 @@ import MessageTypeSelector from '../components/MessageTypeSelector.js'
 import ColorMsgTypePreview from '../components/ColorMsgTypePreview.js'
 import LocationMsgTypePreview from '../components/LocationMsgTypePreview.js'
 import LocationPickerOverlay from '../components/LocationPickerOverlay.js'
-import { CollisionBoxArray } from 'maplibre-gl'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",

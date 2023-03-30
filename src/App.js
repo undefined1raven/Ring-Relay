@@ -4,6 +4,7 @@ import NewAccount from './pages/NewAccount'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import { useEffect, useState } from 'react';
+import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 
 function App() {
 
@@ -14,9 +15,20 @@ function App() {
 
   return (
     <Routes>
-      <Route exact path="newAccount" element={<NewAccount />}></Route>
-      <Route exact path="/login" element={<Login />}></Route>
-      <Route exact path="/" element={<Home />}></Route>
+      {deviceType == 'mobile' || deviceType == 'tablet' ?
+        <>
+          <Route exact path="newAccount" element={<NewAccount />}></Route>
+          <Route exact path="/login" element={<Login />}></Route>
+          <Route exact path="/" element={<Home />}></Route>
+        </> :
+        <>
+          <Route exact path="/" element={
+            <>
+              <div style={{ whiteSpace: 'nowrap', transform: 'translate(-50%, -50%)', position: 'absolute', top: '50%', left: '50%', color: '#FFF', fontSize: "2vh" }}>The Ring Relay is currently available for mobile devices only</div>
+              <div style={{ whiteSpace: 'nowrap', transform: 'translate(-50%, -50%)', position: 'absolute', top: '60%', left: '50%', color: '#AAA', fontSize: "2vh" }}>[Desktop Version In Progress]</div>
+            </>
+          }></Route>
+        </>}
     </Routes>
   );
 }
