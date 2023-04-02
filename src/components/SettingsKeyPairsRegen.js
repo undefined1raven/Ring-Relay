@@ -5,20 +5,80 @@ import KeysRegenDeco from '../components/KeysRegenDeco.js'
 import InputField from '../components/InputField.js'
 import { getKeyPair, keyToPem, getSigningKeyPair } from '../fn/crypto.js';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+import DomainGetter from '../fn/DomainGetter';
+import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
 
 
 function SettingsKeyPairsRegen(props) {
     const [input, setInput] = useState('');
     const [showPasswordPrompt, setShowPasswordPrompt] = useState('');
     const [hasNewKeys, setHasNewKeys] = useState({ ini: false, verificationSig: '', encryptionSig: '' });
+    const [pubkeyJWK, setPubkeyJWK] = useState({ ini: false, key: '' });
+    const [signingPubkeyJWK, setSigningPubkeyJWK] = useState({ ini: false, key: '' });
+    const [newPrivateKeyPEM, setNewPrivateKeyPEM] = useState({ ini: false, key: '' });
+    const [SigningNewPrivateKeyPEM, setSigningNewPrivateKeyPEM] = useState({ ini: false, key: '' });
 
+
+    const passwordVerifiedHandle = (res) => {
+        if (res.data.updatePrivateKeys == true && res.data.error == undefined) {
+            localStorage.setItem(localStorage.getItem('PKGetter'), newPrivateKeyPEM.key);
+            localStorage.setItem(`SV-${localStorage.getItem('PKGetter')}`, SigningNewPrivateKeyPEM.key);
+        }
+
+    }
+
+    const verifyPassword = () => {
+        if (input.length > 5 && pubkeyJWK.ini && signingPubkeyJWK.ini && newPrivateKeyPEM.ini && SigningNewPrivateKeyPEM.ini) {
+            var detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}` };
+            axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
+                var location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
+                axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, {
+                    rtdbPayload: props.rtdbPayload,
+                    password: input,
+                    AT: localStorage.getItem('AT'),
+                    CIP: localStorage.getItem('CIP'),
+                    regenKeys: true,
+                    pubkey: pubkeyJWK.key,
+                    signingPubKey: signingPubkeyJWK.key,
+                    location: JSON.stringify(location),
+                    details: JSON.stringify(detailsObj),
+                }).then(res => {
+                    passwordVerifiedHandle(res)
+                }).catch(e => {
+
+                })
+            }).catch(e => {
+                axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, {
+                    rtdbPayload: props.rtdbPayload,
+                    password: input,
+                    AT: localStorage.getItem('AT'),
+                    CIP: localStorage.getItem('CIP'),
+                    regenKeys: true,
+                    pubkey: pubkeyJWK.key,
+                    signingPubKey: signingPubkeyJWK.key,
+                    location: false,
+                    details: JSON.stringify(detailsObj),
+                }).then(res => {
+                    passwordVerifiedHandle(res)
+                }).catch(e => { })
+            });
+        }
+    }
 
     useEffect(() => {
-
         getKeyPair().then(keys => {
             getSigningKeyPair().then(signingKeys => {
                 window.crypto.subtle.exportKey('jwk', signingKeys.publicKey).then(signingJWK => {
                     window.crypto.subtle.exportKey('jwk', keys.publicKey).then(encryptionJWK => {
+                        keyToPem(keys.privateKey).then(newPrivateKeyPEM => {
+                            keyToPem(signingKeys.privateKey).then(newSigningPrivateKeyPEM => {
+                                setNewPrivateKeyPEM({ ini: true, key: newPrivateKeyPEM });
+                                setSigningNewPrivateKeyPEM({ ini: true, key: newSigningPrivateKeyPEM });
+                            })
+                        })
+                        setPubkeyJWK({ ini: true, key: JSON.stringify(encryptionJWK) });
+                        setSigningPubkeyJWK({ ini: true, key: JSON.stringify(signingJWK) });
                         setHasNewKeys({
                             ini: true,
                             verificationSig: `${signingJWK.x.substring(0, 4)}.${signingJWK.y.substring(signingJWK.y.length - 4, signingJWK.y.length)}`,
@@ -41,16 +101,17 @@ function SettingsKeyPairsRegen(props) {
                         <Label className="mainButtonLabel" text="Regenerate Key Pairs" color="#FF001F"></Label>
                         <KeysRegenDeco style={{ position: 'absolute', top: '-25%' }}></KeysRegenDeco>
                     </div>
-                    <Signature sigLabel="Own Encryption Key" verified={'self'} valid={true} sig="xxsq.svg2" top="80%"></Signature>
-                    <Signature sigLabel="Own SIG Verification Key" verified={'self'} valid={true} sig="xxsq.svg2" top="70%"></Signature>
+                    <Signature sigLabel="Own Encryption Key" verified={'self'} valid={props.ownKeySigs.ini} sig={props.ownKeySigs.encryptionSig} top="80%"></Signature>
+                    <Signature sigLabel="Own SIG Verification Key" verified={'self'} valid={props.ownKeySigs.ini} sig={props.ownKeySigs.verificationSig} top="70%"></Signature>
                     <Button onClick={props.onBack} className="settingsMenuButton" style={{ top: '91.875%' }} fontSize="2.3vh" color="#929292" label="Back"></Button>
                 </div>
                 {showPasswordPrompt ?
                     <div className='keyPairsRegenPasswordConfirmation'>
-                        <Label text="Regenerating your key pairs will make all current conversations unreadable and your contacts will not be able to verify your identity until they would accept the new key signatures" fontSize="1.8vh" className="keysRegenLabel" style={{ width: '90%', top: '14.0625%', height: '12.5%' }} color="#FF002E" bkg="#FF002E20"></Label>
-                        <Signature sig2={hasNewKeys.encryptionSig} doubleSig={true} height="15%" sigLabel="Own Encryption Key" verified={'self'} valid={true} sig={props.ownKeySigs.encryptionSig} top="80%"></Signature>
-                        <Button onClick={props.onBack} className="settingsMenuButton" style={{ top: '50.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E20" label="Regen Key Pairs"></Button>
-                        <Signature sig2={hasNewKeys.verificationSig} doubleSig={true} height="15%" sigLabel="Own SIG Verification Key" verified={'self'} valid={true} sig={props.ownKeySigs.verificationSig} top="70%"></Signature>
+                        <Label text="Regenerating your key pairs will make all current conversations unreadable and your contacts will not be able to verify your identity until they would accept the new key signatures" fontSize="1.8vh" className="keysRegenLabel" style={{ width: '90%', top: '5.15625%', height: '12.5%' }} color="#FF002E" bkg="#FF002E20"></Label>
+                        <Label text="Your current private keys will be overriden" fontSize="1.9vh" className="keysRegenLabel" style={{ width: '90%', top: '20.3125%', height: '6.125%' }} color="#FF002E" bkg="#FF002E20"></Label>
+                        <Signature sig2={hasNewKeys.encryptionSig} doubleSig={true} height="15%" sigLabel="Own Encryption Key" verified={'self'} valid={props.ownKeySigs.ini} sig={props.ownKeySigs.encryptionSig} top="80%"></Signature>
+                        <Button onClick={verifyPassword} className="settingsMenuButton" style={{ top: '50.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E20" label="Regen Key Pairs"></Button>
+                        <Signature sig2={hasNewKeys.verificationSig} doubleSig={true} height="15%" sigLabel="Own SIG Verification Key" verified={'self'} valid={props.ownKeySigs.ini} sig={props.ownKeySigs.verificationSig} top="70%"></Signature>
                         <Label className="passPromptLabel" text="Password" color="#9948FF" style={{ top: '32.34375%' }}></Label>
                         <InputField type="password" id="passInput" style={{ top: '36.5625%' }} color="#6300E0" onChange={(e) => setInput(e.target.value)} value={input}></InputField>
                         <Button onClick={() => { setShowPasswordPrompt(false) }} className="settingsMenuButton" style={{ top: '91.875%' }} fontSize="2.3vh" color="#929292" label="Cancel"></Button>

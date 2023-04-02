@@ -289,7 +289,6 @@ function Home() {
             try {
               const encryptionJWK = JSON.parse(localStorage.getItem('OWN-PUBK'));
               const verificationJWK = JSON.parse(localStorage.getItem('OWN-PUBSK'));
-
               if (encryptionJWK.n && verificationJWK.x) {
                 setOwnKeySigs({
                   ini: true,

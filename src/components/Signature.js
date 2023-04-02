@@ -28,7 +28,7 @@ function Signature(props) {
     }
 
     const sigLabelController = () => {
-        if (props.valid) {
+        if (props.valid == true) {
             if (props.sig2) {
                 return props.sig2;
             } else {
@@ -52,7 +52,7 @@ function Signature(props) {
                     <div className='sigcode'>
                         <Barcode format='CODE128' fontSize={0} width={1} height={props.height ? props.height : "30%"} marginBottom={props.doubleSig ? "30%" : "0%"} marginTop={props.doubleSig ? "70%" : "18%"} text="" lineColor={`${colorHash[statusLabelsController()]}DD`} background='#29005C00' value={props.valid ? props.sig2 : '-UNKNOWN-'}></Barcode>
                     </div>
-                    <BackDeco style={{ position: 'absolute', top: '41%', left: '61.4%', height: "25%", transform: 'rotate(-90deg)' }} color={colorHash[statusLabelsController()]}></BackDeco>
+                    <BackDeco style={{ position: 'absolute', top: '41%', left: '55.7%', height: "25%", transform: 'rotate(-90deg)' }} color={colorHash[statusLabelsController()]}></BackDeco>
                     <BackDeco style={{ position: 'absolute', top: '57%', left: '8%', height: "25%", transform: 'rotate(180deg)' }} color={colorHash[statusLabelsController()]}></BackDeco>
                 </> : ''}
         </div>)
