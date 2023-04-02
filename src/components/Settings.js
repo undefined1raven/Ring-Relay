@@ -20,6 +20,8 @@ import { download } from '../fn/download';
 import { v4 } from 'uuid';
 import NotificationsDialog from '../components/NotificationsDialog.js'
 import SettingsLogs from '../components/SettingsLogs.js'
+import SettingsKeyPairsRegen from '../components/SettingsKeyPairsRegen.js'
+
 const salt = window.crypto.getRandomValues(new Uint8Array(16))
 const iv = window.crypto.getRandomValues(new Uint8Array(12))
 
@@ -110,7 +112,7 @@ function Settings(props) {
 
             if (!decryptionParams.ini) {
                 setIsRefreshing(true)
-                axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
                         let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
@@ -124,7 +126,7 @@ function Settings(props) {
                                         localStorage.setItem('PKGetter', nPKGetter);
                                         localStorage.setItem(nPKGetter, exportPayloadJSON.pkPem);
                                         localStorage.setItem(`SV-${nPKGetter}`, exportPayloadJSON.pskPem);
-                                        axios.post(`${DomainGetter('prodx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                                        axios.post(`${DomainGetter('devx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                                             reloadPage();
                                         });
                                         setTimeout(() => {
@@ -218,7 +220,7 @@ function Settings(props) {
             localStorage.removeItem(localStorage.getItem('PKGetter'));
             localStorage.removeItem(`SV-${localStorage.getItem('PKGetter')}`);
             localStorage.removeItem('PKGetter');
-            axios.post(`${DomainGetter('prodx')}api/dbop?deleteAccount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(rsx => {
+            axios.post(`${DomainGetter('devx')}api/dbop?deleteAccount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(rsx => {
                 setWindowHash('/login');
             });
         }
@@ -289,7 +291,7 @@ function Settings(props) {
                     <Label className="settingsMenuLabel" id="securityLabel" text="Security" fontSize="2.4vh" color="#FFF"></Label>
                     <Button onClick={onDeviceAuth} id="authDeviceButton" className="settingsMenuButton" fontSize="1.9vh" color="#7000FF" bkg="#7000FF" label="Authenticate Another Device"></Button>
                     <Button onClick={onDeviceRemoveAuth} id="removeAuthFromDeviceButton" className="settingsMenuButton" fontSize="2vh" color="#FF002E" bkg="#FF002E" label="Distrust This Device"></Button>
-                    <Button id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pair [Coming Soon]" : '[Not Available]'}></Button>
+                    <Button onClick={() => setActiveWindowId('keysRegen')} id="regenKeyPairButton" className="settingsMenuButton" fontSize="2.3vh" color={props.privateKeyStatus ? "#7000FF" : '#5A5A5A'} bkg={props.privateKeyStatus ? "#7000FF" : ''} label={props.privateKeyStatus ? "Regenerate Key Pairs" : '[Not Available]'}></Button>
                     <Button onClick={() => setActiveWindowId('logs')} id="logsButton" className="settingsMenuButton" fontSize="2.3vh" color="#7000FF" bkg="#7000FF" label="Logs"></Button>
                     <HorizontalLine className="settingsHLine" color="#7000FF" width="89.8%" left="5%" top="87.5%"></HorizontalLine>
                 </div>
@@ -318,7 +320,7 @@ function Settings(props) {
                         <AuthDeviceScanDeco className="mainButtonDeco"></AuthDeviceScanDeco>
                     </div>
                     <Label fontSize={scanMode == 'export' ? '2vh' : '1.6vh'} id="scanFromDeviceOptionLabel" color="#7000FF" bkg="#7000FF30" className="topNoBorderRadius" text={scanMode == 'export' ? "Scan QR Codes using the target device" : 'Scan the QR Code from the device you’re exporting from'}></Label>
-                    <div onClick={() => { setActiveWindowId('fileExportID'); if(scanMode == 'export'){setAuthShareType('file.export');}else{setAuthShareType('file.import');}  if (!authed.ini) { setPasswordPrompt({ visible: true }) } }} id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
+                    <div onClick={() => { setActiveWindowId('fileExportID'); if (scanMode == 'export') { setAuthShareType('file.export'); } else { setAuthShareType('file.import'); } if (!authed.ini) { setPasswordPrompt({ visible: true }) } }} id='downloadBackupOptionButton' className='mainButton bottomNoBorderRadius'>
                         <Label className="mainButtonLabel" text={scanMode == 'export' ? 'Make a backup' : 'Load a backup'} color="#D9D9D9"></Label>
                         {scanMode == 'export' ? <AuthDeviceDownloadDeco className="mainButtonDeco"></AuthDeviceDownloadDeco> : <AuthDeviceLoadDeco className="mainButtonDeco"></AuthDeviceLoadDeco>}
                     </div>
@@ -388,6 +390,7 @@ function Settings(props) {
             <NotificationsDialog onHide={() => setActiveWindowId('home')} show={activeWindowId == 'notificationSettings'}></NotificationsDialog>
             <ChangeUsername onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changeUsername'}></ChangeUsername>
             <SettingsLogs onBack={() => setActiveWindowId('home')} show={activeWindowId == 'logs'}></SettingsLogs>
+            <SettingsKeyPairsRegen onBack={() => setActiveWindowId('home')} show={activeWindowId == 'keysRegen'}></SettingsKeyPairsRegen>
         </div>
     )
 }

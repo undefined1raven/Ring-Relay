@@ -4,7 +4,7 @@ import NewAccount from './pages/NewAccount'
 import Login from './pages/Login'
 import Home from './pages/Home'
 import { useEffect, useState } from 'react';
-import { deviceType, browserName, osName, osVersion, browserVersion } from 'react-device-detect';
+import { deviceType } from 'react-device-detect';
 
 function App() {
 

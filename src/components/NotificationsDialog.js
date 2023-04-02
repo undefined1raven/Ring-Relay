@@ -21,7 +21,7 @@ function NotificationsDialog(props) {
 
     useEffect(() => {
         setChecking(true);
-        axios.post(`${DomainGetter('prodx')}api/dbop?getNotificationsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(resx => {
+        axios.post(`${DomainGetter('devx')}api/dbop?getNotificationsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(resx => {
             if (resx.data.notificationsConfig && resx.data.error == undefined) {
                 const config = JSON.parse(resx.data.notificationsConfig);
                 setNotificationOptions({ ...config });
@@ -38,7 +38,7 @@ function NotificationsDialog(props) {
     const onGranted = () => {
         oneSig.registerForPushNotifications();
         let newPrefs = JSON.stringify(notificationOptions)
-        axios.post(`${DomainGetter('prodx')}api/dbop?updateNotificationsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newPrefs });
+        axios.post(`${DomainGetter('devx')}api/dbop?updateNotificationsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newPrefs });
 
     }
 
@@ -60,7 +60,7 @@ function NotificationsDialog(props) {
 
     const deny = () => {
         let allDeny = JSON.stringify({ messages: false, newContacts: false, security: false });
-        axios.post(`${DomainGetter('prodx')}api/dbop?updateNotificationsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: allDeny });
+        axios.post(`${DomainGetter('devx')}api/dbop?updateNotificationsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: allDeny });
         props.onHide();
     }
 

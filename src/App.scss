@@ -1375,7 +1375,16 @@ rect {
   position: absolute;
   top: 49%;
 }
-
+.keysRegenLabel{
+  height: 8.84375%;
+  border-radius: 5px;
+  @include flex();
+  @include VAlign();
+  text-align: center;
+}
+.keysRegenDecoComponent{
+  transition: all ease-in-out 0.15s;
+}
 .bottomNoBorderRadius {
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
