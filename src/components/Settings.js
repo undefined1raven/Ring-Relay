@@ -390,7 +390,7 @@ function Settings(props) {
             <NotificationsDialog onHide={() => setActiveWindowId('home')} show={activeWindowId == 'notificationSettings'}></NotificationsDialog>
             <ChangeUsername onCancel={() => setActiveWindowId('home')} show={activeWindowId == 'changeUsername'}></ChangeUsername>
             <SettingsLogs onBack={() => setActiveWindowId('home')} show={activeWindowId == 'logs'}></SettingsLogs>
-            <SettingsKeyPairsRegen onBack={() => setActiveWindowId('home')} show={activeWindowId == 'keysRegen'}></SettingsKeyPairsRegen>
+            <SettingsKeyPairsRegen ownKeySigs={props.ownKeySigs} onBack={() => setActiveWindowId('home')} show={activeWindowId == 'keysRegen'}></SettingsKeyPairsRegen>
         </div>
     )
 }

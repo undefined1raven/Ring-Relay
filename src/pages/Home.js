@@ -58,8 +58,7 @@ function Home() {
   const [hasPubKeys, setHasPubKeys] = useState({ ini: false, last: 0 });
   const refsCache = localStorage.getItem(`refs-${localStorage.getItem('ownUID')}`);
   const [messageCountHash, setmessageCountHash] = useState({ ini: false, hash: {}, last: 0 });
-  const [contactStatusIntervalEnabled, setContactStatusIntervalEnabled] = useState(false);
-  const [newMessageCountsIntervalEnabled, setNewMessageCountsIntervalEnabled] = useState(false);
+  const [ownKeySigs, setOwnKeySigs] = useState({ ini: false, verificationSig: '', encryptionSig: '' });
   const [ownMessageBuffer, setOwnMessageBuffer] = useState(0);
   const [isTypingLastUnix, setIsTypingLastUnix] = useState(0);
   const [showIsTyping, setShowIsTyping] = useState(false)
@@ -286,6 +285,25 @@ function Home() {
           localStorage.setItem('PKGetter', res.data.PKGetter);
           let PKGetter = res.data.PKGetter;
           if (PKGetter != undefined && localStorage.getItem(PKGetter) != undefined && localStorage.getItem(`SV-${PKGetter}`) != undefined) {
+
+            try {
+              const encryptionJWK = JSON.parse(localStorage.getItem('OWN-PUBK'));
+              const verificationJWK = JSON.parse(localStorage.getItem('OWN-PUBSK'));
+
+              if (encryptionJWK.n && verificationJWK.x) {
+                setOwnKeySigs({
+                  ini: true,
+                  encryptionSig: `${encryptionJWK.n.substring(0, 4)}.${encryptionJWK.n.substring(encryptionJWK.n.length - 4, encryptionJWK.n.length)}`,
+                  verificationSig: `${verificationJWK.x.substring(0, 4)}.${verificationJWK.y.substring(verificationJWK.y.length - 4, verificationJWK.y.length)}`
+                })
+              }
+            } catch (e) {
+              setOwnKeySigs({
+                ini: false,
+                encryptionSig: `xx`,
+                verificationSig: `xx`
+              })
+            }
             pemToKey(localStorage.getItem(PKGetter)).then(pk => {
               pemToKey(localStorage.getItem(`SV-${PKGetter}`), 'ECDSA').then(signPK => {
                 if (pk.algorithm.name == 'RSA-OAEP' && signPK.algorithm.name == 'ECDSA') {
@@ -387,7 +405,7 @@ function Home() {
       <Chats refreshing={refreshingRefs} onRefresh={refreshRefs} switchToNewContactSection={switchToNewContacts} keyStatus={privateKeyStatus} refs={refs} onChatSelected={(uid) => onChatSelected(uid)} show={windowId == 'chats'} wid={windowId}></Chats>
       {windowId == 'chat' ? <Chat isTypingLastUnix={isTypingLastUnix} showIsTyping={showIsTyping} ownMessageBuffer={ownMessageBuffer} privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} ownUID={ownUID} visible={windowId == 'chat'} onBackButton={onBackButton} show={windowId == 'chat'} chatObj={chatObj}></Chat> : ''}
       {windowId == 'newContact' ? <NewContact refreshRefs={refreshRefs} show={windowId == 'newContact'}></NewContact> : ''}
-      {windowId == 'settings' ? <Settings privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}
+      {windowId == 'settings' ? <Settings ownKeySigs={ownKeySigs} privateKeyStatus={privateKeyStatus.found && privateKeyStatus.valid} user={{ username: currentUsername, ownUID: ownUID }} show={windowId == 'settings'}></Settings> : ''}
     </div>
   );
 }
