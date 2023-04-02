@@ -204,7 +204,7 @@ function Chat(props) {
 
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
-        axios.post(`${DomainGetter('devx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount.count }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount.count }).then(res => {
             if (res.data['error'] == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
@@ -219,7 +219,7 @@ function Chat(props) {
                     }
                 }
                 if (lastRXMID != '') {
-                    axios.post(`${DomainGetter('devx')}api/dbop?setLastSeenMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: lastRXMID, MSUID: res.data.MSUID });
+                    axios.post(`${DomainGetter('prodx')}api/dbop?setLastSeenMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: lastRXMID, MSUID: res.data.MSUID });
                 }
             }
 
@@ -230,7 +230,7 @@ function Chat(props) {
     useEffect(() => {
         setFetchingOlderMessages(true);
         scrollToTop();
-        axios.post(`${DomainGetter('devx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: MSUID, count: 30, offset: msgCount.count, targetUID: props.chatObj.uid }).then(async (resx) => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: MSUID, count: 30, offset: msgCount.count, targetUID: props.chatObj.uid }).then(async (resx) => {
             if (resx.data.error == undefined) {
                 let rawMsgPrependArr = resx.data.messages;
                 rawMsgPrependArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) });
@@ -317,7 +317,7 @@ function Chat(props) {
                                     set(ref(db, `messageBuffer/${props.chatObj.uid}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
                                     set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
                                     if (!ghostModeEnabled) {
-                                        axios.post(`${DomainGetter('devx')}api/dbop?messageSent`, {
+                                        axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                                             AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
                                         }).then(res => { }).catch(e => {
                                             setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
@@ -348,7 +348,7 @@ function Chat(props) {
 
         setRealtimeBufferList(realtimeBuffer.filter(elm => elm.MID != MID).map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
-        axios.post(`${DomainGetter('devx')}api/dbop?deleteMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: MID, MSUID: MSUID }).then(resx => { }).catch(e => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?deleteMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: MID, MSUID: MSUID }).then(resx => { }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1, label: 'Failed to delete' }); setTimeout(() => {
                 setFailedMessageActionLabel({ opacity: 0, label: 'Message Action Failed' })
             }, 2000);
@@ -358,7 +358,7 @@ function Chat(props) {
     const likeMessageUpdate = (args) => {
         update(ref(db, `messageBuffer/${props.ownUID}/liked/${args.MID}`), { state: args.state })
         update(ref(db, `messageBuffer/${props.chatObj.uid}/liked/${args.MID}`), { state: args.state })
-        axios.post(`${DomainGetter('devx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
 
         }).catch(e => {
             setFailedMessageActionLabel({ opacity: 1 })
@@ -476,7 +476,7 @@ function Chat(props) {
                 for (let ix = 0; ix < realtimeBuffer.length; ix++) {
                     if (realtimeBuffer[ix].MID == lastRTBufMID) {
                         updatedRTBuf.push({ ...realtimeBuffer[ix], seen: true });
-                        axios.post(`${DomainGetter('devx')}api/dbop?setLastSeenMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: lastRTBufMID, MSUID: MSUID });
+                        axios.post(`${DomainGetter('prodx')}api/dbop?setLastSeenMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: lastRTBufMID, MSUID: MSUID });
                     } else {
                         updatedRTBuf.push({ ...realtimeBuffer[ix] });
                     }
