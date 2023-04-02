@@ -73,6 +73,8 @@ function SettingsKeyPairsRegen(props) {
                     window.crypto.subtle.exportKey('jwk', keys.publicKey).then(encryptionJWK => {
                         keyToPem(keys.privateKey).then(newPrivateKeyPEM => {
                             keyToPem(signingKeys.privateKey).then(newSigningPrivateKeyPEM => {
+                                console.log(newPrivateKeyPEM)
+                                console.log(newSigningPrivateKeyPEM)
                                 setNewPrivateKeyPEM({ ini: true, key: newPrivateKeyPEM });
                                 setSigningNewPrivateKeyPEM({ ini: true, key: newSigningPrivateKeyPEM });
                             })
