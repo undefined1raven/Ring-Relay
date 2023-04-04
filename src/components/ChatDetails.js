@@ -19,8 +19,8 @@ function ChatDetails(props) {
         <HorizontalLine className="convoDetailsLn" top="68.75%" width="97.5%" color="#7100FF"></HorizontalLine>
 
         <Signature sigLabel="Conversation Signature" valid={props.conversationSig.ini && props.conversationSig.sig?.length == 9} verified={props.conversationSig.verified} sig={props.conversationSig.sig} top="71.875%"></Signature>
-        <Signature sigLabel="Remote SIG Verification Key" valid={props.remoteSigningKeySig.ini & props.remoteSigningKeySig.sig?.length == 9} verified={true} sig={props.remoteSigningKeySig.sig} top="81.40625%"></Signature>
-        <Signature sigLabel="Remote Encryption Key" valid={props.remoteEncryptionKeySig.ini & props.remoteEncryptionKeySig.sig?.length == 9} verified={true} sig={props.remoteEncryptionKeySig.sig} top="90.9375%"></Signature>
+        <Signature sigLabel="Remote SIG Verification Key" valid={props.remoteSigningKeySig.valid} verified={props.remoteSigningKeySig.verified} sig={props.remoteSigningKeySig.sig} top="81.40625%"></Signature>
+        <Signature sigLabel="Remote Encryption Key" valid={props.remoteEncryptionKeySig.ini & props.remoteEncryptionKeySig.sig?.length == 9} verified={props.remoteEncryptionKeySig.verified} sig={props.remoteEncryptionKeySig.sig} top="90.9375%"></Signature>
     </>)
 }
 export default ChatDetails;

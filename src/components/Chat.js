@@ -56,6 +56,7 @@ function Chat(props) {
     const [msgCount, setMsgCount] = useState({ count: 30, last: Date.now() })
     const [MSUID, setMSUID] = useState('')
     const [PKSH, setPKSH] = useState('')
+    const [SPKSH, setSPKSH] = useState('')
     const [chatLoadingLabel, setChatLoadingLabel] = useState({ label: '[Fetching Conversation]', opacity: 1 });
     const [failedMessageActionLabel, setFailedMessageActionLabel] = useState({ opacity: 0, label: 'Message Action Failed' })
     const [realtimeBuffer, setRealtimeBuffer] = useState([])
@@ -93,6 +94,28 @@ function Chat(props) {
             let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.uid}`);
             let rawOwnEncryptionPukKey = localStorage.getItem(`OWN-PUBK`);
 
+            let rawRemoteSigningPukKey = localStorage.getItem(`PUBSK-${props.chatObj.uid}`);
+            let rawOwnSigningPukKey = localStorage.getItem(`OWN-PUBSK`);
+
+            let remotePublicSigningKeyJWK = { x: 'xxxx', y: 'xxxx' };
+            let ownPublicSigningKeyJWK = { x: 'xxxx', y: 'xxxx' };
+
+
+            try {
+                if (rawRemoteSigningPukKey != undefined) {
+                    remotePublicSigningKeyJWK = JSON.parse(rawRemoteSigningPukKey)
+                }
+            } catch (e) { }
+
+            try {
+                if (rawOwnSigningPukKey != undefined) {
+                    ownPublicSigningKeyJWK = JSON.parse(rawOwnSigningPukKey)
+                }
+            } catch (e) { }
+
+            let lSPKSH0 = `${ownPublicSigningKeyJWK.x.toString().substring(0, 5)}.${remotePublicSigningKeyJWK.y.toString().substring(0, 5)}`;
+            let lSPKSH1 = `${remotePublicSigningKeyJWK.x.toString().substring(0, 5)}.${ownPublicSigningKeyJWK.y.toString().substring(0, 5)}`;
+
             let remotePublicEncryptionKeyJWK = { n: 'xxxx' };
             if (rawRemoteEncryptionPukKey != undefined) {
                 remotePublicEncryptionKeyJWK = JSON.parse(rawRemoteEncryptionPukKey);
@@ -105,21 +128,37 @@ function Chat(props) {
             let lPKSH0 = `${rawOwnEncryptionPukKeyJWK?.n.toString().substring(0, 5)}.${remotePublicEncryptionKeyJWK?.n.toString().substring(0, 5)}`;
             let lPKSH1 = `${remotePublicEncryptionKeyJWK?.n.toString().substring(0, 5)}.${rawOwnEncryptionPukKeyJWK?.n.toString().substring(0, 5)}`;
 
+            let signingKeysSIGMatch = false;
+
+            if (SPKSH != null && SPKSH != undefined) {
+                if (lSPKSH0 == SPKSH || lSPKSH1 == SPKSH) {
+                    signingKeysSIGMatch = true;
+                    setRemoteSigningKeySig({ valid: true, verified: true, ini: true, sig: `${SPKSH.substring(0, 4)}+${SPKSH.substring(SPKSH.length - 5, SPKSH.length - 1)}` })
+                } else {
+                    signingKeysSIGMatch = false;
+                    setRemoteSigningKeySig({ valid: true, verified: false, ini: true, sig: `${SPKSH.substring(0, 4)}+${SPKSH.substring(SPKSH.length - 5, SPKSH.length - 1)}` })
+                }
+            } else {
+                setRemoteSigningKeySig({ valid: false, verified: false, ini: true, sig: `${'xxxxx'}` })
+                signingKeysSIGMatch = false;
+            }
+
+
             if (lPKSH0 == PKSH || lPKSH1 == PKSH) {
-                setConversationSig({ verified: true, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
+                if (signingKeysSIGMatch) {
+                    setConversationSig({ verified: true, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
+                    setRemoteEncryptionKeySig({ verified: true, ini: true, sig: `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
+                } else {
+                    setConversationSig({ verified: false, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
+                    setRemoteEncryptionKeySig({ verified: true, ini: true, sig: `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
+                }
             } else {
                 setConversationSig({ verified: false, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
+                setRemoteEncryptionKeySig({ verified: false, ini: true, sig: `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
             }
 
-            if (remotePublicEncryptionKeyJWK.n != undefined) {
-                setRemoteEncryptionKeySig({ ini: true, sig: `${remotePublicEncryptionKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
-            }
-
-            if (publicSigningKeyJWK?.x != undefined) {
-                setRemoteSigningKeySig({ ini: true, sig: `${publicSigningKeyJWK.x.toString().substring(0, 4)}+${publicSigningKeyJWK.y.toString().substring(0, 4)}` })
-            }
         }
-    }, [PKSH])
+    }, [PKSH, SPKSH])
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -211,6 +250,7 @@ function Chat(props) {
                 rawMsgArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
                 setMSUID(res.data.MSUID);
                 setPKSH(res.data.PKSH);
+                setSPKSH(res.data.SPKSH);
                 initialFetch(rawMsgArr);
                 let lastRXMID = ''
                 for (let ix = 0; ix < rawMsgArr.length; ix++) {
@@ -753,8 +793,8 @@ function Chat(props) {
                     {chatLoadingLabel.label == '[No Messages]' ?
                         <>
                             <Signature sigLabel="Conversation Signature" valid={conversationSig.ini && conversationSig.sig?.length == 9} verified={conversationSig.verified} sig={conversationSig.sig} top="52%"></Signature>
-                            <Signature sigLabel="Remote SIG Verification Key" valid={remoteSigningKeySig.ini && remoteSigningKeySig.sig?.length == 9} verified={true} sig={remoteSigningKeySig.sig} top="62%"></Signature>
-                            <Signature sigLabel="Remote Encryption Key" valid={remoteEncryptionKeySig.ini && remoteEncryptionKeySig.sig?.length == 9} verified={true} sig={remoteEncryptionKeySig.sig} top="72%"></Signature>
+                            <Signature sigLabel="Remote SIG Verification Key" valid={remoteSigningKeySig.valid} verified={remoteSigningKeySig.verified} sig={remoteSigningKeySig.sig} top="62%"></Signature>
+                            <Signature sigLabel="Remote Encryption Key" valid={remoteEncryptionKeySig.ini && remoteEncryptionKeySig.sig?.length == 9} verified={remoteEncryptionKeySig.verified} sig={remoteEncryptionKeySig.sig} top="72%"></Signature>
                         </> : ''}
                     <Label className="chatLoadingStatus" fontSize="2.1vh" bkg="#001AFF30" color="#001AFF" text={chatLoadingLabel.label} style={{ opacity: chatLoadingLabel.opacity }}></Label>
                     <Label className="failedMessageAction" fontSize="2.1vh" bkg="#FF002E30" color="#FF002E" text={failedMessageActionLabel.label} style={{ backdropFilter: 'blur(5px)', opacity: failedMessageActionLabel.opacity }}></Label>
