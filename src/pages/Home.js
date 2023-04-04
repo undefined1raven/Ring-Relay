@@ -143,7 +143,7 @@ function Home() {
 
 
   useEffect(() => {
-    if (Date.now() - isTypingLastUnix.tx > 500) {
+    if (Date.now() - isTypingLastUnix.tx > 300) {
       setOwnMessageBuffer({ ...typingTruncatedBuffer })
     }
   }, [typingTruncatedBuffer])
@@ -188,13 +188,13 @@ function Home() {
           } else {
             updatedRefsWithStatus.push({ ...refs.arr[ix], status: lstat });
           }
+          if (ix == refs.arr.length - 1) {
+            if (refs.arr.length == updatedRefsWithStatus.length) {
+              setRefs({ ini: true, arr: updatedRefsWithStatus })
+            }
+          }
         })
       }
-      setTimeout(() => {
-        if (refs.arr.length == updatedRefsWithStatus.length) {
-          setRefs({ ini: true, arr: updatedRefsWithStatus })
-        }
-      }, 200);
     }
   }
 

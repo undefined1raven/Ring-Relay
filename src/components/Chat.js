@@ -20,6 +20,7 @@ import MessageTypeSelector from '../components/MessageTypeSelector.js'
 import ColorMsgTypePreview from '../components/ColorMsgTypePreview.js'
 import LocationMsgTypePreview from '../components/LocationMsgTypePreview.js'
 import LocationPickerOverlay from '../components/LocationPickerOverlay.js'
+import SignatureMismatchDialog from './SignatureMismatchDialog.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -86,6 +87,7 @@ function Chat(props) {
     const [selectedLocation, setSelectedLocation] = useState({ ini: false, locationObj: {} });
     const [messageTypeSelectorTop, setMessageTypeSelectorTop] = useState('86.79375%');
     const [showLocationMsgPreview, setShowLocationMsgPreview] = useState(false);
+    const [showSignatureMismatchDialog, setShowSignatureMismatchDialog] = useState(false);
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
 
@@ -146,13 +148,16 @@ function Chat(props) {
 
             if (lPKSH0 == PKSH || lPKSH1 == PKSH) {
                 if (signingKeysSIGMatch) {
+                    setShowSignatureMismatchDialog(false);
                     setConversationSig({ verified: true, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
                     setRemoteEncryptionKeySig({ verified: true, ini: true, sig: `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
                 } else {
+                    setShowSignatureMismatchDialog(true);
                     setConversationSig({ verified: false, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
                     setRemoteEncryptionKeySig({ verified: true, ini: true, sig: `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
                 }
             } else {
+                setShowSignatureMismatchDialog(true);
                 setConversationSig({ verified: false, ini: true, sig: `${PKSH.substring(0, 4)}+${PKSH.substring(PKSH.length - 5, PKSH.length - 1)}` })
                 setRemoteEncryptionKeySig({ verified: false, ini: true, sig: `${rawOwnEncryptionPukKeyJWK.n.toString().substring(0, 4)}+${remotePublicEncryptionKeyJWK.n.toString().substring(29, 33)}` })
             }
@@ -759,6 +764,7 @@ function Chat(props) {
         }
     }
 
+
     if (props.show) {
         return (
             <div className="chatContainer">
@@ -802,6 +808,7 @@ function Chat(props) {
                 </>
                     :
                     <ChatDetails ghost={ghostModeEnabled} ghostModeToggle={ghostModeToggle} tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
+                <SignatureMismatchDialog onHideSigMismatchDialog={() => setShowSignatureMismatchDialog(false)} show={showSignatureMismatchDialog}></SignatureMismatchDialog>
             </div>
         )
     } else {
