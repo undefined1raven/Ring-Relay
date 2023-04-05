@@ -18,18 +18,24 @@ function SettingsKeyPairsRegen(props) {
     const [signingPubkeyJWK, setSigningPubkeyJWK] = useState({ ini: false, key: '' });
     const [newPrivateKeyPEM, setNewPrivateKeyPEM] = useState({ ini: false, key: '' });
     const [SigningNewPrivateKeyPEM, setSigningNewPrivateKeyPEM] = useState({ ini: false, key: '' });
-
+    const [updating, setUpdating] = useState({ status: false, label: 'Regen Key Pairs' });
 
     const passwordVerifiedHandle = (res) => {
         if (res.data.updatePrivateKeys == true && res.data.error == undefined) {
             localStorage.setItem(localStorage.getItem('PKGetter'), newPrivateKeyPEM.key);
             localStorage.setItem(`SV-${localStorage.getItem('PKGetter')}`, SigningNewPrivateKeyPEM.key);
+            window.location.reload();
+        } else if (!res.data.updatePrivateKeys || res.data.error != undefined) {
+            setUpdating({ status: false, label: 'Action Failed' });
+            setTimeout(() => {
+                setUpdating({ status: false, label: 'Regen Key Pairs' });
+            }, 2000);
         }
-
     }
 
     const verifyPassword = () => {
-        if (input.length > 5 && pubkeyJWK.ini && signingPubkeyJWK.ini && newPrivateKeyPEM.ini && SigningNewPrivateKeyPEM.ini) {
+        if (input.length > 5 && pubkeyJWK.ini && signingPubkeyJWK.ini && newPrivateKeyPEM.ini && SigningNewPrivateKeyPEM.ini && !updating.status) {
+            setUpdating({ status: true, label: '[Verifying]' });
             var detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}` };
             axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
                 var location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
@@ -44,9 +50,9 @@ function SettingsKeyPairsRegen(props) {
                     location: JSON.stringify(location),
                     details: JSON.stringify(detailsObj),
                 }).then(res => {
-                    passwordVerifiedHandle(res)
+                    passwordVerifiedHandle(res);
                 }).catch(e => {
-
+                    setUpdating({ status: false, label: 'Regen Key Pairs' });
                 })
             }).catch(e => {
                 axios.post(`${DomainGetter('prodx')}api/dbop?verifyPassword`, {
@@ -61,8 +67,15 @@ function SettingsKeyPairsRegen(props) {
                     details: JSON.stringify(detailsObj),
                 }).then(res => {
                     passwordVerifiedHandle(res)
-                }).catch(e => { })
+                }).catch(e => {
+                    setUpdating({ status: false, label: 'Regen Key Pairs' });
+                })
             });
+        } else if (input.length < 5) {
+            setUpdating({ status: false, label: 'Invalid Input' });
+            setTimeout(() => {
+                setUpdating({ status: false, label: 'Regen Key Pairs' });
+            }, 2000);
         }
     }
 
@@ -110,7 +123,7 @@ function SettingsKeyPairsRegen(props) {
                         <Label text="Regenerating your key pairs will make all current conversations unreadable and your contacts will not be able to verify your identity until they would accept the new key signatures" fontSize="1.8vh" className="keysRegenLabel" style={{ width: '90%', top: '5.15625%', height: '12.5%' }} color="#FF002E" bkg="#FF002E20"></Label>
                         <Label text="Your current private keys will be overriden" fontSize="1.9vh" className="keysRegenLabel" style={{ width: '90%', top: '20.3125%', height: '6.125%' }} color="#FF002E" bkg="#FF002E20"></Label>
                         <Signature sig2={hasNewKeys.encryptionSig} doubleSig={true} height="15%" sigLabel="Own Encryption Key" verified={'self'} valid={props.ownKeySigs.ini} sig={props.ownKeySigs.encryptionSig} top="80%"></Signature>
-                        <Button onClick={verifyPassword} className="settingsMenuButton" style={{ top: '50.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E20" label="Regen Key Pairs"></Button>
+                        <Button onClick={verifyPassword} className="settingsMenuButton" style={{ top: '50.625%' }} fontSize="2.3vh" color="#FF002E" bkg="#FF002E20" label={updating.label}></Button>
                         <Signature sig2={hasNewKeys.verificationSig} doubleSig={true} height="15%" sigLabel="Own SIG Verification Key" verified={'self'} valid={props.ownKeySigs.ini} sig={props.ownKeySigs.verificationSig} top="70%"></Signature>
                         <Label className="passPromptLabel" text="Password" color="#9948FF" style={{ top: '32.34375%' }}></Label>
                         <InputField type="password" id="passInput" style={{ top: '36.5625%' }} color="#6300E0" onChange={(e) => setInput(e.target.value)} value={input}></InputField>
