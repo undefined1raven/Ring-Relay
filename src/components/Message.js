@@ -173,7 +173,7 @@ function Message(props) {
                     <div className='signatureContainer'>
                         {/* {(props.msgObj.signed == true || props.msgObj.signed == 'self' || props.msgObj.signed == 'local') ? <SignatureVerificatioSuccessDeco color={SignatureSuccessDecoColorHash[props.msgObj.signed]} className="sigIndi" /> : <SignatureVerificationFailedDeco className="sigIndi" />} */}
                     </div>
-                    <Label bkg={`${ghost ? '#0500FF50' : SignatureSuccessDecoColorHash[props.msgObj.signed] + '30'}`} fontSize="2.5vw" className="sigLabel" color={ghost ? "#FFF" : sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
+                    <Label bkg={`${ghost ? '#0500FF50' : `${sigLabelHash[props.msgObj.signed]?.color}30`}`} fontSize="2.5vw" className="sigLabel" color={ghost ? "#FFF" : sigLabelHash[props.msgObj.signed]?.color} text={sigLabelHash[props.msgObj.signed]?.label} />
                     <Label className="msgDate" bkg={ghost ? '#0500FF50' : "#6100DC20"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateUnix.getDate().toString().padStart(2, '0')}.${(parseInt(msgDateUnix.getMonth()) + 1).toString().padStart(2, '0')} [${msgDateUnix.getFullYear().toString().substring(2, 4)}]`} fontSize="2.5vw"></Label>
                     {/* <VerticalLine height="2.3vh" color="#6100DC40" left="50%" top="7vh" /> */}
                 </>
@@ -224,7 +224,6 @@ function Message(props) {
     const sigLabelHash = {
         local: { label: 'Local ▣', color: '#7000FF' }, 'self': { label: '[Own SIG]', color: '#00FFD1' }, 'no_self': { label: '[OSIG_F]', color: '#f39e00' }, true: { label: '[Signed]', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
     };
-    const SignatureSuccessDecoColorHash = { 'self': '#00FFD1', true: '#00FFD1', 'local': '#7000FF' }
 
     return (
         <div>

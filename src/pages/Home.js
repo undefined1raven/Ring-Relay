@@ -46,7 +46,7 @@ function Home() {
   const [windowId, setWindowId] = useState('chats');
   const [windowHash, setWindowHash] = useState('/');
   const [refs, setRefs] = useState({ ini: false, arr: [] });
-  const [chatObj, setChatObj] = useState({ uid: '', name: '', status: '', since: '' });
+  const [chatObj, setChatObj] = useState({ remoteUID: '', name: '', status: '', since: '' });
   const [currentUsername, setCurrentUsername] = useState(0);
   const [ownUID, setOwnUID] = useState(0);
   const [privateKeyStatus, setPrivateKeyStatus] = useState({ found: false, valid: false, ini: false });
@@ -83,7 +83,7 @@ function Home() {
     for (let ix = 0; ix < refs.arr.length; ix++) {
       if (refs.arr[ix].uid == uid) {
         remove(ref(db, `messageBuffer/${ownUID}`));
-        setChatObj({ uid: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since, tx: refs.arr[ix].tx })
+        setChatObj({ remoteUID: uid, name: refs.arr[ix].name, status: refs.arr[ix].status, since: refs.arr[ix].since, tx: refs.arr[ix].tx })
       }
     }
   }
@@ -100,12 +100,12 @@ function Home() {
         setWindowId('chat')
       }, 50)
     } else {
-      setChatObj({ uid: '', name: '', status: '', since: '', tx: '' })
+      setChatObj({ remoteUID: '', name: '', status: '', since: '', tx: '' })
     }
   }
 
   useEffect(() => {
-    if (chatObj.uid != '' && windowId != 'newContact') {
+    if (chatObj.remoteUID != '' && windowId != 'newContact') {
       setWindowId('chat');
     }
   });
@@ -153,7 +153,7 @@ function Home() {
       if (isTypingLastUnix.tx) {
         if (Date.now() - isTypingLastUnix.tx > 500) {
           setShowIsTyping(false)
-          remove(ref(db, `messageBuffer/${chatObj.uid}/typing`));
+          remove(ref(db, `messageBuffer/${chatObj.remoteUID}/typing`));
         } else {
           setShowIsTyping(true)
           scrollToBottom();

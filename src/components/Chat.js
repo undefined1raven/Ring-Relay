@@ -89,14 +89,14 @@ function Chat(props) {
     const [showLocationMsgPreview, setShowLocationMsgPreview] = useState(false);
     const [showSignatureMismatchDialog, setShowSignatureMismatchDialog] = useState(false);
     let privateKeyID = localStorage.getItem('PKGetter');
-    let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.uid}`));
+    let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`));
 
     useEffect(() => {
         if (!PKSH == '') {
-            let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.uid}`);
+            let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.remoteUID}`);
             let rawOwnEncryptionPukKey = localStorage.getItem(`OWN-PUBK`);
 
-            let rawRemoteSigningPukKey = localStorage.getItem(`PUBSK-${props.chatObj.uid}`);
+            let rawRemoteSigningPukKey = localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`);
             let rawOwnSigningPukKey = localStorage.getItem(`OWN-PUBSK`);
 
             let remotePublicSigningKeyJWK = { x: 'xxxx', y: 'xxxx' };
@@ -220,7 +220,7 @@ function Chat(props) {
                 }
             }
             try {
-                if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
+                if (localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`) != undefined) {
                     pemToKey(localStorage.getItem(privateKeyID)).then(privateKey => {
                         JSONtoKey(JSON.parse(localStorage.getItem('OWN-PUBSK')), 'ECDSA').then(ownPUBSK => {
                             window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
@@ -248,7 +248,7 @@ function Chat(props) {
 
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
-        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.uid, count: msgCount.count }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.remoteUID, count: msgCount.count }).then(res => {
             if (res.data['error'] == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
@@ -275,14 +275,14 @@ function Chat(props) {
     useEffect(() => {
         setFetchingOlderMessages(true);
         scrollToTop();
-        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: MSUID, count: 30, offset: msgCount.count, targetUID: props.chatObj.uid }).then(async (resx) => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: MSUID, count: 30, offset: msgCount.count, targetUID: props.chatObj.remoteUID }).then(async (resx) => {
             if (resx.data.error == undefined) {
                 let rawMsgPrependArr = resx.data.messages;
                 rawMsgPrependArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) });
                 if (resx.data.start) {
                     setScrolledToStart(resx.data.start);
                 }
-                if (localStorage.getItem(`PUBSK-${props.chatObj.uid}`) != undefined) {
+                if (localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`) != undefined) {
                     pemToKey(localStorage.getItem(privateKeyID)).then((privateKey) => {
                         JSONtoKey(JSON.parse(localStorage.getItem('OWN-PUBSK')), 'ECDSA').then((ownPUBSK) => {
                             window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(async (pubSigningKey) => {
@@ -332,7 +332,7 @@ function Chat(props) {
             setSelectedMsgType('text');
         }
         if (LocalMsgContent != 0) {
-            let local_nMsgObj = { contentType: selectedMsgType, type: 'tx', signed: 'self', targetUID: props.chatObj.uid, MID: MID, content: LocalMsgContent, tx: Date.now(), auth: true, seen: false, liked: false }
+            let local_nMsgObj = { contentType: selectedMsgType, type: 'tx', signed: 'self', targetUID: props.chatObj.remoteUID, MID: MID, content: LocalMsgContent, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
             setRealtimeBuffer((prevBuf) => {
                 return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
@@ -341,7 +341,7 @@ function Chat(props) {
         setTimeout(() => {
             filterDeletedMessages('159');
         }, 50);
-        window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.uid}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
+        window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.remoteUID}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
             window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
                 let messageContentsObj = { contentType: '', content: '' };
                 if (selectedMsgType == 'text') {
@@ -358,8 +358,8 @@ function Chat(props) {
                         encryptMessage(ownPubkey, JSON.stringify(messageContentsObj)).then(ownCipher => {
                             pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
                                 sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
-                                    let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.uid, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
-                                    set(ref(db, `messageBuffer/${props.chatObj.uid}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
+                                    let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
+                                    set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
                                     set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
                                     if (!ghostModeEnabled) {
                                         axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
@@ -387,7 +387,7 @@ function Chat(props) {
 
     const deleteMessage = (MID) => {
         set(ref(db, `messageBuffer/${props.ownUID}/deleted/${MID}`), { tx: Date.now() });
-        set(ref(db, `messageBuffer/${props.chatObj.uid}/deleted/${MID}`), { tx: Date.now() });
+        set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/deleted/${MID}`), { tx: Date.now() });
 
         setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
@@ -402,7 +402,7 @@ function Chat(props) {
 
     const likeMessageUpdate = (args) => {
         update(ref(db, `messageBuffer/${props.ownUID}/liked/${args.MID}`), { state: args.state })
-        update(ref(db, `messageBuffer/${props.chatObj.uid}/liked/${args.MID}`), { state: args.state })
+        update(ref(db, `messageBuffer/${props.chatObj.remoteUID}/liked/${args.MID}`), { state: args.state })
         axios.post(`${DomainGetter('prodx')}api/dbop?likeMessage`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), state: args.state, MID: args.MID, MSUID: MSUID }).then(resx => {
 
         }).catch(e => {
@@ -443,7 +443,7 @@ function Chat(props) {
                 }
             }
             if (lastRXMID != '') {
-                set(ref(db, `messageBuffer/${props.chatObj.uid}/seen/${props.ownUID}`), { MID: lastRXMID, status: false });
+                set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/seen/${props.ownUID}`), { MID: lastRXMID, status: false });
             }
 
             setRealtimeBufferList(realtimeBuffer.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
@@ -458,7 +458,7 @@ function Chat(props) {
         if (!msgArray.ini && props.visible) {
             getMessagesAndUpdateChat();
             interval = setInterval(() => {
-                get(ref(db, `activeUIDs/${props.chatObj.uid}`)).then(snap => {
+                get(ref(db, `activeUIDs/${props.chatObj.remoteUID}`)).then(snap => {
                     const lastTx = snap.val()
                     if (lastTx != null) {
                         if (Date.now() - lastTx.tx < 5000) {
@@ -466,7 +466,7 @@ function Chat(props) {
                             setStatusProps({ color: '#00FF85' })
                         } else {
                             setStatusOverride('Offline')
-                            remove(ref(db, `activeUIDs/${props.chatObj.uid}`));
+                            remove(ref(db, `activeUIDs/${props.chatObj.remoteUID}`));
                             setStatusProps({ color: '#FF002E' })
                         }
                     } else {
@@ -560,7 +560,7 @@ function Chat(props) {
 
 
     const onNewMessageContent = (e) => {
-        set(ref(db, `messageBuffer/${props.chatObj.uid}/typing`), { status: true, targetUID: props.chatObj.uid, tx: Date.now(), ghost: ghostModeEnabled });
+        set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/typing`), { status: true, targetUID: props.chatObj.remoteUID, tx: Date.now(), ghost: ghostModeEnabled });
         setNewMessageContents(e.target.value);
         let inputActual = document.getElementById('msgInputActual');
         let overflowDelta = inputActual.scrollHeight - inputActual.clientHeight;
@@ -599,7 +599,7 @@ function Chat(props) {
                             window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
                                 for (let ix = 0; ix < RTrawMessagesArray.length; ix++) {//looping over 3 messages everytime we have an update from the realtime buffer is way simpler than tracking what we're displaying by the Message ID (MID)
                                     let rawMsg = RTrawMessagesArray[ix];
-                                    if (rawMsg.targetUID == props.ownUID && rawMsg?.originUID == props.chatObj.uid) {
+                                    if (rawMsg.targetUID == props.ownUID && rawMsg?.originUID == props.chatObj.remoteUID) {
                                         verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(sigStatus => {
                                             decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
                                                 setRealtimeBuffer((prevBuf) => {
@@ -660,8 +660,8 @@ function Chat(props) {
                     setLikedMsgs(llikedMsgs);
                 }
                 if (RXrealtimeBuffer.seen != null) {
-                    if (RXrealtimeBuffer.seen[props.chatObj.uid] != undefined) {
-                        setSeenMsgs(RXrealtimeBuffer.seen[props.chatObj.uid].MID)
+                    if (RXrealtimeBuffer.seen[props.chatObj.remoteUID] != undefined) {
+                        setSeenMsgs(RXrealtimeBuffer.seen[props.chatObj.remoteUID].MID)
                     }
                 }
             }
@@ -696,7 +696,7 @@ function Chat(props) {
             document.documentElement.style.setProperty('--msgInputPlaceholderColor', "#5e00d1")
         }
         if (!ghostModeEnabled && ghostModeEverBeenEnabled) {
-            props.onBackButton({ ghost: true, uid: props.chatObj.uid });
+            props.onBackButton({ ghost: true, uid: props.chatObj.remoteUID });
         }
     }, [ghostModeEnabled])
 
@@ -786,7 +786,7 @@ function Chat(props) {
                         </div>
                         {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
                     </div>
-                    <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid 1px ${msgListBorderColorController()}` }}>
+                    <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid ${showSignatureMismatchDialog ? "0px" : '1px'} ${msgListBorderColorController()}` }}>
                         {fetchingOlderMessages && chatLoadingLabel.label == '[Done]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#001AFF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Fetching Older Messages]" color="#001AFF" bkg="#001AFF30"></Label></li> : ''}
                         {!fetchingOlderMessages && !ghostModeEnabled && scrolledToStart && chatLoadingLabel.label != '[No Messages]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Conversation Started]" color="#9644FF" bkg="#7000FF30"></Label></li> : ''}
                         {ghostModeEnabled ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#0500FF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Ghostly Conversation Started]" color="#FFF" bkg="#0500FF30"></Label></li> : ''}
@@ -808,7 +808,7 @@ function Chat(props) {
                 </>
                     :
                     <ChatDetails ghost={ghostModeEnabled} ghostModeToggle={ghostModeToggle} tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
-                <SignatureMismatchDialog onHideSigMismatchDialog={() => setShowSignatureMismatchDialog(false)} show={showSignatureMismatchDialog}></SignatureMismatchDialog>
+                <SignatureMismatchDialog updateLocalSigs={() => props.onBackButton({ ghost: true, uid: props.chatObj.remoteUID })} MSUID={MSUID} remoteUID={props.chatObj.remoteUID} onHideSigMismatchDialog={() => setShowSignatureMismatchDialog(false)} show={showSignatureMismatchDialog}></SignatureMismatchDialog>
             </div>
         )
     } else {
