@@ -69,7 +69,7 @@ function Chats(props) {
                 <Button onClick={props.switchToNewContactSection} fontSize="2.2vh" show={props.refs.arr.length == 0 && props.refs.ini} id="noConvosButton" bkg="#001AFF" color="#001AFF" label="Add New Contact"></Button>
                 <Button show={props.refs.arr.length == 0 && props.refs.ini} onClick={onRefresh} id="chatsRefreshButton" style={{ border: `${props.refreshing ? 'none' : 'solid 1px #5600C1'}` }} bkg={props.refreshing ? '#001AFF' : "#5600C1"} width="66.944444444%" height="6.71875%" label={props.refreshing ? '[Refreshing]' : "Refresh"} color={props.refreshing ? '#001AFF' : "#5600C1"}></Button>
                 {keyStatusDecoController()}
-                <LoadingNewDeco top={props.refs.ini ? '40%' : '20%'} fillOpacity={props.refs.ini ? 0.03 : 0.2} strokeWidth={props.refs.ini ? 0 : 0.5} width="40vh" height="30vh" id="chatsFetchingDeco" show={true} pathCN="chatsFetchingDecoElm"></LoadingNewDeco>
+                <LoadingNewDeco top={props.refs.ini ? '40%' : '20%'} show={!props.refs.ini} fillOpacity={props.refs.ini ? 0.03 : 0.2} strokeWidth={props.refs.ini ? 0 : 0.5} width="40vh" height="30vh" id="chatsFetchingDeco" show={true} pathCN="chatsFetchingDecoElm"></LoadingNewDeco>
             </div>
         )
     } else {
