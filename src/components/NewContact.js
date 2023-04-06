@@ -107,6 +107,9 @@ function NewContact(props) {
         axios.post(`${DomainGetter('prodx')}api/dbop?updateRequest`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), foreignUID: selectedRequest.uid, approved: status }).then(res => {
             if (res.data.error == undefined) {
                 getActiveRequests();
+                if (status) {
+                    window.location.reload();
+                }
             }
         });
         requestControlsToActiveRequests();

@@ -13,8 +13,8 @@ import Settings from '../components/Settings.js'
 import NotificationsDialog from '../components/NotificationsDialog.js'
 import LogsDialog from '../components/LogsDialog.js'
 import NewContact from '../components/NewContact.js'
-import DomainGetter from '../fn/DomainGetter.js'
 import { useEffect, useState } from 'react'
+import DomainGetter from '../fn/DomainGetter.js'
 import axios from 'axios';
 import { pemToKey, encryptMessage, decryptMessage, getKeyPair, keyToPem, JSONtoKey } from '../fn/crypto.js'
 import { initializeApp } from "firebase/app";
@@ -392,6 +392,7 @@ function Home() {
   const onHideNotificationsDialog = () => {
     setNotificationsDialogShow(false)
   }
+
 
 
   return (

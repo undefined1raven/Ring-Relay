@@ -3,6 +3,8 @@ import VerticalLine from '../components/VerticalLine.js'
 import NewMsgsDeco from '../components/NewMsgsDeco.js'
 import Button from '../components/Button.js'
 import { useEffect, useState } from 'react'
+import DomainGetter from '../fn/DomainGetter.js'
+import axios from 'axios';
 
 function ChatCard(props) {
     const [msgCountLabelProps, setMsgCountLabelProps] = useState({ top: 'auto', text: 'No New Messages', color: '#6600E8' });
@@ -43,6 +45,12 @@ function ChatCard(props) {
         })
     }, [])
 
+    const onDeleteContact = () => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?removeContact`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), remoteUID: props.obj.uid }).then(res => {
+            window.location.reload();
+        }).catch(e => { })
+    }
+
     useEffect(() => {
         var interval = false;
         setUIState()
@@ -74,7 +82,7 @@ function ChatCard(props) {
             </> : <>
                 <VerticalLine top="0%" left="0%" height="100%" color={props.obj.msg == -1 ? '#001AFF' : '#7000FF'}></VerticalLine>
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'absolute', left: '2.285714286%', borderLeft: `solid 1px ${props.obj.msg == -1 ? '#001AFF' : '#7000FF'}`, width: '98.7%', height: "100%", backgroundColor: `${props.obj.msg == -1 ? '#001AFF20' : '#6100DC40'}` }}></div>
-                <Button color={"#FF002E"} className="msgDeleteButton" style={{left: '50%', transform: 'translate(-50%)', top: '10%'}} bkg="#FF002E" label="Remove Contact"></Button>
+                <Button onClick={onDeleteContact} color={"#FF002E"} className="msgDeleteButton" style={{ left: '50%', transform: 'translate(-50%)', top: '10%' }} bkg="#FF002E" label="Remove Contact"></Button>
             </>}
         </div>
     )

@@ -7,13 +7,12 @@ import GenericLoadingDeco from '../components/GenericLoadingDeco.js'
 import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import NotAuthedMsgDeco from '../components/NotAuthedMsgDeco.js'
 
-let oneSig = window.OneSignal;
 
 function Chats(props) {
     const [showKeysStatus, setShowKeysStatus] = useState(true)
 
     const getChatList = () => {
-        return props.refs.arr.map(x => <li onClick={() => { props.onChatSelected(x.uid) }} key={x.name + Math.random()} className='chatCardListContainer'><ChatCard obj={{ ...x }}></ChatCard></li>)
+        return props.refs.arr.map(x => <li onClick={(e) => { if (e.target.innerText != 'Remove Contact') { props.onChatSelected(x.uid) } }} key={x.name + Math.random()} className='chatCardListContainer'><ChatCard obj={{ ...x }}></ChatCard></li>)
     }
 
     const keyStatusLabelController = () => {
