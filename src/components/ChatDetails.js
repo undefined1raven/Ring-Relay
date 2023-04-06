@@ -7,7 +7,7 @@ import Signature from '../components/Signature.js'
 
 function ChatDetails(props) {
 
-    const txDate = new Date(props.tx);
+    const txDate = new Date(parseInt(props.conversationStartUnix));
 
     return (<>
         <Label color="#FFF" bkg="#6100DC30" fontSize="2vh" className="convoDetailsLabel" style={{ top: '17.5%', height: '6.71875%' }} text={`Conversation started on ${txDate.getDate().toString().padStart(2, '0')}.${(parseInt(txDate.getMonth()) + 1).toString().padStart(2, '0')}.${txDate.getFullYear().toString().padEnd(2, '0')}`}></Label>
