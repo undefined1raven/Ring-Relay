@@ -143,7 +143,7 @@ function Home() {
 
 
   useEffect(() => {
-    if (Date.now() - isTypingLastUnix.tx > 300) {
+    if (Date.now() - isTypingLastUnix.tx > 150) {
       setOwnMessageBuffer({ ...typingTruncatedBuffer })
     }
   }, [typingTruncatedBuffer])

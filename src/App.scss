@@ -369,6 +369,7 @@ html {
   border-radius: 5px;
   @include VAlign();
   @include flex();
+  z-index: 500;
 }
 
 #noConvosButton {

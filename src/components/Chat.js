@@ -767,6 +767,11 @@ function Chat(props) {
         }
     }
 
+    const refreshConversationWindow = () => {
+        props.onBackButton({ ghost: true, uid: props.chatObj.remoteUID });
+    }
+
+
 
     if (props.show) {
         return (
@@ -810,7 +815,7 @@ function Chat(props) {
                     <Label className="privateKeyMissingLabel" fontSize="2vh" bkg="#FF002E30" color="#FF002E" text="Plaintext message transport currently not supported" show={!props.privateKeyStatus}></Label>
                 </>
                     :
-                    <ChatDetails conversationStartUnix={conversationStartUnix} ghost={ghostModeEnabled} ghostModeToggle={ghostModeToggle} tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
+                    <ChatDetails refreshConversationWindow={refreshConversationWindow} MSUID={MSUID} remoteUID={props.chatObj.remoteUID} conversationStartUnix={conversationStartUnix} ghost={ghostModeEnabled} ghostModeToggle={ghostModeToggle} tx={props.chatObj.tx} conversationSig={conversationSig} remoteSigningKeySig={remoteSigningKeySig} remoteEncryptionKeySig={remoteEncryptionKeySig}></ChatDetails>}
                 <SignatureMismatchDialog updateLocalSigs={() => props.onBackButton({ ghost: true, uid: props.chatObj.remoteUID })} MSUID={MSUID} remoteUID={props.chatObj.remoteUID} onHideSigMismatchDialog={() => setShowSignatureMismatchDialog(false)} show={showSignatureMismatchDialog}></SignatureMismatchDialog>
             </div>
         )
