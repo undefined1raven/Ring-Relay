@@ -1559,9 +1559,11 @@ stop {
 }
 
 #msgInputActual {
+  position: relative !important;
   padding-top: 5%;
   padding-bottom: 5%;
   height: 47%;
+  left: 1.5% !important;
   display: flex;
   align-items: center;
   justify-content: center;
