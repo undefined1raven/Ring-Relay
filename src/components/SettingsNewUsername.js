@@ -61,7 +61,7 @@ function SettingsNewPassword(props) {
                 var detailsObj = { device: deviceType, browser: `${browserName} v${browserVersion}`, os: `${osName} ${osVersion}` };
                 axios.get(`https://ipgeolocation.abstractapi.com/v1/?api_key=dd09c5fe81bb40f09731ac62189a515c`).then(res => {
                     var location = { name: `${res.data.city}, ${res.data.country_code}`, coords: { lat: res.data.latitude, long: res.data.longitude } };
-                    axios.post(`${DomainGetter('prodx')}api/dbop?changeUsername`, {
+                    axios.post(`${DomainGetter('devx')}api/dbop?changeUsername`, {
                         AT: localStorage.getItem('AT'),
                         CIP: localStorage.getItem('CIP'),
                         currentPassword: currentPasswordInput.toString(),
@@ -74,7 +74,7 @@ function SettingsNewPassword(props) {
                         setEnterButtonProps({ label: 'Request Failed', color: '#FF002E' });
                     })
                 }).catch(e => {
-                    axios.post(`${DomainGetter('prodx')}api/dbop?changeUsername`, {
+                    axios.post(`${DomainGetter('devx')}api/dbop?changeUsername`, {
                         AT: localStorage.getItem('AT'),
                         CIP: localStorage.getItem('CIP'),
                         currentPassword: currentPasswordInput.toString(),

@@ -46,7 +46,7 @@ function ChatCard(props) {
     }, [])
 
     const onDeleteContact = () => {
-        axios.post(`${DomainGetter('prodx')}api/dbop?removeContact`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), remoteUID: props.obj.uid }).then(res => {
+        axios.post(`${DomainGetter('devx')}api/dbop?removeContact`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), remoteUID: props.obj.uid }).then(res => {
             window.location.reload();
         }).catch(e => { })
     }
