@@ -6,8 +6,9 @@
 
 ## Status
 ```diff
-+ Front-end required for the features mentioned below completed [This repo]
-@@ Implementing Back-end @@
++ Front-end required for the initial release completed [This repo]
++ Back-end required for the initial release completed [Ring-Relay-API-Prod] +
+@@ Modifying readme and finishing up documentation @@
 ```
 
 ##### Note: this isn't the repo for the app mentioned on my linkedin or resume, this is a complete remake of the Ring Relay I've built a year ago
