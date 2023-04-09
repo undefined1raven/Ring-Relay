@@ -11,7 +11,7 @@ function SignatureMismatchDialog(props) {
     const updateSigs = () => {
         if (!updating) {
             setUpdating(true);
-            axios.post(`${DomainGetter('devx')}api/dbop?updateConvoSig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), remoteUID: props.remoteUID, MSUID: props.MSUID }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?updateConvoSig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), remoteUID: props.remoteUID, MSUID: props.MSUID }).then(res => {
                 props.updateLocalSigs();
                 setUpdating(false);
             }).catch(e => {
