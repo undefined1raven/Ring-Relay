@@ -21,6 +21,7 @@ import { v4 } from 'uuid';
 import NotificationsDialog from '../components/NotificationsDialog.js'
 import SettingsLogs from '../components/SettingsLogs.js'
 import SettingsKeyPairsRegen from '../components/SettingsKeyPairsRegen.js'
+import QRCodeScanAreaDeco from './QRCodeScanAreaDeco';
 
 const salt = window.crypto.getRandomValues(new Uint8Array(16))
 const iv = window.crypto.getRandomValues(new Uint8Array(12))
@@ -36,6 +37,7 @@ const Reader = (props) => {
     return (
         <>
             <QrReader
+
                 constraints={{ facingMode: 'environment' }}
                 onResult={(result, error) => {
                     if (!!result) {
@@ -45,7 +47,8 @@ const Reader = (props) => {
                 }}
                 style={{ width: '90%', top: '29.375%', left: '5%', border: 'solid 1px #001AFF', borderRadius: 'border-radius: 5px 5px 0px 0px' }}
             />
-            <Label text={props.len} id="results" color="#FFF"></Label>
+            <Label text="Adjust the distance/brightness of the screen while keeping it centered" style={{ top: '70%' }} fontSize="1.5vh" id="results" color="#999"></Label>
+            {/* <QRCodeScanAreaDeco style={{ position: 'absolute', top: '42%', zIndex: '5000' }} id="QRCodeScanAreaDeco"></QRCodeScanAreaDeco> */}
         </>
     );
 };
@@ -332,7 +335,7 @@ function Settings(props) {
             {activeWindowId == 'scanExportID' ?
                 <>
                     <Label className="settingsMenuLabel" id="accountLabel" text={scanMode == 'export' ? "Export Identity" : 'Import Identity'} fontSize="2.4vh" color="#FFF"></Label>
-                    <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text="Scan this QR Code from the target device"></Label>
+                    <Label fontSize="2vh" id="scanExpordIDLabel" bkg="#7000FF30" color="#9644FF" text={scanMode == 'export' ? "Scan this QR Code from the target device" : "Scan the QR Code from the exporting device"}></Label>
                     <Button onClick={() => setScanExportStage(prev => prev + 1)} id="scanExportIDNextButton" className="settingsMenuButton" fontSize="2.3vh" color="#001AFF" bkg="#001AFF" label={scanExportStage == 4 ? 'Done' : 'Next'}></Button>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel0" bkg={`${colorFromExportStage(0)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(0)} text="1"></Label>
                     <Label fontSize="2.5vh" id="scanExpordIDStageLabel1" bkg={`${colorFromExportStage(1)}30`} className="settingsMenuButton scanExpordIDStageLabelx" color={colorFromExportStage(1)} text="2"></Label>

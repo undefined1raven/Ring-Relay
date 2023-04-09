@@ -16,7 +16,7 @@ function SettingsLogs(props) {
     const [showLogDetails, setShowLogDetails] = useState({ show: false, logObj: {} });
     const [showLogCollectionSettings, setShowLogCollectionSettings] = useState(false);
     const [showLogFilter, setShowLogFilter] = useState(false);
-    const [logFilters, setLogFilters] = useState({ login: true, usernameChanged: true, passwordReset: true, keysExport: true, keysImport: true, keysRegen: true, info: true, warning: true, important: true, critical: true, last24h: true, lastWeek: false, lastMonth: false });
+    const [logFilters, setLogFilters] = useState({ login: true, usernameChanged: true, passwordReset: true, keysExport: true, keysImport: true, keysRegen: true, info: true, warning: true, important: true, critical: true, last24h: true, lastWeek: true, lastMonth: true });
 
     const [logsArray, setLogsArray] = useState({
         ini: false, array: []
@@ -29,7 +29,7 @@ function SettingsLogs(props) {
     }
 
     const areTimeFiltersDefault = () => {
-        return (logFilters.last24h && logFilters.lastWeek == false && logFilters.lastMonth == false)
+        return (logFilters.last24h && logFilters.lastWeek && logFilters.lastMonth)
     }
 
     const removeTypeFilters = () => {
@@ -47,8 +47,8 @@ function SettingsLogs(props) {
     const resetTimeFilters = () => {
         let nFilters = logFilters;
         nFilters['last24h'] = true;
-        nFilters['lastWeek'] = false;
-        nFilters['lastMonth'] = false;
+        nFilters['lastWeek'] = true;
+        nFilters['lastMonth'] = true;
         setLogFilters(nFilters);
         filterLogs();
     }
@@ -113,10 +113,10 @@ function SettingsLogs(props) {
             <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="31.09375%"></HorizontalLine>
             <Label style={{ top: '18.28125%' }} className="logsFiltersLabel" fontSize="2vh" text="Type" color="#FFF" bkg="#7000FF20"></Label>
             <Label style={{ top: '25%' }} className="logsFiltersLabel" fontSize="2vh" text="Time" color="#FFF" bkg="#7000FF20"></Label>
-            <Button onClick={() => removeTypeFilters()} label="All" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '18.28125%', color: `${isFilteredByType() ? '#9B9B9B' : '#FFF'}` }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button onClick={resetTimeFilters} label="Last 24h" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '25%', color: `${areTimeFiltersDefault() ? "#FFF" : "#9B9B9B"}` }} bkg="#7000FF" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '18.28125%', color: `${isFilteredByType() ? '#FFF' : '#9B9B9B'}` }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
-            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '54.722222222%', top: '25%', color: `${areTimeFiltersDefault() ? "#9B9B9B" : "#FFF"}` }} bkg="#340076" width="20.833333333%" className="logsFilterButton"></Button>
+            <Button onClick={() => removeTypeFilters()} label="All" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '18.28125%', color: `${isFilteredByType() ? '#9B9B9B' : '#FFF'}` }} bkg="#7000FF" width="27.777777778%" className="logsFilterButton"></Button>
+            <Button onClick={resetTimeFilters} label="Last Month" fontSize="2vh" color="#7000FF" style={{ left: '29.444444444%', top: '25%', color: `${areTimeFiltersDefault() ? "#FFF" : "#9B9B9B"}` }} bkg="#7000FF" width="27.777777778%" className="logsFilterButton"></Button>
+            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '60.833333333%', top: '18.28125%', color: `${isFilteredByType() ? '#FFF' : '#9B9B9B'}` }} bkg="#340076" width="27.777777778%" className="logsFilterButton"></Button>
+            <Button onClick={() => setShowLogFilter(true)} label="Filter" fontSize="2vh" color="#7000FF" style={{ left: '60.833333333%', top: '25%', color: `${areTimeFiltersDefault() ? "#9B9B9B" : "#FFF"}` }} bkg="#340076" width="27.777777778%" className="logsFilterButton"></Button>
             {!showLogDetails.show ? <>
                 <HorizontalLine className="logsLn" color="#7000FF" width="90%" top="89.375%"></HorizontalLine>
                 <Button onClick={props.onBack} label="Back" className="logsButton" style={{ top: '91.71875%', height: '6.25%', width: '43.055555556%', left: '5%' }} color="#929292"></Button>

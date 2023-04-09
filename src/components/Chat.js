@@ -379,10 +379,10 @@ function Chat(props) {
                         })
                     })
                 } else {
-                    setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message [NTYX]' });
-                    setTimeout(() => {
-                        setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message [NTYX]' });
-                    }, 2000);
+                    // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message [NTYX]' });
+                    // setTimeout(() => {
+                    //     setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message [NTYX]' });
+                    // }, 2000);
                 }
             });
         });
