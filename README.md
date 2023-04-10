@@ -1,7 +1,7 @@
 <h1 align="center">Ring Relay</h1>
 
 <p align="center">
-  <img src="/src/visual_assets/logof.svg"></img>
+  <img src="src/visual_assets/logoMin.svg"></img>
 </p>
 
 ## Status
