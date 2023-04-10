@@ -12,8 +12,8 @@
 
 ## Documentation
 There is a document in the ``/docs`` folder that contains an in-depth dive into how this app works, how to use it, and more. <br>
-Click the link below to download it directly. <br>
-[Ring-Relay Documentation](https://github.com/undefined1raven/Ring-Relay/raw/main/docs/Ring-Relay%20Documentation.pdf)
+Open the link below in a new tab to download it directly. <br>
+[Ring-Relay Documentation (https://github.com/undefined1raven/Ring-Relay/raw/main/docs/Ring-Relay%20Documentation.pdf)](https://github.com/undefined1raven/Ring-Relay/raw/main/docs/Ring-Relay%20Documentation.pdf)
 
 ## About
 
