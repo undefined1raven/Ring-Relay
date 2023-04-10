@@ -20,27 +20,27 @@ An end-to-end encrypted messaging application using public-key cryptography for 
 ## Features
 
 ### Security
-▣ End-to-end encryption for all message types and modes
+▣ End-to-end encryption for all message types and modes <br>
 This means that only the private keys your device stores locally can decrypt messages meant for you.
 
-▣ Message Authentication using ECDSA
+▣ Message Authentication using ECDSA <br>
 This Sign/Verify process ensures the origin of the messages you're receiving (who wrote it) and its integrity (no tempering at any point during transit).
 
-▣ Private Keys Management
+▣ Private Keys Management <br>
 Using the export/import functions, you can either transfer private keys between devices using QR Codes, or generate an encrypted backup of your private keys in a text file.
 
-▣ Security Signatures
+▣ Security Signatures <br>
 Security Signatures make sure that no bad actor can abuse the Keys Regeneration feature to impersonate users.
-
-▣ Logs
+ 
+▣ Logs <br>
 Activity Logs let you keep track of important actions happening across all devices so you could identify actions that weren't yours in the case of a bad actor gaining access to your account.
 
-### Supported Message Types
-▣ Text
-▣ Image (coming soon)
-▣ Color
-This message type allows you to pick a color for the other person to instantly visualize
-▣ Location
+### Supported Message Types 
+▣ Text <br>
+▣ Image (coming soon) <br>
+▣ Color <br>
+This message type allows you to pick a color for the other person to instantly visualize <br>
+▣ Location <br>
 You can use a built-in interactive map or your device's location to easily share a location to your contacts
 
 ### Account Management
@@ -48,10 +48,10 @@ Go to the ``/docs`` folder for more details
 
 
 ## How to host it yourself
-You'll need (free) accounts for the following services:
-▣ Vercel
-▣ Firebase
-▣ Planet Scale
+You'll need (free) accounts for the following services: <br>
+▣ Vercel <br>
+▣ Firebase <br>
+▣ Planet Scale <br>
 
 
 ## Tech Stack
@@ -60,7 +60,7 @@ The entire tech stack and architecture is described in-depth in the ``/docs`` fo
 
 ### Backend
 
-Vercel Serverless + Firebase Realtime DB (for real-time COMMS between users since you can't establish persistent connections to Vercel)
+Vercel Serverless + Firebase Realtime DB (for real-time communication between users since you can't establish persistent connections to Vercel)
 
 ### Frontend
 
@@ -75,9 +75,6 @@ Since I already have 3 years of experience working with Mongo DB, I'll try out P
 ## Development Method
 
 I'll use a Github project to track everything that needs doing and the progress on every task. Since I'm a big fan of Agile, I'll do the bulk development in sprits spanning a couple of days and use the same method for adding new features later on.
-
-
-Since the latency between users would be too high if I would've used serverless functions alone, I've decided to use the Firebase Realtime DB as a conversation buffer to deliver the messages near-instantly. This works by each active user(has a specific chat window open) having an unique JSON object stored in the RTDB at path `UID`. Any incoming messages from other users would be saved there while the session is active, and since the user client would be listening to changes at that specific path, as soon as a new message hits the buffer, it would then get relayed to the front-end. At the same time, the serverless function also adds a new row in the `UM${OWN}` or `UM${FOREIGN}` table to permanently store the messages.
 
 #### I'm planning on adding more features like push notifications, MFA, and possibily audio and video calls, but first I'll be focusing on the basic features above.
 
