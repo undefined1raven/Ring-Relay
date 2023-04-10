@@ -368,7 +368,7 @@ function Chat(props) {
                                         axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                                             AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
                                         }).then(res => { }).catch(e => {
-                                            setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
+                                            // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
                                             setTimeout(() => {
                                                 setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
                                             }, 2000);

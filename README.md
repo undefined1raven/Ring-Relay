@@ -67,8 +67,8 @@ You'll need (free) accounts for the following services: <br>
 4. Once the front-end is up and running, clone the back-end from the ``Ring-Relay-API-Prod`` repo <br>
 5. Install the Vercel CLI with ``npm i -g vercel`` <br>
 6. Run ``npm i && vercel dev`` at the root of the back-end folder to run it locally (you might have to log in) <br>
-7. Use a global seach function in the front-end folder (CTRL+Shift+F in VS Code) to replace all strings matching ``prodx`` with ``devx`` (this tells the front-end to use the local back-end) (its important not to skip this since the CORS policy will prevent you from using the production back-end from localhost) <br>
-8. Make sure the if statements present in the function at ``src/fn/DomainGetter.js`` are working properly (ENV_TYPE == 'devx' to return the localhost API url and the other one the production url) <br>
+7. Use a global seach function in the front-end folder (CTRL+Shift+F in VS Code) to replace all strings matching ``prodx`` with ``prodx`` (this tells the front-end to use the local back-end) (its important not to skip this since the CORS policy will prevent you from using the production back-end from localhost) <br>
+8. Make sure the if statements present in the function at ``src/fn/DomainGetter.js`` are working properly (ENV_TYPE == 'prodx' to return the localhost API url and the other one the production url) <br>
 9. Create two Github repos one for the back-end and one for the front-end <br>
 10. Link the repos to Vercel (each should have its own app) <br>
 11. Search the two files (``dbop.js`` and ``auth.js``) containing the back-end for ``process.env`` to find all env variables you'll have to add to Vercel <br>

@@ -25,7 +25,6 @@ function App() {
           <Route exact path="/" element={
             <>
               <div style={{ whiteSpace: 'nowrap', transform: 'translate(-50%, -50%)', position: 'absolute', top: '50%', left: '50%', color: '#FFF', fontSize: "2vh" }}>The Ring Relay is currently available for mobile devices only</div>
-              <div style={{ whiteSpace: 'nowrap', transform: 'translate(-50%, -50%)', position: 'absolute', top: '60%', left: '50%', color: '#AAA', fontSize: "2vh" }}>[Desktop Version In Progress]</div>
             </>
           }></Route>
         </>}
