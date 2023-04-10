@@ -8,60 +8,74 @@
 ```diff
 + Front-end required for the initial release completed [This repo]
 + Back-end required for the initial release completed [Ring-Relay-API-Prod] +
-@@ Modifying readme and finishing up documentation @@
 ```
 
-##### Note: this isn't the repo for the app mentioned on my linkedin or resume, this is a complete remake of the Ring Relay I've built a year ago
+## Documentation
+There is a document in the ``/docs`` folder that contains an in-depth dive into how this app works, how to use it, and more.
 
 ## About
 
-A chatting app that lets you see different stats about your texts and conversations such as freqency maps for words, average length of each message and more. I'd love for this app to use a dynamic unique design. I'll also implement end-to-end encryption using a public-private key pair for each user. I'll detail the architecture implemented later on.
+An end-to-end encrypted messaging application using public-key cryptography for encrypting and authenticating messages. This app also has a comprehensive set of features for the users to manage their accounts, private keys, contacts, and preferences.
+
+## Features
+
+### Security
+▣ End-to-end encryption for all message types and modes
+This means that only the private keys your device stores locally can decrypt messages meant for you.
+
+▣ Message Authentication using ECDSA
+This Sign/Verify process ensures the origin of the messages you're receiving (who wrote it) and its integrity (no tempering at any point during transit).
+
+▣ Private Keys Management
+Using the export/import functions, you can either transfer private keys between devices using QR Codes, or generate an encrypted backup of your private keys in a text file.
+
+▣ Security Signatures
+Security Signatures make sure that no bad actor can abuse the Keys Regeneration feature to impersonate users.
+
+▣ Logs
+Activity Logs let you keep track of important actions happening across all devices so you could identify actions that weren't yours in the case of a bad actor gaining access to your account.
+
+### Supported Message Types
+▣ Text
+▣ Image (coming soon)
+▣ Color
+This message type allows you to pick a color for the other person to instantly visualize
+▣ Location
+You can use a built-in interactive map or your device's location to easily share a location to your contacts
+
+### Account Management
+Go to the ``/docs`` folder for more details
+
+
+## How to host it yourself
+You'll need (free) accounts for the following services:
+▣ Vercel
+▣ Firebase
+▣ Planet Scale
+
 
 ## Tech Stack
 
+The entire tech stack and architecture is described in-depth in the ``/docs`` folder.
+
 ### Backend
 
-Even if the most efficient back-end solution for this type of real-time app is to use websockets, Heroku removed their free tier so as a result I'm gonna use Vercel Serverless functions as the basis for the backend. I'll use the Firebase Realtime DB as a conversation buffer to enable near-instant delivery of the messages between users while the backend also sends the message objects to Planet Scale (mySql) for permanent storage. 
+Vercel Serverless + Firebase Realtime DB (for real-time COMMS between users since you can't establish persistent connections to Vercel)
 
 ### Frontend
 
-I feel like I'm already profficient with Vue because I used it for more than a year now so I'd really like to have the same level of familiarity with React cuz I enjoy using it just as much and it's also really popular.
+I feel like I'm already profficient with Vue/Nuxt because I used it for more than a year now so I'd really like to have the same level of familiarity with React cuz I enjoy using it just as much and it's also really popular.
 
 ### Databases
 
-Since I already have 3 years of experience working with Mongo DB, I'll try out Planet Scale just for some novelty (this isn't a techinal driven decision cuz I'll be using this app with friends only anyway)(also I'd like to get some experience with SQL based DBs). I'll stick to Firebase Realtime DB for storing sessions and any other temporary data such as reset password tokens.
+Details regarding the architecture I chose and why its scalable can be found in the ``/docs`` folder.
+
+Since I already have 3 years of experience working with Mongo DB, I'll try out Planet Scale just for some novelty (also I'd like to get some experience with SQL based DBs). I'll stick to Firebase Realtime DB for storing sessions and any other temporary data.
 
 ## Development Method
 
 I'll use a Github project to track everything that needs doing and the progress on every task. Since I'm a big fan of Agile, I'll do the bulk development in sprits spanning a couple of days and use the same method for adding new features later on.
 
-## Architecture In-Depth
-
-### DB Schema
-<p align="center">
-  <img src="/docs/Ring Relay Architecture(DB Schema).png"></img>
-</p>
-
-The Planet Scale hosted Mysql DB contains 2 main tables (users and refs) that contain all user account data and the relations between how users are connected to eachother. Each user then has its own table that has the name UM`${UID}`. The purpose of this table is to contain all messages sent or received for that specific user, depending on who started the connection. For example, the picture below contains the flowchart of how this new contact process would take place.
-
-### New Contact Flow
-<p align="center">
-  <img src="/docs/Ring Relay Architecture (New Contact Flow).png"></img>
-</p>
-
-The flowchart above ilustrates how an user (Client 0 / [C0]) will connect with another user (Client 1 / [C1]). At the end of this process, both users will have the other one saved in the `refs` table. I know using some sort of relation between this data would've been more efficient, but by allowing all users to have an independant array of contacts ensures access to those conversations even if one of the parties would delete the other one from their contacts on their end. 
-
-### Message Retrival
-<p align="center">
-  <img src="/docs/Ring Relay Architecture (Retrieve Messages).png"></img>
-</p>
-
-Every time an users taps on a conversation, the flowchart above gets triggered so the front-end could display the conversation using the message array retrieved from the DB. The first step is retrieving the UIDs any given user is connected to, so the front-end could hydrate the 'chats' section of the UI. After the user selects a conversation, a request is sent containing the UID of the person the conversation is with. Then, the serverless function checks both the `UM${OWN[UID]}` table and if the conversation is not found there, the `UM${FOREIGN[UID]}` table. This is efficient since the conversation can be in one of the 2 places. (I considered adding a new field in the refs table to deal with this, but concluded it would add complexity that's not warranted when considering the trade-offs of both methods) 
-
-### Message Exchange
-<p align="center">
-  <img src="/docs/Ring Relay Architecture (Message Exchange).png"></img>
-</p>
 
 Since the latency between users would be too high if I would've used serverless functions alone, I've decided to use the Firebase Realtime DB as a conversation buffer to deliver the messages near-instantly. This works by each active user(has a specific chat window open) having an unique JSON object stored in the RTDB at path `UID`. Any incoming messages from other users would be saved there while the session is active, and since the user client would be listening to changes at that specific path, as soon as a new message hits the buffer, it would then get relayed to the front-end. At the same time, the serverless function also adds a new row in the `UM${OWN}` or `UM${FOREIGN}` table to permanently store the messages.
 
