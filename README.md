@@ -48,11 +48,33 @@ Go to the ``/docs`` folder for more details
 
 
 ## How to host it yourself
-You'll need (free) accounts for the following services: <br>
+
+### Prerequisites
+You'll need (free) accounts for the following services: 
+▣ Node JS and NPM installed on your machine (if you get any version incompatibility errors use the n pkg (``npm install -g n``) to modify the Node version) <br>
 ▣ Vercel <br>
 ▣ Firebase <br>
 ▣ Planet Scale <br>
+▣ Github <br>
+▣ One Signal (optional for notifications. if you dont want to create an account for this make sure to delete the code related to sending notifications in the back-end) <br>
 
+### Steps 
+1. Clone this repo to your machine <br>
+2. Run ``npm i`` to install dependancies (you might have to use the -f flag too) <br>
+3. Build the app for local dev with ``npm start`` <br>
+4. Once the front-end is up and running, clone the back-end from the ``Ring-Relay-API-Prod`` repo <br>
+5. Install the Vercel CLI with ``npm i -g vercel`` <br>
+6. Run ``npm i && vercel dev`` at the root of the back-end folder to run it locally (you might have to log in) <br>
+7. Use a global seach function in the front-end folder (CTRL+Shift+F in VS Code) to replace all strings matching ``prodx`` with ``devx`` (this tells the front-end to use the local back-end) (its important not to skip this since the CORS policy will prevent you from using the production back-end from localhost) <br>
+8. Make sure the if statements present in the function at ``src/fn/DomainGetter.js`` are working properly (ENV_TYPE == 'devx' to return the localhost API url and the other one the production url) <br>
+9. Create two Github repos one for the back-end and one for the front-end <br>
+10. Link the repos to Vercel (each should have its own app) <br>
+11. Search the two files (``dbop.js`` and ``auth.js``) containing the back-end for ``process.env`` to find all env variables you'll have to add to Vercel <br>
+12. Use your Firebase accont to create a new app for the Realtime Database and copy the credentials from ``Project Overview -> Project Settings -> Your apps -> SDK setup and configuration`` to a Vercel env variable named ``FIREBASE_SCA`` <br>
+13. Replace the ``initializeApp`` function args with the credential and/or databaseURL from your Firebase Project (this applies for both front-end and back-end since both interface with Firebase) <br>
+14. Use Planet Scale's Node JS setup to get the Database Key. Copy that into an env variable named ``DB_KEY`` in Vercel <br>
+15. Use Planet Scale's Console to create the ``Users``, ``refs``, and ``Logs`` tables with the schemas detailed in the ``/docs`` folder <br>
+16. At this point all the the config is done, but considering the complexity of the process, you'll probably have to do some debugging. The back-end code is properly protected against crashes so you might want to comment out catches so you would get some info about what happened in the console. Using the dev tool's network tab makes this easier. For any issues, feel free to create a new issue describing what isn't working as expected. 
 
 ## Tech Stack
 
@@ -74,7 +96,8 @@ Since I already have 3 years of experience working with Mongo DB, I'll try out P
 
 ## Development Method
 
-I'll use a Github project to track everything that needs doing and the progress on every task. Since I'm a big fan of Agile, I'll do the bulk development in sprits spanning a couple of days and use the same method for adding new features later on.
+I'll use a Github project to track everything that needs doing and the progress on every task.
 
-#### I'm planning on adding more features like push notifications, MFA, and possibily audio and video calls, but first I'll be focusing on the basic features above.
+## Future Features
+See the Features Project for features that will be added and their status. Feel free to create new Issues with the ``feature`` tag to recommend any new features. 
 
