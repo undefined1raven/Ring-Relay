@@ -11,8 +11,8 @@
 ```
 
 ## Documentation
-There is a document in the ``/docs`` folder that contains an in-depth dive into how this app works, how to use it, and more.
-Click the link below to download it directly.
+There is a document in the ``/docs`` folder that contains an in-depth dive into how this app works, how to use it, and more. <br>
+Click the link below to download it directly. <br>
 [Ring-Relay Documentation](https://github.com/undefined1raven/Ring-Relay/raw/main/docs/Ring-Relay%20Documentation.pdf)
 
 ## About
@@ -52,7 +52,7 @@ Go to the ``/docs`` folder for more details
 ## How to host it yourself
 
 ### Prerequisites
-You'll need (free) accounts for the following services: 
+You'll need (free) accounts for the following services: <br>
 ▣ Node JS and NPM installed on your machine (if you get any version incompatibility errors use the n pkg (``npm install -g n``) to modify the Node version) <br>
 ▣ Vercel <br>
 ▣ Firebase <br>
