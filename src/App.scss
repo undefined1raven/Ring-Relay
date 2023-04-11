@@ -1570,11 +1570,37 @@ stop {
   left: 5%;
   width: 90%;
 }
-
+.ImageOpStatus{
+  position: absolute;
+  top: 90%;
+  @include flex();
+  @include VAlign();
+  width: 70%;
+  height: 8%;
+  background-color: #4200FF20;
+  border-radius: 5px;
+  backdrop-filter: blur(5px);
+}
 input[type=file] {
   font-size: 0;
 }
-
+#ImageCompressIndiContainer{
+  position: absolute;
+  width: 84%;
+  left: 8%;
+  top: 75%;
+  height: 0.3vh;
+  background-color: #6100DC40;
+  overflow: hidden;
+  border-radius: 15px;
+}
+#imageCompressionIndiActual{
+  position: absolute;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  background-color: #4200FF;
+}
 #QRCodeScanAreaDeco {
   @include VAlign();
 }
