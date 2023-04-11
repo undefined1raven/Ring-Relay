@@ -1571,6 +1571,10 @@ stop {
   width: 90%;
 }
 
+input[type=file] {
+  font-size: 0;
+}
+
 #QRCodeScanAreaDeco {
   @include VAlign();
 }

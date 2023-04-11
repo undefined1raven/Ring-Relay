@@ -118,7 +118,7 @@ export const JSONtoKey = ((jwk, algo) => {
         importKeyArgs = { algo: { name: 'ECDSA', namedCurve: 'P-521' }, ops: ['verify'] };
     }
     if (importKeyArgs != 0) {
-        
+
         return window.crypto.subtle.importKey(
             "jwk",
             jwk,
@@ -130,7 +130,7 @@ export const JSONtoKey = ((jwk, algo) => {
 })
 
 export const verify = async (publicSigningKey, encryptedMessage, signature) => {
-    let sigCheck = await window.crypto.subtle.verify({name: 'ECDSA', hash: 'SHA-512'}, publicSigningKey, btoaTobuf(signature), str2ab(encryptedMessage))
+    let sigCheck = await window.crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-512' }, publicSigningKey, btoaTobuf(signature), str2ab(encryptedMessage))
     return sigCheck;
 }
 
