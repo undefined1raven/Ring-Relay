@@ -24,6 +24,7 @@ import SignatureMismatchDialog from './SignatureMismatchDialog.js'
 import imageCompression from 'browser-image-compression';
 import ImageMsgTypePreview from './ImageMsgTypePreview.js';
 import ImagePickerOverlay from './ImagePickerOverlay.js'
+import ImageProcessingSendBtnDeco from './ImageProcessingSendBtnDeco.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -88,7 +89,7 @@ function Chat(props) {
     const [selectedMsgType, setSelectedMsgType] = useState('text')
     const [selectedColor, setSelectedColor] = useState('#8100D0')
     const [selectedLocation, setSelectedLocation] = useState({ ini: false, locationObj: {} });
-    const [selectedImage, setSelectedImage] = useState({ ini: false, imageObj: {}, compressionProgress: 0 });
+    const [selectedImage, setSelectedImage] = useState({ ini: false, imageObj: {}, compressionProgress: 0, isEncrypting: false, done: false });
     const [selectedImageBase64, setSelectedImageBase64] = useState({ ini: false, data: '' });
     const [messageTypeSelectorTop, setMessageTypeSelectorTop] = useState('86.79375%');
     const [showLocationMsgPreview, setShowLocationMsgPreview] = useState(false);
@@ -791,25 +792,27 @@ function Chat(props) {
         if (typeID != 'image') {
             setSelectedMsgType(typeID);
         } else {
-            const options = { maxSizeMB: 3, onProgress: (e) => { setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, compressionProgress: e }) }, useWebWorker: true, preserveExif: false }
+            const options = { maxSizeMB: 3, onProgress: (e) => { setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, compressionProgress: e, isEncrypting: false, done: false }) }, useWebWorker: true, preserveExif: false }
 
             const file = e.target.files[0]
-            setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name });
+            setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, compressionProgress: 0, isEncrypting: false, done: false });
 
-            
+            let fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+
+            fileReader.onload = () => setSelectedImageBase64({ ini: true, data: fileReader.result })
+
             imageCompression(file, options).then(val => {
                 let rawOwnEncryptionPukKey = JSON.parse(localStorage.getItem(`OWN-PUBK`));
                 window.crypto.subtle.importKey('jwk', rawOwnEncryptionPukKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(key => {
                     new Response(val).arrayBuffer().then(buf => {
-                        let fileReader = new FileReader()
-                        fileReader.readAsDataURL(val)
-            
-                        fileReader.onload = () => setSelectedImageBase64({ ini: true, data: fileReader.result })
 
 
                         console.log(buf)
                         console.log(key)
+
                         let chunks = [];
+                        setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), compressionProgress: 100, fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: true, done: false });
                         for (let ix = 0; ix < Math.round(buf.byteLength / 446); ix++) {
                             chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, buf.slice(0, 446)));
                         }
@@ -818,6 +821,7 @@ function Chat(props) {
 
                         Promise.all(chunks).then(all => {
                             console.log(Date.now() - s)
+                            setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
                         })
 
                     })
@@ -847,7 +851,7 @@ function Chat(props) {
                             {props.privateKeyStatus ? <LocationMsgTypePreview ghost={ghostModeEnabled} selectedLocation={selectedLocation} show={showLocationMsgPreview} onCancel={() => setSelectedMsgType('text')} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></LocationMsgTypePreview> : ''}
                             {props.privateKeyStatus ? <ImageMsgTypePreview selectedImage={selectedImage} ghost={ghostModeEnabled} onCancel={() => setSelectedMsgType('text')} show={showImageMsgPreview} bkg={ghostModeEnabled ? "#0500FF20" : "#6100DC20"}></ImageMsgTypePreview> : ''}
                         </div>
-                        {props.privateKeyStatus ? <Button onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'} label="Send"></Button> : ''}
+                        {props.privateKeyStatus ? <Button child={!selectedImage.done && selectedMsgType == 'image' ? <ImageProcessingSendBtnDeco /> : <Label fontSize="2.4vh" color="#7000FF" text="Send"></Label>} onClick={onSend} id="sendButton" bkg={msgListBorderColorController()} width="20%" height="100%" color={ghostModeEnabled ? '#FFF' : '#7000FF'}></Button> : ''}
                     </div>
                     <ul onTouchEnd={onTouchEnd} onScroll={onChatScroll} id="msgsList" className='msgsList' style={{ height: msgsListHeight, borderLeft: `solid ${showSignatureMismatchDialog ? "0px" : '1px'} ${msgListBorderColorController()}` }}>
                         {fetchingOlderMessages && chatLoadingLabel.label == '[Done]' ? <li className='msgContainer' style={{ paddingBottom: '2%', paddingTop: '2%', borderLeftColor: '#001AFF' }}><Label fontSize="1.9vh" id="convoStartedLabel" text="[Fetching Older Messages]" color="#001AFF" bkg="#001AFF30"></Label></li> : ''}
@@ -857,7 +861,7 @@ function Chat(props) {
                         {(chatLoadingLabel.label == '[Done]' || chatLoadingLabel.label == '[No Messages]') ? realtimeBufferList : ''}
                         {props.showIsTyping ? <Label fontSize="1.9vh" id="typingLabel" style={{ left: `${props.isTypingLastUnix.ghost ? "56.6%" : "76%"}`, borderRight: `solid 1px ${props.isTypingLastUnix.ghost ? '#0500FF' : '#7000FF'}`, width: `${props.isTypingLastUnix.ghost ? '40%' : '20.545189504%'}` }} bkg={props.isTypingLastUnix.ghost ? '#0500FF30' : "#6100DC30"} text={props.isTypingLastUnix.ghost ? 'Ghostly Typing...' : "Typing..."} color={props.isTypingLastUnix.ghost ? '#0500FF' : "#A9A9A9"}></Label> : ''}
                     </ul>
-                    <ImagePickerOverlay selectedImageBase64={selectedImageBase64} compressionProgress={selectedImage.compressionProgress} ghost={ghostModeEnabled} show={showImageMsgPreview}></ImagePickerOverlay>
+                    <ImagePickerOverlay selectedImageBase64={selectedImageBase64} selectedImage={selectedImage} ghost={ghostModeEnabled} show={showImageMsgPreview}></ImagePickerOverlay>
                     <LocationPickerOverlay ghost={ghostModeEnabled} updateLocationInput={updateLocationInput} show={showLocationMsgPreview}></LocationPickerOverlay>
                     <MessageTypeSelector top={messageTypeSelectorTop} ghost={ghostModeEnabled} onTypeSelected={updateSelectedMsgType}></MessageTypeSelector>
                     {chatLoadingLabel.label == '[No Messages]' ?
