@@ -816,59 +816,59 @@ function Chat(props) {
 
             imageCompression(file, options).then(val => {
                 let rawOwnEncryptionPukKey = JSON.parse(localStorage.getItem(`OWN-PUBK`));
-                window.crypto.subtle.importKey('jwk', rawOwnEncryptionPukKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(key => {
-                    new Response(val).arrayBuffer().then(buf => {
-                        setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), compressionProgress: 100, fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: true, done: false });
+                window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.remoteUID}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
+                    window.crypto.subtle.importKey('jwk', rawOwnEncryptionPukKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(key => {
+                        new Response(val).arrayBuffer().then(buf => {
+                            setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), compressionProgress: 100, fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: true, done: false });
 
+                            let base64encodedBuf = _arrayBufferToBase64(buf);
 
-                        let base64encodedBuf = _arrayBufferToBase64(buf);
+                            let ownChunks = [];
+                            let remoteChunks = [];
+                            let chunkCount = Math.round(base64encodedBuf.length / 446);
 
-                        let chunks = [];
-                        let chunkCount = Math.round(base64encodedBuf.length / 446);
-                        console.log(base64encodedBuf.length)
-                        console.log(chunkCount)
-
-                        for (let ix = 0; ix <= chunkCount; ix++) {
-                            if (ix == 0) {
-                                chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(0, 446))));
-                            }
-                            if (ix > 0 && ix < chunkCount) {
-                                chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring((ix - 1) * 446, ix * 446))));
-                            }
-                            if (ix == chunkCount) {
-                                let len = base64encodedBuf.length;
-                                let modRes = len % 446;
-                                chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(len - modRes, len - 1))));
-                            }
-                        }
-
-
-                        let s = Date.now()
-
-                        Promise.all(chunks).then(all => {
-                            pemToKey(localStorage.getItem(privateKeyID)).then((privateKey) => {
-                                let decryptPromises = [];
-
-                                for (let ix = 0; ix < all.length; ix++) {
-                                    decryptPromises.push(decryptMessage(privateKey, all[ix], 'buffer'))
+                            for (let ix = 0; ix <= chunkCount; ix++) {
+                                if (ix == 0) {
+                                    ownChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(0, 446))));
+                                    remoteChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, remotePubkey, new TextEncoder().encode(base64encodedBuf.substring(0, 446))));
                                 }
+                                if (ix > 1 && ix < chunkCount) {
+                                    ownChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring((ix - 1) * 446, ix * 446))));
+                                    remoteChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, remotePubkey, new TextEncoder().encode(base64encodedBuf.substring((ix - 1) * 446, ix * 446))));
+                                }
+                                if (ix == chunkCount) {
+                                    let len = base64encodedBuf.length;
+                                    let modRes = len % 446;
+                                    ownChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(len - modRes, len))));
+                                    remoteChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, remotePubkey, new TextEncoder().encode(base64encodedBuf.substring(len - modRes, len))));
+                                }
+                            }
 
+                            Promise.all(ownChunks).then(encryptedOwnChunks => {
+                                Promise.all(remoteChunks).then(encryptedRemoteChunks => {
+                                    // pemToKey(localStorage.getItem(privateKeyID)).then((privateKey) => {
+                                    //     let decryptPromises = [];
 
+                                    //     for (let ix = 0; ix < encryptedOwnChunks.length; ix++) {
+                                    //         decryptPromises.push(decryptMessage(privateKey, encryptedOwnChunks[ix], 'buffer'))
+                                    //     }
 
-                                Promise.all(decryptPromises).then(decryptedBuf => {
-                                    let fullDecryptedBufStr = '';
+                                    //     Promise.all(decryptPromises).then(decryptedBuf => {
+                                    //         let fullDecryptedBufStr = '';
 
-                                    console.log(decryptedBuf.join())
-                                    console.log(base64encodedBuf)
+                                    //         console.log(decryptedBuf.join(''))
+                                    //         // console.log('------EMNDD-----')
+                                    //         console.log(base64encodedBuf)
+
+                                    //         setSelectedImageBase64({ ini: true, data: `data:image/png;base64, ${decryptedBuf.join('')}` })
+                                    //     })
+                                    // })
+                                    setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
                                 })
                             })
 
-
-                            console.log(Date.now() - s)
-                            setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
                         })
-
-                    })
+                    });
                 });
             }).catch(e => console.log(e));
             setSelectedMsgType(typeID);
