@@ -25,6 +25,7 @@ import imageCompression from 'browser-image-compression';
 import ImageMsgTypePreview from './ImageMsgTypePreview.js';
 import ImagePickerOverlay from './ImagePickerOverlay.js'
 import ImageProcessingSendBtnDeco from './ImageProcessingSendBtnDeco.js'
+import CommonSigMismatchDeco from './CommonSigMismatchDeco.js'
 
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
@@ -52,6 +53,17 @@ const db = getDatabase(app);
 //     const errorMessage = error.message;
 //     // ...
 //   });
+
+
+function _arrayBufferToBase64(buffer) {
+    var binary = '';
+    var bytes = new Uint8Array(buffer);
+    var len = bytes.byteLength;
+    for (var i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
+}
 
 function Chat(props) {
     const [statusProps, setStatusProps] = useState({ color: '#FF002E' });
@@ -806,20 +818,52 @@ function Chat(props) {
                 let rawOwnEncryptionPukKey = JSON.parse(localStorage.getItem(`OWN-PUBK`));
                 window.crypto.subtle.importKey('jwk', rawOwnEncryptionPukKey, { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(key => {
                     new Response(val).arrayBuffer().then(buf => {
+                        setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), compressionProgress: 100, fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: true, done: false });
 
 
-                        console.log(buf)
-                        console.log(key)
+                        let base64encodedBuf = _arrayBufferToBase64(buf);
 
                         let chunks = [];
-                        setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), compressionProgress: 100, fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: true, done: false });
-                        for (let ix = 0; ix < Math.round(buf.byteLength / 446); ix++) {
-                            chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, buf.slice(0, 446)));
+                        let chunkCount = Math.round(base64encodedBuf.length / 446);
+                        console.log(base64encodedBuf.length)
+                        console.log(chunkCount)
+
+                        for (let ix = 0; ix <= chunkCount; ix++) {
+                            if (ix == 0) {
+                                chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(0, 446))));
+                            }
+                            if (ix > 0 && ix < chunkCount) {
+                                chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring((ix - 1) * 446, ix * 446))));
+                            }
+                            if (ix == chunkCount) {
+                                let len = base64encodedBuf.length;
+                                let modRes = len % 446;
+                                chunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(len - modRes, len - 1))));
+                            }
                         }
+
 
                         let s = Date.now()
 
                         Promise.all(chunks).then(all => {
+                            pemToKey(localStorage.getItem(privateKeyID)).then((privateKey) => {
+                                let decryptPromises = [];
+
+                                for (let ix = 0; ix < all.length; ix++) {
+                                    decryptPromises.push(decryptMessage(privateKey, all[ix], 'buffer'))
+                                }
+
+
+
+                                Promise.all(decryptPromises).then(decryptedBuf => {
+                                    let fullDecryptedBufStr = '';
+
+                                    console.log(decryptedBuf.join())
+                                    console.log(base64encodedBuf)
+                                })
+                            })
+
+
                             console.log(Date.now() - s)
                             setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
                         })

@@ -148,7 +148,7 @@ export const encryptMessage = async (key, plaintext) => {
 }
 
 
-export const decryptMessage = async (key, ciphertext, cipherEncoding) => {
+export const decryptMessage = async (key, ciphertext, cipherEncoding, returnBuffer) => {
     try {
 
         let cipherActual;
@@ -165,8 +165,11 @@ export const decryptMessage = async (key, ciphertext, cipherEncoding) => {
             key,
             cipherActual
         );
-
-        return new TextDecoder().decode(decrypted);
+        if (returnBuffer) {
+            return decrypted;
+        } else {
+            return new TextDecoder().decode(decrypted);
+        }
 
     } catch (e) { console.log(e) }
 }
