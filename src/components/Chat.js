@@ -108,6 +108,7 @@ function Chat(props) {
     const [showSignatureMismatchDialog, setShowSignatureMismatchDialog] = useState(false);
     const [conversationStartUnix, setConversationStartUnix] = useState(0);
     const [showImageMsgPreview, setShowImageMsgPreview] = useState(false);
+    const [imageMessagePayload, setImageMessagePayload] = useState({ ini: false, signature: '', ownContent: '', remoteContent: '', localContent: '' });
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`));
@@ -199,36 +200,68 @@ function Chat(props) {
     }
 
     const atomicDecrypt = async (rawMsg, ownPUBSK, privateKey, pubSigningKey) => {
-        if (rawMsg.type == 'tx') {
-            return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
-                return await decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
-                    try {
-                        let messageContentsObj = JSON.parse(plain);
-                        if (messageContentsObj.content.length > 0 && messageContentsObj.contentType == 'text' || messageContentsObj.contentType == 'color' || messageContentsObj.contentType == 'location') {
-                            return { ...rawMsg, content: messageContentsObj.content, contentType: messageContentsObj.contentType, signed: (ownSigStatus) ? 'self' : 'no_self' }
-                        } else {
+        if (rawMsg.typeOverride == 'none' || rawMsg.typeOverride == undefined) {
+            if (rawMsg.type == 'tx') {
+                return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
+                    return await decryptMessage(privateKey, rawMsg.ownContent, 'base64').then(plain => {
+                        try {
+                            let messageContentsObj = JSON.parse(plain);
+                            if (messageContentsObj.content.length > 0 && messageContentsObj.contentType == 'text' || messageContentsObj.contentType == 'color' || messageContentsObj.contentType == 'location') {
+                                return { ...rawMsg, content: messageContentsObj.content, contentType: messageContentsObj.contentType, signed: (ownSigStatus) ? 'self' : 'no_self' }
+                            } else {
+                                return { ...rawMsg, content: plain, signed: (ownSigStatus) ? 'self' : 'no_self' }
+                            }
+                        } catch (e) {
                             return { ...rawMsg, content: plain, signed: (ownSigStatus) ? 'self' : 'no_self' }
                         }
-                    } catch (e) {
-                        return { ...rawMsg, content: plain, signed: (ownSigStatus) ? 'self' : 'no_self' }
-                    }
-                })
-            });
-        } else {
-            return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
-                return await decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
-                    try {
-                        let messageContentsObj = JSON.parse(plain);
-                        if (messageContentsObj.content.length > 0 && messageContentsObj.contentType == 'text' || messageContentsObj.contentType == 'color' || messageContentsObj.contentType == 'location') {
-                            return { ...rawMsg, content: messageContentsObj.content, contentType: messageContentsObj.contentType, signed: sigStatus }
-                        } else {
+                    })
+                });
+            } else {
+                return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
+                    return await decryptMessage(privateKey, rawMsg.remoteContent, 'base64').then(plain => {
+                        try {
+                            let messageContentsObj = JSON.parse(plain);
+                            if (messageContentsObj.content.length > 0 && messageContentsObj.contentType == 'text' || messageContentsObj.contentType == 'color' || messageContentsObj.contentType == 'location') {
+                                return { ...rawMsg, content: messageContentsObj.content, contentType: messageContentsObj.contentType, signed: sigStatus }
+                            } else {
+                                return { ...rawMsg, content: plain, signed: sigStatus }
+                            }
+                        } catch (e) {
                             return { ...rawMsg, content: plain, signed: sigStatus }
                         }
-                    } catch (e) {
-                        return { ...rawMsg, content: plain, signed: sigStatus }
-                    }
+                    })
                 })
-            })
+            }
+        } else if (rawMsg.typeOverride == 'image') {
+            if (rawMsg.type == 'tx') {
+                return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
+                    let encryptedImageChunks = rawMsg.ownContent.split('<X>');
+
+                    let decryptPromises = [];
+
+                    for (let ix = 0; ix < encryptedImageChunks.length; ix++) {
+                        decryptPromises.push(decryptMessage(privateKey, encryptedImageChunks[ix], 'base64'))
+                    }
+
+                    return Promise.all(decryptPromises).then(decryptedBuf => {
+                        return { ...rawMsg, content: decryptedBuf.join(''), contentType: 'image', signed: (ownSigStatus) ? 'self' : 'no_self' }
+                    });
+                });
+            } else {
+                return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
+                    let encryptedImageChunks = rawMsg.ownContent.split('<X>');
+
+                    let decryptPromises = [];
+
+                    for (let ix = 0; ix < encryptedImageChunks.length; ix++) {
+                        decryptPromises.push(decryptMessage(privateKey, encryptedImageChunks[ix], 'base64'))
+                    }
+
+                    return Promise.all(decryptPromises).then(decryptedBuf => {
+                        return { ...rawMsg, content: decryptedBuf.join(''), contentType: 'image', signed: (sigStatus) ? 'self' : 'no_self' }
+                    });
+                })
+            }
         }
     }
 
@@ -332,6 +365,22 @@ function Chat(props) {
         }).catch(e => { })
     }, [msgCount])
 
+
+    const atomicMsgSend = (nMsgObj, MID) => {
+        set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
+        set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
+        if (!ghostModeEnabled) {
+            axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
+                AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
+            }).then(res => { }).catch(e => {
+                // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
+                setTimeout(() => {
+                    setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
+                }, 2000);
+            })
+        }
+    }
+
     const onSend = () => {
         setInputDynamicStyle({ top: '92.1875%', height: '6.5625%' })
         setMsgsListHeight('74.21875%')
@@ -353,8 +402,13 @@ function Chat(props) {
             setNewMessageContents('');
             setSelectedMsgType('text');
         }
+        if (selectedMsgType == 'image' && imageMessagePayload.ini) {
+            LocalMsgContent = imageMessagePayload.localContent;
+            setNewMessageContents('');
+            setSelectedMsgType('text');
+        }
         if (LocalMsgContent != 0) {
-            let local_nMsgObj = { contentType: selectedMsgType, type: 'tx', signed: 'self', targetUID: props.chatObj.remoteUID, MID: MID, content: LocalMsgContent, tx: Date.now(), auth: true, seen: false, liked: false }
+            let local_nMsgObj = { typeOverride: `${selectedMsgType == 'image' ? 'image' : 'none'}`, contentType: selectedMsgType, type: 'tx', signed: 'self', targetUID: props.chatObj.remoteUID, MID: MID, content: LocalMsgContent, tx: Date.now(), auth: true, seen: false, liked: false }
             //add messages sent to the local realtime buffer. this improves the ux significantly while also maintaining the end-to-end encryption since this plain text message objects never hits the network
             setRealtimeBuffer((prevBuf) => {
                 return [...prevBuf, { ...local_nMsgObj, ghost: ghostModeEnabled }]
@@ -363,54 +417,48 @@ function Chat(props) {
         setTimeout(() => {
             filterDeletedMessages('159');
         }, 50);
-        window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.remoteUID}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
-            window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
-                let messageContentsObj = { contentType: '', content: '' };
-                if (selectedMsgType == 'text') {
-                    messageContentsObj = { contentType: 'text', content: newMessageContents };
-                }
-                if (selectedMsgType == 'color') {
-                    messageContentsObj = { contentType: 'color', content: selectedColor.toString() };
-                }
-                if (selectedMsgType == 'location' && selectedLocation.ini) {
-                    messageContentsObj = { contentType: 'location', content: JSON.stringify(selectedLocation.locationObj) };
-                }
-                if (messageContentsObj.contentType != '' && messageContentsObj.content != '') {
-                    encryptMessage(remotePubkey, JSON.stringify(messageContentsObj)).then(remoteCipher => {
-                        encryptMessage(ownPubkey, JSON.stringify(messageContentsObj)).then(ownCipher => {
-                            pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
-                                sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
-                                    let nMsgObj = { originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
-                                    set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
-                                    set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
-                                    if (!ghostModeEnabled) {
-                                        axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
-                                            AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
-                                        }).then(res => { }).catch(e => {
-                                            // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
-                                            setTimeout(() => {
-                                                setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
-                                            }, 2000);
-                                        })
-                                    }
+        if (selectedMsgType != 'image') {
+            window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`PUBK-${props.chatObj.remoteUID}`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(remotePubkey => {
+                window.crypto.subtle.importKey('jwk', JSON.parse(localStorage.getItem(`OWN-PUBK`)), { name: 'RSA-OAEP', hash: 'SHA-256' }, true, ['encrypt']).then(ownPubkey => {
+                    let messageContentsObj = { contentType: '', content: '' };
+                    if (selectedMsgType == 'text') {
+                        messageContentsObj = { contentType: 'text', content: newMessageContents };
+                    }
+                    if (selectedMsgType == 'color') {
+                        messageContentsObj = { contentType: 'color', content: selectedColor.toString() };
+                    }
+                    if (selectedMsgType == 'location' && selectedLocation.ini) {
+                        messageContentsObj = { contentType: 'location', content: JSON.stringify(selectedLocation.locationObj) };
+                    }
+                    if (messageContentsObj.contentType != '' && messageContentsObj.content != '') {
+                        encryptMessage(remotePubkey, JSON.stringify(messageContentsObj)).then(remoteCipher => {
+                            encryptMessage(ownPubkey, JSON.stringify(messageContentsObj)).then(ownCipher => {
+                                pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
+                                    sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
+                                        let nMsgObj = { typeOverride: 'none', originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
+                                        atomicMsgSend(nMsgObj, MID);
+                                    })
                                 })
                             })
                         })
-                    })
-                } else {
-                    // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message [NTYX]' });
-                    // setTimeout(() => {
-                    //     setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message [NTYX]' });
-                    // }, 2000);
-                }
+                    } else {
+                        // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message [NTYX]' });
+                        // setTimeout(() => {
+                        //     setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message [NTYX]' });
+                        // }, 2000);
+                    }
+                });
             });
-        });
+        } else if (imageMessagePayload.ini) {
+            let messageContentsObj = { contentType: 'image', ownContent: imageMessagePayload.ownContent, remoteContent: imageMessagePayload.remoteContent };
+            let nMsgObj = { typeOverride: 'image', originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: messageContentsObj.ownContent, remoteContent: messageContentsObj.remoteContent, tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
+            atomicMsgSend(nMsgObj, MID);
+        }
     }
 
     const deleteMessage = (MID) => {
         set(ref(db, `messageBuffer/${props.ownUID}/deleted/${MID}`), { tx: Date.now() });
         set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/deleted/${MID}`), { tx: Date.now() });
-
         setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
         setRealtimeBufferList(realtimeBuffer.filter(elm => elm.MID != MID).map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
@@ -804,7 +852,7 @@ function Chat(props) {
         if (typeID != 'image') {
             setSelectedMsgType(typeID);
         } else {
-            const options = { maxSizeMB: 3, onProgress: (e) => { setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, compressionProgress: e, isEncrypting: false, done: false }) }, useWebWorker: true, preserveExif: false }
+            const options = { maxSizeMB: 0.5, onProgress: (e) => { setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, compressionProgress: e, isEncrypting: false, done: false }) }, useWebWorker: true, preserveExif: false }
 
             const file = e.target.files[0]
             setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, compressionProgress: 0, isEncrypting: false, done: false });
@@ -829,40 +877,36 @@ function Chat(props) {
 
                             for (let ix = 0; ix <= chunkCount; ix++) {
                                 if (ix == 0) {
-                                    ownChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(0, 446))));
-                                    remoteChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, remotePubkey, new TextEncoder().encode(base64encodedBuf.substring(0, 446))));
+                                    ownChunks.push(encryptMessage(key, base64encodedBuf.substring(0, 446)));
+                                    remoteChunks.push(encryptMessage(remotePubkey, base64encodedBuf.substring(0, 446)));
                                 }
                                 if (ix > 1 && ix < chunkCount) {
-                                    ownChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring((ix - 1) * 446, ix * 446))));
-                                    remoteChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, remotePubkey, new TextEncoder().encode(base64encodedBuf.substring((ix - 1) * 446, ix * 446))));
+                                    ownChunks.push(encryptMessage(key, base64encodedBuf.substring((ix - 1) * 446, ix * 446)));
+                                    remoteChunks.push(encryptMessage(remotePubkey, base64encodedBuf.substring((ix - 1) * 446, ix * 446)));
                                 }
                                 if (ix == chunkCount) {
                                     let len = base64encodedBuf.length;
                                     let modRes = len % 446;
-                                    ownChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, new TextEncoder().encode(base64encodedBuf.substring(len - modRes, len))));
-                                    remoteChunks.push(window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, remotePubkey, new TextEncoder().encode(base64encodedBuf.substring(len - modRes, len))));
+                                    ownChunks.push(encryptMessage(key, base64encodedBuf.substring(len - modRes, len)));
+                                    remoteChunks.push(encryptMessage(remotePubkey, base64encodedBuf.substring(len - modRes, len)));
                                 }
                             }
 
                             Promise.all(ownChunks).then(encryptedOwnChunks => {
                                 Promise.all(remoteChunks).then(encryptedRemoteChunks => {
-                                    // pemToKey(localStorage.getItem(privateKeyID)).then((privateKey) => {
-                                    //     let decryptPromises = [];
-
-                                    //     for (let ix = 0; ix < encryptedOwnChunks.length; ix++) {
-                                    //         decryptPromises.push(decryptMessage(privateKey, encryptedOwnChunks[ix], 'buffer'))
-                                    //     }
-
-                                    //     Promise.all(decryptPromises).then(decryptedBuf => {
-                                    //         let fullDecryptedBufStr = '';
-
-                                    //         console.log(decryptedBuf.join(''))
-                                    //         // console.log('------EMNDD-----')
-                                    //         console.log(base64encodedBuf)
-
-                                    //         setSelectedImageBase64({ ini: true, data: `data:image/png;base64, ${decryptedBuf.join('')}` })
-                                    //     })
-                                    // })
+                                    pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
+                                        let base64EncodedOwnChunks = '';
+                                        let base64EncodedRemoteChunks = '';
+                                        for (let ix = 0; ix < encryptedOwnChunks.length; ix++) {
+                                            base64EncodedOwnChunks += encryptedOwnChunks[ix].base64;
+                                            base64EncodedOwnChunks += '<X>';
+                                            base64EncodedRemoteChunks += encryptedRemoteChunks[ix].base64;
+                                            base64EncodedRemoteChunks += '<X>';
+                                        }
+                                        sign(signingPrivateKey, base64EncodedRemoteChunks).then(cipherSig => {
+                                            setImageMessagePayload({ localContent: base64encodedBuf, ini: true, signature: cipherSig.base64, ownContent: base64EncodedOwnChunks, remoteContent: base64EncodedRemoteChunks });
+                                        });
+                                    })
                                     setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
                                 })
                             })

@@ -140,6 +140,7 @@ function Message(props) {
         } else {
             return (
                 <>
+                    {props.msgObj.contentType == 'image' ? <img style={{ width: '100%' }} src={`data:image/png;base64, ${props.msgObj.content}`}></img> : ''}
                     {props.msgObj.contentType == 'color' ?
                         <div style={{ top: '0%', left: '0%', backgroundColor: '#00000000' }} className="colorMsgTypePreviewContainer">
                             <MsgTypeColorDeco style={{ left: '3%' }}></MsgTypeColorDeco>

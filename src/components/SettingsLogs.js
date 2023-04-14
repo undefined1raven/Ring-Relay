@@ -34,7 +34,7 @@ function SettingsLogs(props) {
 
     const removeTypeFilters = () => {
         let nFilters = logFilters;
-        for (let ix = 0; ix < Object.keys(nFilters).length - 1; ix++) {
+        for (let ix = 0; ix < Object.keys(nFilters).length; ix++) {
             let key = Object.keys(nFilters)[ix]
             if (key != 'last24h' && key != 'lastWeek' && key != 'lastMonth') {
                 nFilters[key] = true;
