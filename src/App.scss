@@ -675,6 +675,19 @@ rect {
   @include flex();
 }
 
+.imageSendingContainer {
+  position: absolute;
+  top: 17.03125%;
+  left: 1.2%;
+  width: 96.122222222%;
+  @include VAlign();
+  @include flex();
+  height: 6%;
+  background-color: #160031EE;
+  backdrop-filter: blur(5px);
+  z-index: 1000;
+}
+
 .msgDeleteButton,
 .msgCopyButton {
   width: 40%;
@@ -890,6 +903,12 @@ rect {
     background-color: #6100DC30;
     color: #E09FFF
   }
+}
+
+
+#imageSendingLabel{
+  animation: chatsFetchingDecoElmAni linear 1.5s infinite;
+  background-color: #00008300 !important;
 }
 
 .chatsFetchingDecoElm {
@@ -1570,7 +1589,8 @@ stop {
   left: 5%;
   width: 90%;
 }
-.ImageOpStatus{
+
+.ImageOpStatus {
   position: absolute;
   top: 90%;
   @include flex();
@@ -1581,10 +1601,12 @@ stop {
   border-radius: 5px;
   backdrop-filter: blur(5px);
 }
+
 input[type=file] {
   font-size: 0;
 }
-#ImageCompressIndiContainer{
+
+#ImageCompressIndiContainer {
   position: absolute;
   width: 84%;
   left: 8%;
@@ -1594,13 +1616,15 @@ input[type=file] {
   overflow: hidden;
   border-radius: 15px;
 }
-#imageCompressionIndiActual{
+
+#imageCompressionIndiActual {
   position: absolute;
   top: 0%;
   width: 100%;
   height: 100%;
   background-color: #4200FF;
 }
+
 #QRCodeScanAreaDeco {
   @include VAlign();
 }

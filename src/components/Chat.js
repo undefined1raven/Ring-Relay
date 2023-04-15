@@ -109,6 +109,7 @@ function Chat(props) {
     const [conversationStartUnix, setConversationStartUnix] = useState(0);
     const [showImageMsgPreview, setShowImageMsgPreview] = useState(false);
     const [imageMessagePayload, setImageMessagePayload] = useState({ ini: false, signature: '', ownContent: '', remoteContent: '', localContent: '' });
+    const [imageSending, setImageSending] = useState(false);
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`));
@@ -380,13 +381,8 @@ function Chat(props) {
         set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
         set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
         if (!ghostModeEnabled) {
-            axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
+            return axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                 AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
-            }).then(res => { }).catch(e => {
-                // setFailedMessageActionLabel({ opacity: 1, label: 'Failed to send message' });
-                setTimeout(() => {
-                    setFailedMessageActionLabel({ opacity: 0, label: 'Failed to send message' });
-                }, 2000);
             })
         }
     }
@@ -446,7 +442,7 @@ function Chat(props) {
                                 pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
                                     sign(signingPrivateKey, remoteCipher.base64).then(cipherSig => {
                                         let nMsgObj = { typeOverride: 'none', originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownCipher.base64, remoteContent: remoteCipher.base64, tx: Date.now(), auth: true, seen: false, liked: false, signature: cipherSig.base64 }
-                                        atomicMsgSend(nMsgObj, MID);
+                                        atomicMsgSend(nMsgObj, MID).then(resx => { }).catch(e => console.log(e));
                                     })
                                 })
                             })
@@ -463,12 +459,16 @@ function Chat(props) {
             let ownTransportArray = imageMessagePayload.ownContent.toString().match(/.{1,38000}/g);
             let remoteTransportArray = imageMessagePayload.remoteContent.toString().match(/.{1,38000}/g);
 
+            let chunksTransferPromiseArray = [];
+            setImageSending(true);
             for (let ix = 0; ix < ownTransportArray.length; ix++) {
                 let nMsgObj = { typeOverride: `image.${ix}`, originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownTransportArray[ix], remoteContent: remoteTransportArray[ix], tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
-                atomicMsgSend(nMsgObj, MID);
+                chunksTransferPromiseArray.push(atomicMsgSend(nMsgObj, MID));
             }
 
-
+            Promise.all(chunksTransferPromiseArray).then(() => {
+                setImageSending(false);
+            }).catch(() => { })
         }
     }
 
@@ -938,6 +938,11 @@ function Chat(props) {
     if (props.show) {
         return (
             <div className="chatContainer">
+                {imageSending ?
+                    <div className='imageSendingContainer'>
+                        <Label id="imageSendingLabel" fontSize="1.9vh" style={{ top: '28.2%', left: '5%' }} color="#FFF" text="[Sending Image]"></Label>
+                        <ImageProcessingSendBtnDeco style={{ position: 'absolute', left: '86.5%', top: '11.5%' }}></ImageProcessingSendBtnDeco>
+                    </div> : ''}
                 <div className='chatHeader' style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}` }}>
                     <div onClick={convoDetailsToggle} style={{ backgroundColor: `${ghostModeEnabled ? '#0500FF20' : '#6100DC20'}`, borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : "#7000FF"}` }} className='chatHeaderBkg'></div>
                     <Button onClick={!showChatDetails ? props.onBackButton : () => { setShowChatDetails(false); scrollToBottom(); }} id="chatHeaderBackButton" bkg={ghostModeEnabled ? '#0500FF' : "#7000FF"} width="9.428571429%" height="100%" child={<BackDeco color={ghostModeEnabled ? '#0500FF' : "#7000FF"} />}></Button>
