@@ -150,7 +150,6 @@ export const encryptMessage = async (key, plaintext) => {
 
 export const decryptMessage = async (key, ciphertext, cipherEncoding, returnBuffer) => {
     try {
-
         let cipherActual;
         if (cipherEncoding == 'base64') {
             cipherActual = btoaTobuf(ciphertext);
@@ -171,7 +170,7 @@ export const decryptMessage = async (key, ciphertext, cipherEncoding, returnBuff
             return new TextDecoder().decode(decrypted);
         }
 
-    } catch (e) { console.log(e) }
+    } catch (e) { console.log(ciphertext) }
 }
 
 function getKeyMaterial(password) {

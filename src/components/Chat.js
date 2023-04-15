@@ -199,7 +199,7 @@ function Chat(props) {
         }, 50);
     }
 
-    const atomicDecrypt = async (rawMsg, ownPUBSK, privateKey, pubSigningKey) => {
+    const atomicDecrypt = async (rawMsg, ownPUBSK, privateKey, pubSigningKey, rawMsgArr) => {
         if (rawMsg.typeOverride == 'none' || rawMsg.typeOverride == undefined) {
             if (rawMsg.type == 'tx') {
                 return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
@@ -232,35 +232,44 @@ function Chat(props) {
                     })
                 })
             }
-        } else if (rawMsg.typeOverride == 'image') {
-            if (rawMsg.type == 'tx') {
-                return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
-                    let encryptedImageChunks = rawMsg.ownContent.split('<X>');
+        } else if (rawMsg.typeOverride.split('.')[0] == 'image') {
+            if (rawMsg.typeOverride.split('.')[1] == 0) {
+                let encryptedImageChunks = rawMsgArr.filter(msg => msg.MID == rawMsg.MID);
+                let encryptedOwnImagaDataChunks = '';
+                let encryptedRemoteImagaDataChunks = '';
 
-                    let decryptPromises = [];
-
-                    for (let ix = 0; ix < encryptedImageChunks.length; ix++) {
-                        decryptPromises.push(decryptMessage(privateKey, encryptedImageChunks[ix], 'base64'))
-                    }
-
-                    return Promise.all(decryptPromises).then(decryptedBuf => {
-                        return { ...rawMsg, content: decryptedBuf.join(''), contentType: 'image', signed: (ownSigStatus) ? 'self' : 'no_self' }
-                    });
-                });
-            } else {
-                return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
-                    let encryptedImageChunks = rawMsg.remoteContent.split('<X>');
-
-                    let decryptPromises = [];
-
-                    for (let ix = 0; ix < encryptedImageChunks.length; ix++) {
-                        decryptPromises.push(decryptMessage(privateKey, encryptedImageChunks[ix], 'base64'))
-                    }
-
-                    return Promise.all(decryptPromises).then(decryptedBuf => {
-                        return { ...rawMsg, content: decryptedBuf.join(''), contentType: 'image', signed: (sigStatus) ? 'self' : 'no_self' }
-                    });
+                encryptedImageChunks.forEach(chunk => {
+                    encryptedOwnImagaDataChunks += chunk.ownContent
+                    encryptedRemoteImagaDataChunks += chunk.remoteContent
                 })
+
+                let decryptionPromiseArray = [];
+                if (rawMsg.type == 'rx') {
+                    return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
+                        encryptedRemoteImagaDataChunks.split('<X>').forEach(encryptedChunk => {
+                            if (encryptedChunk.length > 0) {
+                                decryptionPromiseArray.push(decryptMessage(privateKey, encryptedChunk, 'base64'));
+                            }
+                        });
+                        return Promise.all(decryptionPromiseArray).then(decryptedImageChunks => {
+                            return { ...rawMsg, content: decryptedImageChunks.join(''), contentType: 'image', signed: (sigStatus) ? 'self' : 'no_self' }
+                        })
+                    })
+                }
+                if (rawMsg.type == 'tx') {
+                    return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
+                        encryptedOwnImagaDataChunks.split('<X>').forEach(encryptedChunk => {
+                            if (encryptedChunk.length > 0) {
+                                decryptionPromiseArray.push(decryptMessage(privateKey, encryptedChunk, 'base64'));
+                            }
+                        })
+                        return Promise.all(decryptionPromiseArray).then(decryptedImageChunks => {
+                            return { ...rawMsg, content: decryptedImageChunks.join(''), contentType: 'image', signed: (ownSigStatus) ? 'self' : 'no_self' }
+                        })
+                    });
+                }
+            } else {
+                return { ...rawMsg, content: '', contentType: 'image', signed: (false) ? 'self' : 'no_self', hide: true }
             }
         }
     }
@@ -280,7 +289,7 @@ function Chat(props) {
                             window.crypto.subtle.importKey('jwk', publicSigningKeyJWK, { name: 'ECDSA', namedCurve: 'P-521' }, true, ['verify']).then(pubSigningKey => {
                                 let promiseArray = [];
                                 for (let ix = 0; ix < rawMsgArr.length; ix++) {
-                                    promiseArray.push(atomicDecrypt(rawMsgArr[ix], ownPUBSK, privateKey, pubSigningKey));
+                                    promiseArray.push(atomicDecrypt(rawMsgArr[ix], ownPUBSK, privateKey, pubSigningKey, rawMsgArr));
                                 }
                                 Promise.all(promiseArray).then(msgArr => {
                                     setMsgArray({ ini: true, array: [...msgArr] });
@@ -450,24 +459,22 @@ function Chat(props) {
                 });
             });
         } else if (imageMessagePayload.ini) {
-            let messageContentsObj = { contentType: 'image', ownContent: imageMessagePayload.ownContent, remoteContent: imageMessagePayload.remoteContent };
+            let ownTransportArray = imageMessagePayload.ownContent.toString().match(/.{1,38000}/g);
+            let remoteTransportArray = imageMessagePayload.remoteContent.toString().match(/.{1,38000}/g);
 
-            let transportChunkCount = imageMessagePayload.ownContent.length / 38000;
+            for (let ix = 0; ix < ownTransportArray.length; ix++) {
+                let nMsgObj = { typeOverride: `image.${ix}`, originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownTransportArray[ix], remoteContent: remoteTransportArray[ix], tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
+                atomicMsgSend(nMsgObj, MID);
+            }
 
-            let demo = imageMessagePayload.ownContent.substring(0, Math.round(imageMessagePayload.ownContent.length / transportChunkCount))
 
-            let nMsgObj = { typeOverride: 'image', originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: demo, remoteContent: demo, tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
-
-            console.log(transportChunkCount)
-
-            atomicMsgSend(nMsgObj, MID);
         }
     }
 
     const deleteMessage = (MID) => {
         set(ref(db, `messageBuffer/${props.ownUID}/deleted/${MID}`), { tx: Date.now() });
         set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/deleted/${MID}`), { tx: Date.now() });
-        setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        setMsgList(msgArray.array.filter(elm => elm.MID != MID).map(x => <li style={{ display: `${x?.hide ? 'none' : 'block'}` }} id={x?.MID} key={x?.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x?.content != undefined ? true : false} msgObj={x}></Message></li>))
 
         setRealtimeBufferList(realtimeBuffer.filter(elm => elm.MID != MID).map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
 
@@ -568,7 +575,7 @@ function Chat(props) {
     }, [props])
 
     useEffect(() => {
-        setMsgList(msgArray.array.map(x => <li id={x.MID} key={x.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x.content != undefined ? true : false} msgObj={x}></Message></li>))
+        setMsgList(msgArray.array.map(x => <li style={{ display: `${x?.hide ? 'none' : 'block'}` }} id={x?.MID} key={x?.MID + Math.random()}><Message deleteMessage={deleteMessage} likeMessageUpdate={likeMessageUpdate} decrypted={x?.content != undefined ? true : false} msgObj={x}></Message></li>))
     }, [msgArray])
 
     const filterDeletedMessages = (id) => {
