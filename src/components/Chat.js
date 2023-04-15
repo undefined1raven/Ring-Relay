@@ -249,7 +249,7 @@ function Chat(props) {
                 });
             } else {
                 return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
-                    let encryptedImageChunks = rawMsg.ownContent.split('<X>');
+                    let encryptedImageChunks = rawMsg.remoteContent.split('<X>');
 
                     let decryptPromises = [];
 
@@ -451,7 +451,15 @@ function Chat(props) {
             });
         } else if (imageMessagePayload.ini) {
             let messageContentsObj = { contentType: 'image', ownContent: imageMessagePayload.ownContent, remoteContent: imageMessagePayload.remoteContent };
-            let nMsgObj = { typeOverride: 'image', originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: messageContentsObj.ownContent, remoteContent: messageContentsObj.remoteContent, tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
+
+            let transportChunkCount = imageMessagePayload.ownContent.length / 38000;
+
+            let demo = imageMessagePayload.ownContent.substring(0, Math.round(imageMessagePayload.ownContent.length / transportChunkCount))
+
+            let nMsgObj = { typeOverride: 'image', originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: demo, remoteContent: demo, tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
+
+            console.log(transportChunkCount)
+
             atomicMsgSend(nMsgObj, MID);
         }
     }
