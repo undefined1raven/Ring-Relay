@@ -234,6 +234,7 @@ function Chat(props) {
             }
         } else if (rawMsg.typeOverride.split('.')[0] == 'image') {
             if (rawMsg.typeOverride.split('.')[1] == 0) {
+
                 let encryptedImageChunks = rawMsgArr.filter(msg => msg.MID == rawMsg.MID);
                 let encryptedOwnImagaDataChunks = '';
                 let encryptedRemoteImagaDataChunks = '';

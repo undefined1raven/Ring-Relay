@@ -1,10 +1,6 @@
 
-import MinLogo from '../components/MinLogo.js'
-import InputField from '../components/InputField.js'
 import Label from '../components/Label.js'
-import VerticalLine from '../components/VerticalLine.js'
 import Button from '../components/Button.js'
-import BackDeco from '../components/BackDeco.js'
 import { useEffect, useState } from 'react'
 import NotAuthedMsgDeco from '../components/NotAuthedMsgDeco.js'
 import MsgTXDeco from '../components/MsgTXDeco.js'
@@ -12,14 +8,12 @@ import MsgRXDeco from '../components/MsgRXDeco.js'
 import AuthedMsgDeco from '../components/AuthedMsgDeco.js'
 import MsgLikedDeco from '../components/MsgLikedDeco.js'
 import CommonSigMismatchDeco from '../components/CommonSigMismatchDeco.js'
-import SignatureVerificationFailedDeco from '../components/SignatureVerificationFailedDeco.js'
-import SignatureVerificatioSuccessDeco from '../components/SignatureVerificationSuccessDeco.js'
 import MsgGhost from '../components/MsgGhost.js'
 import ColorPreview from '../components/ColorPreview.js'
 import MsgTypeColorDeco from '../components/MsgTypeColorDeco.js'
 import maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import Map, { NavigationControl, Marker } from 'react-map-gl';
+import Map, { Marker } from 'react-map-gl';
 import StaticMapMarker from '../components/StaticMapMarker.js'
 
 function Message(props) {
@@ -30,6 +24,7 @@ function Message(props) {
     const [location, setLocation] = useState({ ini: false, long: 0, lat: 0, zoom: 5 });
     const [showMap, setShowMap] = useState(false);
     const [isMapInteractive, setIsMapInteractive] = useState(false);
+    const [dynamicMarginBottom, setDynamicMarginBottom] = useState({ ini: false, margin: '' });
 
     useEffect(() => {
         document.addEventListener('click', (e) => {
@@ -126,6 +121,30 @@ function Message(props) {
         }
     }
 
+    const MsgTimeLabelColorController = () => {
+        if (props.msgObj.contentType == 'image') {
+            return { bkg: '#000000AA', color: '#FFF' };
+        } else {
+            if (ghost) {
+                return { bkg: '#0500FF50', color: '#FFF' };
+            } else {
+                return { bkg: '#55007350', color: '#8300B0' };
+            }
+        }
+    }
+
+    const MsgTypeDecoColorController = () => {
+        if (props.msgObj.contentType == 'image') {
+            return { bkg: '#000000', color: '#FFF' };
+        } else {
+            if (ghost) {
+                return { bkg: '#0500FF', color: '#FFF' };
+            } else {
+                return { bkg: '#550073', color: '#8300B0' };
+            }
+        }
+    }
+
     const onMsgClick = useSingleAndDoubleClick(() => { }, onDoubleClick)
     const msgDateUnix = new Date(parseInt(props.msgObj.tx));
     const menuController = () => {
@@ -140,7 +159,7 @@ function Message(props) {
         } else {
             return (
                 <>
-                    {props.msgObj.contentType == 'image' ? <img style={{ width: '100%' }} src={`data:image/webp;base64, ${props.msgObj.content}`}></img> : ''}
+                    {props.msgObj.contentType == 'image' ? <img id={`IMG-${props.msgObj.MID}`} style={{ position: 'absolute', top: '0%', left: '0%', height: 'auto', width: '100%', marginBottom: '5%' }} src={`data:image/webp;base64, ${props.msgObj.content}`}></img> : ''}
                     {props.msgObj.contentType == 'color' ?
                         <div style={{ top: '0%', left: '0%', backgroundColor: '#00000000' }} className="colorMsgTypePreviewContainer">
                             <MsgTypeColorDeco style={{ left: '3%' }}></MsgTypeColorDeco>
@@ -161,9 +180,9 @@ function Message(props) {
                     ><Marker children={<StaticMapMarker />} draggable={false} longitude={location.long} latitude={location.lat}></Marker></Map> : ""}
                     {!isMapInteractive && props.msgObj.contentType == 'location' && showMap ? <div className='mapInteractionDisallower' style={{ position: 'absolute', width: '100%', height: '100%', top: '0%', left: '0%' }}></div> : ''}
                     {props.msgObj.contentType == 'location' && showMap ? <Button onClick={() => setIsMapInteractive(prev => !prev)} className="messageMapGoInteractiveButton" fontSize="1.7vh" width="60%" color="#999" label={`Tap here to go ${isMapInteractive ? 'static' : 'interactive'}`} style={{ backgroundColor: `${ghost ? "#00109EAA" : "#2E0067AA"}`, border: `solid 1px ${ghost ? "#0500FF" : "#7100FF"}` }}></Button> : ''}
-                    <Label className="msgTime" bkg={ghost ? '#0500FF00' : "#55007300"} color={ghost ? '#FFF' : "#8300B0"} text={`${msgDateUnix.getHours().toString().padStart(2, '0')}:${msgDateUnix.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
-                    {props.msgObj.auth ? <AuthedMsgDeco ghost={ghost} /> : <NotAuthedMsgDeco />}
-                    {props.msgObj.type == 'rx' ? <MsgRXDeco ghost={ghost} /> : <MsgTXDeco ghost={ghost} />}
+                    <Label className="msgTime" bkg={MsgTimeLabelColorController().bkg} color={MsgTimeLabelColorController().color} text={`${msgDateUnix.getHours().toString().padStart(2, '0')}:${msgDateUnix.getMinutes().toString().padStart(2, '0')}`} fontSize="2.5vw"></Label>
+                    {props.msgObj.auth ? <AuthedMsgDeco bkgOpacity={props.msgObj.contentType == 'image' ? '0.8' : '0.3'} signed={props.msgObj.signed} isImage={props.msgObj.contentType == 'image'} ghost={ghost} /> : <NotAuthedMsgDeco />}
+                    {props.msgObj.type == 'rx' ? <MsgRXDeco color={MsgTypeDecoColorController().color} bkg={MsgTypeDecoColorController().bkg} opacity={props.msgObj.contentType == 'image' ? '0.8' : '0.3'} /> : <MsgTXDeco bkg={MsgTypeDecoColorController().bkg} color={MsgTypeDecoColorController().color} opacity={props.msgObj.contentType == 'image' ? '0.8' : '0.3'} />}
                     {ghost ? <MsgGhost /> : ''}
                     {(props.msgObj.seen && props.msgObj.type == 'tx') ? <Label fontSize="2.5vw" className="msgSeen" color={ghost ? '#0500FF' : "#8300B0"} bkg={ghost ? '#0500FF20' : "#55007340"} text="Seen" /> : ''}
                     {(liked && !deleted) ? <MsgLikedDeco /> : ''}
@@ -211,14 +230,19 @@ function Message(props) {
     }
 
     const messageBorderColorController = () => {
-        if (props.decrypted) {
-            if (ghost) {
-                return '#0500FF';
+        if (props.msgObj.contentType != 'image') {
+
+            if (props.decrypted) {
+                if (ghost) {
+                    return '#0500FF';
+                } else {
+                    return '#7000FF';
+                }
             } else {
-                return '#7000FF';
+                return '#E20028';
             }
         } else {
-            return '#E20028';
+            return '';
         }
     }
 
@@ -226,9 +250,16 @@ function Message(props) {
         local: { label: 'Local ▣', color: '#7000FF' }, 'self': { label: '[Own SIG]', color: '#00FFD1' }, 'no_self': { label: '[OSIG_F]', color: '#f39e00' }, true: { label: '[Signed]', color: '#00FFD1' }, false: { label: 'SIG Fail', color: '#FF002E' }
     };
 
+    useEffect(() => {
+        let dynamicMarginBottom = document.getElementById(`IMG-${props.msgObj.MID}`)?.clientHeight - ((0.5 / 100) * document.documentElement.clientHeight);
+        if (dynamicMarginBottom != NaN && dynamicMarginBottom != undefined && dynamicMarginBottom > 0) {
+            setDynamicMarginBottom({ ini: true, margin: `${dynamicMarginBottom}px` });
+        }
+    }, [])
+
     return (
         <div>
-            <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={messageBkgController()} style={{ borderLeft: `solid 1px ${messageBorderColorController()}`, paddingTop: `${props.msgObj.contentType == 'location' ? '30%' : 'auto'}` }} child={
+            <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={messageBkgController()} style={{ borderLeft: `solid 1px ${messageBorderColorController()}`, paddingTop: `${props.msgObj.contentType == 'location' ? '30%' : 'auto'}`, marginBottom: `${props.msgObj.contentType == 'image' ? dynamicMarginBottom.margin : '5%'}` }} child={
                 props.decrypted ?
                     <div>
                         {menuController()}
