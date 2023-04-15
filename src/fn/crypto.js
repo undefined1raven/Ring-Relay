@@ -170,7 +170,7 @@ export const decryptMessage = async (key, ciphertext, cipherEncoding, returnBuff
             return new TextDecoder().decode(decrypted);
         }
 
-    } catch (e) { console.log(ciphertext) }
+    } catch (e) { console.log(e) }
 }
 
 function getKeyMaterial(password) {
