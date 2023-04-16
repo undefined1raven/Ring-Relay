@@ -110,11 +110,13 @@ function Chat(props) {
     const [showImageMsgPreview, setShowImageMsgPreview] = useState(false);
     const [imageMessagePayload, setImageMessagePayload] = useState({ ini: false, signature: '', ownContent: '', remoteContent: '', localContent: '' });
     const [imageSending, setImageSending] = useState(false);
+    const [decryptedImageData, setDecryptedImageData] = useState([]);
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`));
 
     useEffect(() => {
+
         if (!PKSH == '') {
             let rawRemoteEncryptionPukKey = localStorage.getItem(`PUBK-${props.chatObj.remoteUID}`);
             let rawOwnEncryptionPukKey = localStorage.getItem(`OWN-PUBK`);
@@ -200,6 +202,24 @@ function Chat(props) {
         }, 50);
     }
 
+
+    useEffect(() => {
+        decryptedImageData.forEach(msg => {
+            let updatedMsgArray = [];
+            for (let ix = 0; ix < msgArray.array.length; ix++) {
+                if (msg.MID == msgArray.array[ix].MID && msgArray.array[ix].typeOverride == 'image.0') {
+                    updatedMsgArray.push(msg);
+                } else {
+                    updatedMsgArray.push(msgArray.array[ix]);
+                }
+            }
+            setMsgArray({ ini: true, array: updatedMsgArray });
+            setTimeout(() => {
+                scrollToBottom();
+            }, 150);
+        })
+    }, [decryptedImageData])
+
     const atomicDecrypt = async (rawMsg, ownPUBSK, privateKey, pubSigningKey, rawMsgArr) => {
         if (rawMsg.typeOverride == 'none' || rawMsg.typeOverride == undefined) {
             if (rawMsg.type == 'tx') {
@@ -236,6 +256,14 @@ function Chat(props) {
         } else if (rawMsg.typeOverride.split('.')[0] == 'image') {
             if (rawMsg.typeOverride.split('.')[1] == 0) {
 
+                let imageDecryptorWorker = new Worker('./imageDecryptor.js');
+
+                imageDecryptorWorker.onmessage = (e) => {
+                    if (e.data.status == 'Success') {
+                        setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
+                    }
+                }
+
                 let encryptedImageChunks = rawMsgArr.filter(msg => msg.MID == rawMsg.MID);
                 let encryptedOwnImagaDataChunks = '';
                 let encryptedRemoteImagaDataChunks = '';
@@ -245,31 +273,18 @@ function Chat(props) {
                     encryptedRemoteImagaDataChunks += chunk.remoteContent
                 })
 
-                let decryptionPromiseArray = [];
-                if (rawMsg.type == 'rx') {
-                    return verify(pubSigningKey, rawMsg.remoteContent, rawMsg.signature).then(async (sigStatus) => {
-                        encryptedRemoteImagaDataChunks.split('<X>').forEach(encryptedChunk => {
-                            if (encryptedChunk.length > 0) {
-                                decryptionPromiseArray.push(decryptMessage(privateKey, encryptedChunk, 'base64'));
-                            }
-                        });
-                        return Promise.all(decryptionPromiseArray).then(decryptedImageChunks => {
-                            return { ...rawMsg, content: decryptedImageChunks.join(''), contentType: 'image', signed: (sigStatus) ? 'self' : 'no_self' }
-                        })
-                    })
-                }
-                if (rawMsg.type == 'tx') {
-                    return verify(ownPUBSK, rawMsg.remoteContent, rawMsg.signature).then(async (ownSigStatus) => {
-                        encryptedOwnImagaDataChunks.split('<X>').forEach(encryptedChunk => {
-                            if (encryptedChunk.length > 0) {
-                                decryptionPromiseArray.push(decryptMessage(privateKey, encryptedChunk, 'base64'));
-                            }
-                        })
-                        return Promise.all(decryptionPromiseArray).then(decryptedImageChunks => {
-                            return { ...rawMsg, content: decryptedImageChunks.join(''), contentType: 'image', signed: (ownSigStatus) ? 'self' : 'no_self' }
-                        })
-                    });
-                }
+                imageDecryptorWorker.postMessage({
+                    eid: 'onDecryptStart',
+                    MID: rawMsg.MID,
+                    rawMsg: rawMsg,
+                    encryptedOwnImagaDataChunks: encryptedOwnImagaDataChunks,
+                    encryptedRemoteImagaDataChunks: encryptedRemoteImagaDataChunks,
+                    pubSigningKey: pubSigningKey,
+                    privateKey: privateKey,
+                    ownPUBSK: ownPUBSK,
+                });
+
+                return { ...rawMsg, content: '[Decrypting Image]', contentType: 'image', signed: (false) ? 'self' : 'no_self' }
             } else {
                 return { ...rawMsg, content: '', contentType: 'image', signed: (false) ? 'self' : 'no_self', hide: true }
             }
