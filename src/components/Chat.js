@@ -26,7 +26,8 @@ import ImageMsgTypePreview from './ImageMsgTypePreview.js';
 import ImagePickerOverlay from './ImagePickerOverlay.js'
 import ImageProcessingSendBtnDeco from './ImageProcessingSendBtnDeco.js'
 import CommonSigMismatchDeco from './CommonSigMismatchDeco.js'
-
+import { deflate, inflate } from 'react-zlib-js';
+import * as buffer from 'buffer';
 const firebaseConfig = {
     apiKey: "AIzaSyDgMwrGAEogcyudFXMuLRrC96xNQ8B9dI4",
     authDomain: "ring-relay.firebaseapp.com",
@@ -111,6 +112,7 @@ function Chat(props) {
     const [imageMessagePayload, setImageMessagePayload] = useState({ ini: false, signature: '', ownContent: '', remoteContent: '', localContent: '' });
     const [imageSending, setImageSending] = useState(false);
     const [decryptedImageData, setDecryptedImageData] = useState([]);
+    const [imageDataChunksTransportStatus, setImageDataChunksTransportStatus] = useState(0)//# of image data packets that still have to be sent 
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`));
@@ -326,12 +328,20 @@ function Chat(props) {
         }
     }
 
+    const bx = (bufstr) => {
+        let buf = new buffer.Buffer(bufstr);
+        return (buf)
+    }
+
     const getMessagesAndUpdateChat = () => {
         setChatLoadingLabel({ opacity: 1, label: '[Fetching Conversation]' });
         axios.post(`${DomainGetter('prodx')}api/dbop?getMessages`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), targetUID: props.chatObj.remoteUID, count: msgCount.count }).then(res => {
             if (res.data['error'] == undefined) {
                 setChatLoadingLabel({ opacity: 1, label: '[Decrypting Conversation]' });
                 let rawMsgArr = res.data.messages;
+
+                // inflate(bx(rawMsgArr), (jsx) => {
+                // })
                 rawMsgArr.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
                 setMSUID(res.data.MSUID);
                 setPKSH(res.data.PKSH);
@@ -475,17 +485,24 @@ function Chat(props) {
             let remoteTransportArray = imageMessagePayload.remoteContent.toString().match(/.{1,38000}/g);
 
             let chunksTransferPromiseArray = [];
+            setImageDataChunksTransportStatus({ val: ownTransportArray.length, ini: ownTransportArray.length });
             setImageSending(true);
             for (let ix = 0; ix < ownTransportArray.length; ix++) {
                 let nMsgObj = { typeOverride: `image.${ix}`, originUID: props.ownUID, targetUID: props.chatObj.remoteUID, MID: MID, ownContent: ownTransportArray[ix], remoteContent: remoteTransportArray[ix], tx: Date.now(), auth: true, seen: false, liked: false, signature: imageMessagePayload.signature }
-                chunksTransferPromiseArray.push(atomicMsgSend(nMsgObj, MID));
+                atomicMsgSend(nMsgObj, MID).then(res => {
+                    setImageDataChunksTransportStatus((prev) => { return { ...prev, val: prev.val - 1 } });
+                }).catch(e => {
+                    setImageDataChunksTransportStatus((prev) => { return { ...prev, val: prev.val - 1 } });
+                });
             }
-
-            Promise.all(chunksTransferPromiseArray).then(() => {
-                setImageSending(false);
-            }).catch(() => { })
         }
     }
+
+    useEffect(() => {
+        if (imageDataChunksTransportStatus.val == 0) {
+            setImageSending(false);
+        }
+    }, [imageDataChunksTransportStatus])
 
     const deleteMessage = (MID) => {
         set(ref(db, `messageBuffer/${props.ownUID}/deleted/${MID}`), { tx: Date.now() });
@@ -923,6 +940,9 @@ function Chat(props) {
                                 }
                             }
 
+                            console.log(`OWNL ${ownChunks.length}`);
+                            console.log(`REMOL ${remoteChunks.length}`);
+
                             Promise.all(ownChunks).then(encryptedOwnChunks => {
                                 Promise.all(remoteChunks).then(encryptedRemoteChunks => {
                                     pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
@@ -955,7 +975,7 @@ function Chat(props) {
             <div className="chatContainer">
                 {imageSending ?
                     <div className='imageSendingContainer'>
-                        <Label id="imageSendingLabel" fontSize="1.9vh" style={{ top: '28.2%', left: '5%' }} color="#FFF" text="[Sending Image]"></Label>
+                        <Label id="imageSendingLabel" fontSize="1.9vh" style={{ top: '28.2%', left: '5%' }} color="#FFF" text={`[Sending Image] [${100 - Math.round((imageDataChunksTransportStatus.val / imageDataChunksTransportStatus.ini) * 100)}%]`}></Label>
                         <ImageProcessingSendBtnDeco style={{ position: 'absolute', left: '86.5%', top: '11.5%' }}></ImageProcessingSendBtnDeco>
                     </div> : ''}
                 <div className='chatHeader' style={{ borderLeft: `solid 1px ${ghostModeEnabled ? '#0500FF' : '#7000FF'}` }}>
