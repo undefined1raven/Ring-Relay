@@ -1,7 +1,7 @@
 
 import Label from '../components/Label.js'
 import Button from '../components/Button.js'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, memo } from 'react'
 import NotAuthedMsgDeco from '../components/NotAuthedMsgDeco.js'
 import MsgTXDeco from '../components/MsgTXDeco.js'
 import MsgRXDeco from '../components/MsgRXDeco.js'
@@ -17,7 +17,7 @@ import Map, { Marker } from 'react-map-gl';
 import StaticMapMarker from '../components/StaticMapMarker.js'
 import ImageProcessingSendBtnDeco from './ImageProcessingSendBtnDeco.js'
 
-function Message(props) {
+const Message = memo(function Message(props) {
     const [liked, setLiked] = useState(props.msgObj.liked);
     const [deleted, setDeleted] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -148,6 +148,10 @@ function Message(props) {
         }
     }
 
+    const onImageLoadError = (e) => {
+        console.log('ILF')
+    }
+
     const onMsgClick = useSingleAndDoubleClick(() => { }, onDoubleClick)
     const msgDateUnix = new Date(parseInt(props.msgObj.tx));
     const menuController = () => {
@@ -162,8 +166,8 @@ function Message(props) {
         } else {
             return (
                 <>
-                    {props.msgObj.contentType == 'image' && props.msgObj.content == '[Decrypting Image]' ? <ImageProcessingSendBtnDeco style={{top: '20%', left: '48%'}}/> : ''}
-                    {props.msgObj.contentType == 'image' && props.msgObj.content != '[Decrypting Image]' ? <img id={`IMG-${props.msgObj.MID}`} style={{ position: 'absolute', top: '0%', left: '0%', height: 'auto', width: '100%', marginBottom: '5%' }} src={`data:image/webp;base64, ${props.msgObj.content}`}></img> : ''}
+                    {props.msgObj.contentType == 'image' && props.msgObj.content == '[Decrypting Image]' ? <ImageProcessingSendBtnDeco style={{ top: '20%', left: '48%' }} /> : ''}
+                    {props.msgObj.contentType == 'image' && props.msgObj.content != '[Decrypting Image]' ? <img id={`IMG-${props.msgObj.MID}`} style={{ position: 'absolute', top: '0%', left: '0%', height: 'auto', width: '100%', marginBottom: '5%' }} onError={onImageLoadError} src={`data:image/webp;base64, ${props.msgObj.content}`}></img> : ''}
                     {props.msgObj.contentType == 'color' ?
                         <div style={{ top: '0%', left: '0%', backgroundColor: '#00000000' }} className="colorMsgTypePreviewContainer">
                             <MsgTypeColorDeco style={{ left: '3%' }}></MsgTypeColorDeco>
@@ -273,6 +277,6 @@ function Message(props) {
             ></Label>
         </div >
     )
-}
+});
 
 export default Message;

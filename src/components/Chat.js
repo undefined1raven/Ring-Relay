@@ -222,6 +222,28 @@ function Chat(props) {
         })
     }, [decryptedImageData])
 
+
+    const startImageDecrypt = (rawMsg, encryptedOwnImagaDataChunks, encryptedRemoteImagaDataChunks, pubSigningKey, privateKey, ownPUBSK) => {
+        let imageDecryptorWorker = new Worker('./imageDecryptor.js');
+
+        imageDecryptorWorker.postMessage({
+            eid: 'onDecryptStart',
+            MID: rawMsg.MID,
+            rawMsg: rawMsg,
+            encryptedOwnImagaDataChunks: encryptedOwnImagaDataChunks,
+            encryptedRemoteImagaDataChunks: encryptedRemoteImagaDataChunks,
+            pubSigningKey: pubSigningKey,
+            privateKey: privateKey,
+            ownPUBSK: ownPUBSK,
+        });
+
+        imageDecryptorWorker.onmessage = (e) => {
+            if (e.data.status == 'Success') {
+                setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
+            }
+        }
+    }
+
     const atomicDecrypt = async (rawMsg, ownPUBSK, privateKey, pubSigningKey, rawMsgArr) => {
         if (rawMsg.typeOverride == 'none' || rawMsg.typeOverride == undefined) {
             if (rawMsg.type == 'tx') {
@@ -258,33 +280,32 @@ function Chat(props) {
         } else if (rawMsg.typeOverride.split('.')[0] == 'image') {
             if (rawMsg.typeOverride.split('.')[1] == 0) {
 
-                let imageDecryptorWorker = new Worker('./imageDecryptor.js');
+                axios.post(`${DomainGetter('prodx')}api/dbop?getImageData`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MID: rawMsg.MID }).then(res => {
+                    if (res.data.imageChunks != undefined && res.data.error == undefined) {
+                        let encryptedImageChunks = [];
 
-                imageDecryptorWorker.onmessage = (e) => {
-                    if (e.data.status == 'Success') {
-                        setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
+                        encryptedImageChunks.push({ ...rawMsg });
+
+
+                        res.data.imageChunks.forEach(imageChunk => {
+                            encryptedImageChunks.push({ ...imageChunk });
+                        })
+
+                        let encryptedOwnImagaDataChunks = '';
+                        let encryptedRemoteImagaDataChunks = '';
+
+                        encryptedImageChunks.sort((a, b) => { return parseInt(a.tx) - parseInt(b.tx) })
+
+                        encryptedImageChunks.forEach(chunk => {
+                            encryptedOwnImagaDataChunks += chunk.ownContent;
+                            encryptedRemoteImagaDataChunks += chunk.remoteContent;
+                        });
+
+                        startImageDecrypt(rawMsg, encryptedOwnImagaDataChunks, encryptedRemoteImagaDataChunks, pubSigningKey, privateKey, ownPUBSK);
                     }
-                }
+                }).catch(e => {
 
-                let encryptedImageChunks = rawMsgArr.filter(msg => msg.MID == rawMsg.MID);
-                let encryptedOwnImagaDataChunks = '';
-                let encryptedRemoteImagaDataChunks = '';
-
-                encryptedImageChunks.forEach(chunk => {
-                    encryptedOwnImagaDataChunks += chunk.ownContent
-                    encryptedRemoteImagaDataChunks += chunk.remoteContent
                 })
-
-                imageDecryptorWorker.postMessage({
-                    eid: 'onDecryptStart',
-                    MID: rawMsg.MID,
-                    rawMsg: rawMsg,
-                    encryptedOwnImagaDataChunks: encryptedOwnImagaDataChunks,
-                    encryptedRemoteImagaDataChunks: encryptedRemoteImagaDataChunks,
-                    pubSigningKey: pubSigningKey,
-                    privateKey: privateKey,
-                    ownPUBSK: ownPUBSK,
-                });
 
                 return { ...rawMsg, content: '[Decrypting Image]', contentType: 'image', signed: (false) ? 'self' : 'no_self' }
             } else {
