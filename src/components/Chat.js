@@ -113,6 +113,7 @@ function Chat(props) {
     const [imageSending, setImageSending] = useState(false);
     const [decryptedImageData, setDecryptedImageData] = useState([]);
     const [imageDataChunksTransportStatus, setImageDataChunksTransportStatus] = useState(0)//# of image data packets that still have to be sent 
+    const [imageDecryptors, setImageDecryptors] = useState([])//stores web workers for destruction after the decrypted image data has been passed to the msg obj 
 
     let privateKeyID = localStorage.getItem('PKGetter');
     let publicSigningKeyJWK = JSON.parse(localStorage.getItem(`PUBSK-${props.chatObj.remoteUID}`));
@@ -211,6 +212,10 @@ function Chat(props) {
             for (let ix = 0; ix < msgArray.array.length; ix++) {
                 if (msg.MID == msgArray.array[ix].MID && msgArray.array[ix].typeOverride == 'image.0') {
                     updatedMsgArray.push(msg);
+                    let lworker = imageDecryptors.filter(worker => worker.MID == msgArray.array[ix].MID);
+                    lworker.forEach(workerObj => {
+                        workerObj.worker.terminate();
+                    })
                 } else {
                     updatedMsgArray.push(msgArray.array[ix]);
                 }
@@ -225,6 +230,7 @@ function Chat(props) {
 
     const startImageDecrypt = (rawMsg, encryptedOwnImagaDataChunks, encryptedRemoteImagaDataChunks, pubSigningKey, privateKey, ownPUBSK) => {
         let imageDecryptorWorker = new Worker('./imageDecryptor.js');
+        setImageDecryptors(prev => [...prev, { MID: rawMsg.MID, worker: imageDecryptorWorker }])
 
         imageDecryptorWorker.postMessage({
             eid: 'onDecryptStart',
@@ -241,7 +247,7 @@ function Chat(props) {
             if (e.data.status == 'Success') {
                 setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
             }
-            imageDecryptorWorker.terminate();
+            // imageDecryptorWorker.terminate();
         }
     }
 
