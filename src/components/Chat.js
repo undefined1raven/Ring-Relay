@@ -241,6 +241,7 @@ function Chat(props) {
             if (e.data.status == 'Success') {
                 setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
             }
+            imageDecryptorWorker.terminate();
         }
     }
 
@@ -427,9 +428,11 @@ function Chat(props) {
         set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
         set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
         if (!ghostModeEnabled) {
+            console.log(MID)
+            console.log(MSUID)
             return axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                 AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
-            })
+            });
         }
     }
 
@@ -505,7 +508,6 @@ function Chat(props) {
             let ownTransportArray = imageMessagePayload.ownContent.toString().match(/.{1,38000}/g);
             let remoteTransportArray = imageMessagePayload.remoteContent.toString().match(/.{1,38000}/g);
 
-            let chunksTransferPromiseArray = [];
             setImageDataChunksTransportStatus({ val: ownTransportArray.length, ini: ownTransportArray.length });
             setImageSending(true);
             for (let ix = 0; ix < ownTransportArray.length; ix++) {
@@ -961,9 +963,6 @@ function Chat(props) {
                                 }
                             }
 
-                            console.log(`OWNL ${ownChunks.length}`);
-                            console.log(`REMOL ${remoteChunks.length}`);
-
                             Promise.all(ownChunks).then(encryptedOwnChunks => {
                                 Promise.all(remoteChunks).then(encryptedRemoteChunks => {
                                     pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
@@ -978,7 +977,7 @@ function Chat(props) {
                                         sign(signingPrivateKey, base64EncodedRemoteChunks).then(cipherSig => {
                                             setImageMessagePayload({ localContent: base64encodedBuf, ini: true, signature: cipherSig.base64, ownContent: base64EncodedOwnChunks, remoteContent: base64EncodedRemoteChunks });
                                         });
-                                    })
+                                    });
                                     setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
                                 })
                             })

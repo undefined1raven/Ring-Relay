@@ -18,6 +18,7 @@ import StaticMapMarker from '../components/StaticMapMarker.js'
 import ImageProcessingSendBtnDeco from './ImageProcessingSendBtnDeco.js'
 
 const Message = memo(function Message(props) {
+    const [decrypted, setDecrypted] = useState(props.decrypted);
     const [liked, setLiked] = useState(props.msgObj.liked);
     const [deleted, setDeleted] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
@@ -94,7 +95,7 @@ const Message = memo(function Message(props) {
         } else {
             if (deleted) {
                 return '[Deleted]';
-            } else if (props.decrypted) {
+            } else if (decrypted) {
                 if (props.msgObj.contentType == undefined) {
                     return props.msgObj.content;
                 } else if (props.msgObj.contentType == 'text') {
@@ -106,8 +107,10 @@ const Message = memo(function Message(props) {
                 } else if (props.msgObj.contentType == 'image' && props.msgObj.content == '[Decrypting Image]') {
                     return '[Decrypting Image]'
                 }
-            } else {
+            } else if (props.msgObj.contentType != 'image') {
                 return '[Failed to decrypt]';
+            } else {
+                return '[Failed to decrypt image]';
             }
         }
     }
@@ -149,7 +152,7 @@ const Message = memo(function Message(props) {
     }
 
     const onImageLoadError = (e) => {
-        console.log('ILF')
+        setDecrypted(false);
     }
 
     const onMsgClick = useSingleAndDoubleClick(() => { }, onDoubleClick)
@@ -210,7 +213,7 @@ const Message = memo(function Message(props) {
     }
 
     const messageContentColorController = () => {
-        if (props.decrypted) {
+        if (decrypted) {
             if (props.msgObj.contentType == undefined || props.msgObj.contentType == 'text') {
                 if (ghost) {
                     return props.msgObj.type == 'rx' ? '#FFF' : '#4B47FF';
@@ -228,7 +231,7 @@ const Message = memo(function Message(props) {
     }
 
     const messageBkgController = () => {
-        if (props.decrypted) {
+        if (decrypted) {
             if (ghost) {
                 return '#0500FF20';
             } else {
@@ -242,7 +245,7 @@ const Message = memo(function Message(props) {
     const messageBorderColorController = () => {
         if (props.msgObj.contentType != 'image') {
 
-            if (props.decrypted) {
+            if (decrypted) {
                 if (ghost) {
                     return '#0500FF';
                 } else {
@@ -270,7 +273,7 @@ const Message = memo(function Message(props) {
     return (
         <div>
             <Label onContextMenu={onContextMenu} onClick={(e) => onMsgClick(e)} className={`msgContainer ${props.className}`} color={messageContentColorController()} text={msgContentController()} fontSize="4.5vw" bkg={messageBkgController()} style={{ borderLeft: `solid 1px ${messageBorderColorController()}`, paddingTop: `${props.msgObj.contentType == 'location' ? '30%' : 'auto'}`, marginBottom: `${props.msgObj.contentType == 'image' ? dynamicMarginBottom.margin : '5%'}` }} child={
-                props.decrypted ?
+                decrypted ?
                     <div>
                         {menuController()}
                     </div> : ''}
