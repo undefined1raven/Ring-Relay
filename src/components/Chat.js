@@ -228,8 +228,21 @@ function Chat(props) {
     }, [decryptedImageData])
 
 
+    function imageOpsOnMessageHandler(e) {
+        if (e.data.eid == 'onDecrypted') {
+            if (e.data.status == 'Success') {
+                setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
+            }
+        }
+        if (e.data.eid == 'onEncrypted') {
+            if (e.data.status == 'Success') {
+                setImageMessagePayload(e.data.payload);
+            }
+        }
+    }
+
     const startImageDecrypt = (rawMsg, encryptedOwnImagaDataChunks, encryptedRemoteImagaDataChunks, pubSigningKey, privateKey, ownPUBSK) => {
-        let imageDecryptorWorker = new Worker('./imageDecryptor.js');
+        let imageDecryptorWorker = new Worker('./imageOps.js');
         setImageDecryptors(prev => [...prev, { MID: rawMsg.MID, worker: imageDecryptorWorker }])
 
         imageDecryptorWorker.postMessage({
@@ -244,10 +257,7 @@ function Chat(props) {
         });
 
         imageDecryptorWorker.onmessage = (e) => {
-            if (e.data.status == 'Success') {
-                setDecryptedImageData((prev) => { return [...prev, { ...e.data.msg }] });
-            }
-            // imageDecryptorWorker.terminate();
+            imageOpsOnMessageHandler(e)
         }
     }
 
@@ -434,8 +444,6 @@ function Chat(props) {
         set(ref(db, `messageBuffer/${props.chatObj.remoteUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
         set(ref(db, `messageBuffer/${props.ownUID}/messages/${MID}`), { ...nMsgObj, ghost: ghostModeEnabled });
         if (!ghostModeEnabled) {
-            console.log(MID)
-            console.log(MSUID)
             return axios.post(`${DomainGetter('prodx')}api/dbop?messageSent`, {
                 AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), ...nMsgObj, username: props.chatObj.name
             });
@@ -526,6 +534,12 @@ function Chat(props) {
             }
         }
     }
+
+    useEffect(() => {
+        if (imageMessagePayload.ini) {
+            setSelectedImage(prev => { return { ...prev, done: true } })
+        }
+    }, [imageMessagePayload])
 
     useEffect(() => {
         if (imageDataChunksTransportStatus.val == 0) {
@@ -948,45 +962,16 @@ function Chat(props) {
 
                             let base64encodedBuf = _arrayBufferToBase64(buf);
 
-                            let ownChunks = [];
-                            let remoteChunks = [];
                             let chunkCount = Math.round(base64encodedBuf.length / 446);
 
-                            for (let ix = 0; ix <= chunkCount; ix++) {
-                                if (ix == 0) {
-                                    ownChunks.push(encryptMessage(key, base64encodedBuf.substring(0, 446)));
-                                    remoteChunks.push(encryptMessage(remotePubkey, base64encodedBuf.substring(0, 446)));
-                                }
-                                if (ix > 1 && ix < chunkCount) {
-                                    ownChunks.push(encryptMessage(key, base64encodedBuf.substring((ix - 1) * 446, ix * 446)));
-                                    remoteChunks.push(encryptMessage(remotePubkey, base64encodedBuf.substring((ix - 1) * 446, ix * 446)));
-                                }
-                                if (ix == chunkCount) {
-                                    let len = base64encodedBuf.length;
-                                    let modRes = len % 446;
-                                    ownChunks.push(encryptMessage(key, base64encodedBuf.substring(len - modRes, len)));
-                                    remoteChunks.push(encryptMessage(remotePubkey, base64encodedBuf.substring(len - modRes, len)));
-                                }
-                            }
+                            const imageEncryptor = new Worker('./imageOps.js')
 
-                            Promise.all(ownChunks).then(encryptedOwnChunks => {
-                                Promise.all(remoteChunks).then(encryptedRemoteChunks => {
-                                    pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
-                                        let base64EncodedOwnChunks = '';
-                                        let base64EncodedRemoteChunks = '';
-                                        for (let ix = 0; ix < encryptedOwnChunks.length; ix++) {
-                                            base64EncodedOwnChunks += encryptedOwnChunks[ix].base64;
-                                            base64EncodedOwnChunks += '<X>';
-                                            base64EncodedRemoteChunks += encryptedRemoteChunks[ix].base64;
-                                            base64EncodedRemoteChunks += '<X>';
-                                        }
-                                        sign(signingPrivateKey, base64EncodedRemoteChunks).then(cipherSig => {
-                                            setImageMessagePayload({ localContent: base64encodedBuf, ini: true, signature: cipherSig.base64, ownContent: base64EncodedOwnChunks, remoteContent: base64EncodedRemoteChunks });
-                                        });
-                                    });
-                                    setSelectedImage({ ini: true, fileSize: (file.size / 1024 / 1024).toFixed(2), fileName: file.name, chunkCount: Math.round(buf.byteLength / 446), isEncrypting: false, done: true });
-                                })
-                            })
+                            pemToKey(localStorage.getItem(`SV-${localStorage.getItem('PKGetter')}`), 'ECDSA').then(signingPrivateKey => {
+                                imageEncryptor.postMessage({ eid: 'onEncryptStart', base64encodedBuf: base64encodedBuf, chunkCount: chunkCount, signingPrivateKey: signingPrivateKey, key: key, remotePubkey: remotePubkey })
+                                imageEncryptor.onmessage = (e) => {
+                                    imageOpsOnMessageHandler(e)
+                                }
+                            });
 
                         })
                     });
