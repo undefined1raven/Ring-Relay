@@ -35,7 +35,7 @@ function Login() {
     }
 
     function auth(cip, location, details) {
-        axios.post(`${DomainGetter('prodx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
+        axios.post(`${DomainGetter('devx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
             ip: cip,
@@ -69,7 +69,7 @@ function Login() {
     }
 
     const validateInput = (continous) => {
-        if (setUserid.length < 2) {
+        if (userid.length < 2) {
             setUsernameFieldColor("#FF002E");
             setTimeout(() => {
                 if (!continous) {

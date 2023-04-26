@@ -115,7 +115,7 @@ function Settings(props) {
 
             if (!decryptionParams.ini) {
                 setIsRefreshing(true)
-                axios.post(`${DomainGetter('prodx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                axios.post(`${DomainGetter('devx')}api/dbop?getIDP=0`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                     if (res.data.flag) {
                         let ivBuf = _base64ToArrayBuffer(res.data.iv.toString())
                         let saltBuf = _base64ToArrayBuffer(res.data.salt.toString())
@@ -129,7 +129,7 @@ function Settings(props) {
                                         localStorage.setItem('PKGetter', nPKGetter);
                                         localStorage.setItem(nPKGetter, exportPayloadJSON.pkPem);
                                         localStorage.setItem(`SV-${nPKGetter}`, exportPayloadJSON.pskPem);
-                                        axios.post(`${DomainGetter('prodx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+                                        axios.post(`${DomainGetter('devx')}api/dbop?removeExportToken`, { DPID: DPID, AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
                                             reloadPage();
                                         });
                                         setTimeout(() => {
@@ -223,7 +223,7 @@ function Settings(props) {
             localStorage.removeItem(localStorage.getItem('PKGetter'));
             localStorage.removeItem(`SV-${localStorage.getItem('PKGetter')}`);
             localStorage.removeItem('PKGetter');
-            axios.post(`${DomainGetter('prodx')}api/dbop?deleteAccount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(rsx => {
+            axios.post(`${DomainGetter('devx')}api/dbop?deleteAccount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(rsx => {
                 setWindowHash('/login');
             });
         }
