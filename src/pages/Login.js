@@ -35,7 +35,7 @@ function Login() {
     }
 
     function auth(cip, location, details) {
-        axios.post(`${DomainGetter('devx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
+        axios.post(`${DomainGetter('prodx')}api/auth`, {//https://ring-relay-api-prod.vercel.app/api/auth|http://localhost:3001/api/auth
             userid: userid,
             password: password,
             ip: cip,

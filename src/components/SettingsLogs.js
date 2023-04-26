@@ -75,7 +75,7 @@ function SettingsLogs(props) {
     }, [logsArray])
 
     const fetchLogs = () => {
-        axios.post(`${DomainGetter('devx')}api/dbop?getLogs`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), count: 150 }).then(resx => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getLogs`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), count: 150 }).then(resx => {
             if (resx.data.error == undefined) {
                 if (resx.data.logs) {
                     let parsedLogArray = [];

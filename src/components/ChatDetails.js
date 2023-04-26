@@ -15,7 +15,7 @@ function ChatDetails(props) {
     const deleteConversation = () => {
         if (!updating) {
             setUpdating(true);
-            axios.post(`${DomainGetter('devx')}api/dbop?deleteConversation`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: props.MSUID, remoteUID: props.remoteUID }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?deleteConversation`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), MSUID: props.MSUID, remoteUID: props.remoteUID }).then(res => {
                 if (res.data.error == undefined) {
                     props.refreshConversationWindow();
                 }

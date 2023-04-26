@@ -20,7 +20,7 @@ function NotificationsDialog(props) {
 
     useEffect(() => {
         setChecking(true);
-        axios.post(`${DomainGetter('devx')}api/dbop?getLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(resx => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(resx => {
             if (resx.data.logsConfig && resx.data.error == undefined) {
                 const config = JSON.parse(resx.data.logsConfig);
                 setLogsOptions({ ...config });
@@ -36,7 +36,7 @@ function NotificationsDialog(props) {
 
     const onGranted = () => {
         let newPrefs = JSON.stringify({ ...logsOptions, ini: true });
-        axios.post(`${DomainGetter('devx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newPrefs });
+        axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newPrefs });
         sessionStorage.removeItem('showLogsConfig')
         props.onHide();
     }
@@ -51,7 +51,7 @@ function NotificationsDialog(props) {
 
     const deny = () => {
         let allDeny = JSON.stringify({ ini: true, account: false, security: false });
-        axios.post(`${DomainGetter('devx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: allDeny });
+        axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: allDeny });
         props.onHide();
     }
 

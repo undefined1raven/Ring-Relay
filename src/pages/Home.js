@@ -201,7 +201,7 @@ function Home() {
 
   const getNewMessageCounts = (res) => {
     if (res.data.refs.length > 0) {
-      axios.post(`${DomainGetter('devx')}api/dbop?getNewMessagesCount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), refs: res.data.refs }).then(resx => {
+      axios.post(`${DomainGetter('prodx')}api/dbop?getNewMessagesCount`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), refs: res.data.refs }).then(resx => {
         if (!resx.data.error) {
           let lmessageCountsHash = resx.data.messageCountsHash;
           for (let ix = 0; ix < res.data.refs.length; ix++) {
@@ -250,7 +250,7 @@ function Home() {
   useEffect(() => {
     window.location.hash = windowHash;
     if (!authorized) {
-      axios.post(`${DomainGetter('devx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+      axios.post(`${DomainGetter('prodx')}api/auth?val=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
         if (!res.data.flag) {
           window.location.hash = `#${res.data.redirect}`;
           setAuthorized(false)
@@ -347,7 +347,7 @@ function Home() {
         for (let ix = 0; ix < refs.arr.length; ix++) {
           uidArr.push(refs.arr[ix].uid);
         }
-        axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uidArray: uidArr }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uidArray: uidArr }).then(res => {
           if (!res.data.error) {
             for (let key in res.data.pubkeyHash) {
               localStorage.setItem(`PUBK-${key}`, res.data.pubkeyHash[key].publicKey);
@@ -355,7 +355,7 @@ function Home() {
             }
           }
         });
-        axios.post(`${DomainGetter('devx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getPubilcKey`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), uid: 'self' }).then(res => {
           if (!res.data.error) {
             localStorage.setItem(`OWN-PUBK`, res.data.publicKey);
             localStorage.setItem(`OWN-PUBSK`, res.data.publicSigningKey);
@@ -375,7 +375,7 @@ function Home() {
     if (updateUIRefs.length == refs.arr.length) {
       setRefs({ arr: updateUIRefs, ini: true });
     }
-    axios.post(`${DomainGetter('devx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
+    axios.post(`${DomainGetter('prodx')}api/dbop?getRefs=0`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(res => {
       if (res.data.refs) {
         if (res.data.refs.length == 0) {
           setRefreshingRefs(false);

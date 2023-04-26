@@ -14,7 +14,7 @@ function LogCollectionSettings(props) {
 
     useEffect(() => {
         setChecking(true);
-        axios.post(`${DomainGetter('devx')}api/dbop?getLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(resx => {
+        axios.post(`${DomainGetter('prodx')}api/dbop?getLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP') }).then(resx => {
             if (resx.data.logsConfig && resx.data.error == undefined) {
                 const config = JSON.parse(resx.data.logsConfig);
                 setLogsOptions({ ...config });
@@ -47,7 +47,7 @@ function LogCollectionSettings(props) {
             flippedLogOptions[logTypeKey] = !flippedLogOptions[logTypeKey];
             setLogsOptions({ ...flippedLogOptions })
             let newConfig = JSON.stringify({...flippedLogOptions, ini: true});
-            axios.post(`${DomainGetter('devx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newConfig }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), newPrefs: newConfig }).then(res => {
                 if (res.data.error == undefined) {
                     if (logTypeKey == 'account') {
                         setIsLogOptionUpdating({ ...isLogOptionUpdating, account: false })
@@ -68,7 +68,7 @@ function LogCollectionSettings(props) {
     const deleteAll = () => {
         if (!isDeletingAll) {
             setIsDeletingAll(true);
-            axios.post(`${DomainGetter('devx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), deleteAll: true }).then(res => {
+            axios.post(`${DomainGetter('prodx')}api/dbop?updateLogsConfig`, { AT: localStorage.getItem('AT'), CIP: localStorage.getItem('CIP'), deleteAll: true }).then(res => {
                 if (res.data.error == undefined) {
                     setIsDeletingAll(false);
                 } else {
